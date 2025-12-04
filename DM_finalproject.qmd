@@ -112,7 +112,7 @@ file_names <- here("DATA_wid", paste0("WID_data_", codes_states, ".csv"))
 Since the files don't have the full state names, we need to turn the abbreviations into the actual states names. To do so, we create a data base that associates each abbreviation to the state.
 
 ```{r}
-dict_etats <- tibble(
+dict_states <- tibble(
  country = c(
    "US-AL", "US-AK", "US-AZ", "US-AR", "US-CA", "US-CO", "US-CT", "US-DE",
    "US-FL", "US-GA", "US-HI", "US-ID", "US-IL", "US-IN", "US-IA", "US-KS",
@@ -201,7 +201,7 @@ dict_variables <- tibble(
 wid_all <- wid_all |>
   left_join(dict_variables, by = "variable") |>
   select(!variable) |>
-  left_join(dict_etats, by = "country") |>
+  left_join(dict_states, by = "country") |>
   select(!country) |>
   relocate(State, new_name)
 ```
