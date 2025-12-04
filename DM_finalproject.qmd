@@ -58,6 +58,30 @@ Unemployment per state: https://data.bls.gov/cew/apps/table_maker/v4/table_maker
 
 ## Data cleaning
 
+Loading and cleaning for each base.
 
+```{r}
+#| message : false
+#| echo : false
+
+library(dplyr)
+library(here)
+library(vroom)
+library(ggplot2)
+library(tidyverse)
+library(tidyr)
+```
+
+```{r}
+here::i_am("Data-management---final-project.Rproj")
+```
+
+### Loading and cleaning each database
+
+#### The crime database
+
+```{r}
+crime <- vroom("DATA_statecrime.csv")
+```
 
 
