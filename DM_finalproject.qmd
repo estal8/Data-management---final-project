@@ -215,6 +215,7 @@ wid_all |>
 ```
 
 The table that summarises this database : 
+
 ```{r}
 wid_all |>
   summarise(
