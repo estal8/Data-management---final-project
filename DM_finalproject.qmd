@@ -158,5 +158,72 @@ nrow(wid_all)
 n_distinct(wid_all$country)
 ```
 
-We have 51 states because the District of Columbia is counted as one here.
+We have 51 states because the District of Columbia is counted as one here. The variable is named country because the WID is originally for countries and not for regions within countries.
+
+Now, checking for missing values : 
+
+```{r}
+wid_all |>
+ summarise(
+   na_country = sum(is.na(country)),
+   na_variable = sum(is.na(variable)),
+   na_percentile = sum(is.na(percentile)),
+   na_year = sum(is.na(year)),
+   na_value = sum(is.na(value)),
+   na_age = sum(is.na(age)),
+   na_pop = sum(is.na(pop))
+ ) |>
+  knitr::kable()
+```
+
+There are no missing values.
+
+As for the types : 
+
+```{r}
+sapply(wid_all, typeof)
+```
+
+**Change the type of year, value and age ???**
+
+We also want to clarify what the variable codes stand for. We use the variable list that was provided when downloading the WID data, and then join the newly created database to our **wid_all** base.
+
+```{r}
+dict_variables <- tibble(
+ variable = c("afiinct992", "mfiinct992", "npopult992",
+              "ntaxret992", "sfiinct992", "sptinct992"),
+ new_name = c("avg_fiscal_income", "total_fiscal_income", "population",
+               "nb_tax_returns", "share_fiscal_income", "share_pretax_income")
+)
+```
+
+```{r}
+wid_all <- wid_all |>
+  left_join(dict_variables, by = "variable") |>
+  select(!variable) |>
+  left_join(dict_etats, by = "country") |>
+  select(!country) |>
+  relocate(State, new_name)
+```
+
+The database now looks like this : 
+
+```{r}
+wid_all |>
+ slice_head(n = 10) |>
+  knitr::kable()
+```
+
+The table that summarises this database : 
+```{r}
+wid_all |>
+  summarise(
+    nb_lines = n(),
+    nb_states = n_distinct(State),
+    nb_years = n_distinct(year)
+  ) |>
+  knitr::kable()
+```
+
+
 
