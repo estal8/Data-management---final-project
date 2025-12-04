@@ -10,12 +10,28 @@ The link to our github repository : https://github.com/estal8/Data-management---
 
 ## Description of our data
 
-The **crime per state (1960-2019) database** from the **CORGIS Dataset Project** (Collection of Really Great, Interesting, Situated Datasets). 
+The **crime per state (1960-2019) database** from the **CORGIS Dataset Project** (Collection of Really Great, Interesting, Situated Datasets). This dataset was produced by the U.S. Department of Justice and the Federal Bureau of Investigation. The crimes described in this dataset are divided into two categories : violent crimes and property crimes (much more numerous), which encompass themselves different types of crimes : 
+
+- violent crimes : assaults, murders, rapes, and robberies.
+
+- property crimes : burglaries, larcenies, and motor crimes.
+
+The database combines rates per 100 000 population and total number of crimes per states, which we will mainly focus on.
 
 https://corgis-edu.github.io/corgis/csv/state_crime/
 
 
+The **World Inequality Database** (WID), for every US state. The WID combines national accounts with survey data and tax sources, enabling the publication of more reliable estimates of inequality covering the entire distribution of income and wealth. It was initially created in January 2011 under the name World Top Incomes Database (WTID) and offers the most comprehensive collection of historical series on wealth inequality available to date. We only downloaded data for each US state.
 
+https://wid.world/fr/donnees/
+
+
+The **police shootings database (2015-2024)** we used is from the Washington Post. In 2015, the Washington Post started compiling data on murders caused by police shootings. The data gathered is much larger than what we need (threat type, flee status, name and age of the victime, etc). We will calculate the number of people who have died because of a police shooting by state.
+
+https://github.com/washingtonpost/data-police-shootings/tree/master 
+
+
+## Data cleaning
 
 
 
