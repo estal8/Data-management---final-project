@@ -137,5 +137,26 @@ dict_etats <- tibble(
 )
 ```
 
+Now, we create a list with all the file names and download all files.
 
+```{r}
+list_wid <- list()
+
+list_wid <- lapply(file_names, vroom, delim = ";", show_col_types = FALSE)
+```
+
+And now, we can bind the 51 databases by using *bind_rows* so that each of them is stacked below the previous one.
+
+```{r}
+wid_all <- bind_rows(list_wid)
+```
+
+We check that we have the right number of states.
+
+```{r}
+nrow(wid_all)
+n_distinct(wid_all$country)
+```
+
+We have 51 states because the District of Columbia is counted as one here.
 
