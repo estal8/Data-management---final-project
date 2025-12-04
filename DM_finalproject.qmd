@@ -58,7 +58,7 @@ Unemployment per state: https://data.bls.gov/cew/apps/table_maker/v4/table_maker
 
 ## Data cleaning
 
-Loading and cleaning for each base.
+Loading the packages we will use and starting cleaning for each base.
 
 ```{r}
 #| message : false
