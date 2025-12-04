@@ -4,3 +4,19 @@ author: Paula and Esther
 format: html
 ---
 
+## Introduction
+
+The link to our github repository : https://github.com/estal8/Data-management---final-project.git
+
+## Description of our data
+
+The **crime per state (1960-2019) database** from the **CORGIS Dataset Project** (Collection of Really Great, Interesting, Situated Datasets). 
+
+https://corgis-edu.github.io/corgis/csv/state_crime/
+
+
+
+
+
+
+
