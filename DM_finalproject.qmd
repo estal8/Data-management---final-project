@@ -35,6 +35,27 @@ The **immigration per state database (2013-2023)** is from the Office of Homelan
 
 https://ohss.dhs.gov/topics/immigration/state-immigration-data 
 
+
+The **total per capita categorized public spending** (education, welfare, health, corrections, etc.) **for every US state (2017-2023)** database is from the United States Census Bureau.
+
+https://data.census.gov/table/GOVSTIMESERIES.GS00LF01?q=Local+Government+Finances&g=010XX00US,$0400000&nkd=GOVTYPE~001,time~2023  
+
+
+The **Food Environment Atlas (2012-2023)** from the **US Department for Agriculture** (USDA). It incorporates data from the Food Access Research Atlas, the Household Food Security in the United States, SNAP Policy Database, Atlas of Rural and Small-Town America, and Poverty Area Measures. 
+
+https://www.ers.usda.gov/data-products/food-environment-atlas/data-access-and-documentation-downloads 
+
+
+**Regional Economic Accounts** from the **Bureau of Economic Analysis** of the US. We only downloaded the SASUMMARY table, that compiles State Annual Summary Statistics (Personal Income, GDP, Consumer Spending, Price Indexes, and Employment).
+
+https://apps.bea.gov/regional/downloadzip.htm
+
+
+**State unemployment** ????
+
+Unemployment per state: https://data.bls.gov/cew/apps/table_maker/v4/table_maker.htm#type=0&year=2024&qtr=A&own=2&ind=10&supp=0 or from the census bureau : https://data.census.gov/table/ACSDP1Y2024.DP03?q=employment&g=010XX00US$0400000 
+
+
 ## Data cleaning
 
 
