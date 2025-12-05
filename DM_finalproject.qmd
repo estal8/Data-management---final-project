@@ -296,9 +296,7 @@ immigration |>
 These missing values are properly encoded and are associated to a total of refugees equal to 0.
 
 
-
 **Don't forget the tables for each database !**
-
 
 
 #### Total per capita categorized public spending
@@ -350,14 +348,58 @@ wid_crime |>
 The large number of NA can be explained by the presence of the US in the database for crime but not in the WID. We will only use it to plot the evolution of both property and violent crimes at the country level, so these NAs won't have any impact on our work.
 
 ```{r}
-wid_us <- wid_crime |>
-  filter(State == "United States")
+wid_us <- wid_crime |> 
+  filter(State == "United States") # use this for the graph !!!
 ```
 
 ```{r}
 wid_crime <- wid_crime |>
   filter(State != "United States")
 ```
+
+As for the rest, it is likely due to the fact that the WID goes to 2018 and the crime database to 2019. We can see it here by looking at the WID data :
+
+```{r}
+wid_crime |>
+  filter(Year == 2019) |>
+  slice_head(n = 5) |>
+  select(26:last_col()) |> # I'm only printing these columns because before are the variables for crime, which don't have any NA.
+  knitr::kable()
+```
+
+So, we can keep only the years both databases have in common :
+
+```{r}
+wid_crime <- wid_crime |>
+  filter(Year <= 2018)
+```
+
+Now, we should have much less NAs :
+
+```{r}
+wid_crime |>
+  summarise(nb_na = sum(is.na(across(everything()))), .by = State) |>
+  arrange(desc(nb_na)) |>
+  slice_head(n = 5) |> # because there are 0 missing values for all states
+  knitr::kable()
+```
+
+#### Adding police shootings 
+
+
+#### Adding immigration 
+
+
+#### Adding GDP
+
+
+#### Adding Food
+
+
+#### Adding public spending
+
+
+### Selecting the variables of interest
 
 
 
