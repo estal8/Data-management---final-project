@@ -69,6 +69,7 @@ library(here)
 library(vroom)
 library(ggplot2)
 library(tidyr)
+library(stringr)
 ```
 
 ```{r}
@@ -215,12 +216,14 @@ wid_all |>
 
 We need to pivot it. But before doing so we can clarify the variables by sorting them for each percentile : 
 
+**Probleme de rendering**
+
 ```{r}
 wid_all <- wid_all |>
   mutate(var_complete = str_c(new_name, percentile, sep = "_"))
 ```
 
-Now we can pivot.
+Now we can pivot :
 
 ```{r}
 wid_wide <- wid_all |>
@@ -230,7 +233,7 @@ wid_wide <- wid_all |>
     names_from = var_complete,
     values_from = value
   ) |>
-  rename(Year = year) # else the merging isn't working 
+  rename(Year = year) # else merging does not work
 ```
 
 The table that summarises this database : 
@@ -240,7 +243,7 @@ wid_wide |>
   summarise(
     nb_lines = n(),
     nb_states = n_distinct(State),
-    nb_years = n_distinct(year)
+    nb_years = n_distinct(Year)
   ) |>
   knitr::kable()
 ```
