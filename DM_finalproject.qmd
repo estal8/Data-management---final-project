@@ -339,6 +339,25 @@ nrow(wid_crime)
 ncol(wid_crime)
 ```
 
+```{r}
+wid_crime |>
+  summarise(nb_na = sum(is.na(across(everything()))), .by = State) |>
+  filter(nb_na > 0) |>
+  arrange(desc(nb_na)) |>
+  knitr::kable()
+```
+
+The large number of NA can be explained by the presence of the US in the database for crime but not in the WID. We will only use it to plot the evolution of both property and violent crimes at the country level, so these NAs won't have any impact on our work.
+
+```{r}
+wid_us <- wid_crime |>
+  filter(State == "United States")
+```
+
+```{r}
+wid_crime <- wid_crime |>
+  filter(State != "United States")
+```
 
 
 
