@@ -61,8 +61,7 @@ Unemployment per state: https://data.bls.gov/cew/apps/table_maker/v4/table_maker
 Loading the packages we will use and starting cleaning for each base.
 
 ```{r}
-#| message : false
-#| echo : false
+#| message: false
 
 library(dplyr)
 library(here)
@@ -73,6 +72,8 @@ library(stringr)
 ```
 
 ```{r}
+#| message: false
+
 here::i_am("Data-management---final-project.Rproj")
 ```
 
@@ -81,6 +82,8 @@ here::i_am("Data-management---final-project.Rproj")
 #### The crime database
 
 ```{r}
+#| message: false
+
 crime <- vroom("DATA_statecrime.csv")
 ```
 
@@ -216,8 +219,6 @@ wid_all |>
 
 We need to pivot it. But before doing so we can clarify the variables by sorting them for each percentile : 
 
-**Probleme de rendering**
-
 ```{r}
 wid_all <- wid_all |>
   mutate(var_complete = str_c(new_name, percentile, sep = "_"))
@@ -273,6 +274,8 @@ The huge number of missing values for Alaska can probably be explained by the fa
 #### Immigration database 
 
 ```{r}
+#| message: false
+
 immigration <- vroom("DATA_stateimmigration.csv")
 ```
 
@@ -301,12 +304,16 @@ These missing values are properly encoded and are associated to a total of refug
 #### Total per capita categorized public spending
 
 ```{r}
+#| message: false
+
 public_spending <- vroom("DATA_spending.csv")
 ```
 
 #### Food Environment Atlas
 
 ```{r}
+#| message: false
+
 food_data <- vroom(here("FOOD ACCESS", "DATA_foodenvi.csv"))
 food_variables <- vroom(here("FOOD ACCESS", "DATA_foodenvi-variables.csv")) # the names of the variables, needed to clarify the variables in the main database
 ```
@@ -314,6 +321,8 @@ food_variables <- vroom(here("FOOD ACCESS", "DATA_foodenvi-variables.csv")) # th
 #### State GDP
 
 ```{r}
+#| message: false
+
 state_income <- vroom("DATA_stateincome.csv")
 ```
 
