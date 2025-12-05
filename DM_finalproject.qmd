@@ -229,7 +229,8 @@ wid_wide <- wid_all |>
     id_cols = c(State, year),
     names_from = var_complete,
     values_from = value
-  )
+  ) |>
+  rename(Year = year) # else the merging isn't working 
 ```
 
 The table that summarises this database : 
@@ -317,7 +318,7 @@ state_income <- vroom("DATA_stateincome.csv")
 
 #### Crime and WID 
 
-We can merge the WID database for all states with the crime database.
+Now, we can actually merge the WID database for all states with the crime database.
 
 ```{r}
 wid_crime <- left_join(crime, wid_wide, by = c("State", "Year"))
