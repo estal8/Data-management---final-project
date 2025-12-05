@@ -264,7 +264,7 @@ wid_wide |>
   knitr::kable()
 ```
 
-What happened with Alaska ??
+The huge number of missing values for Alaska can probably be explained by the fact it only became a US state in 1959. Since the crime database begins in 1960, these won't be considered in the analysis anyways. As for the rest of the NAs, considering the huge amount of values (more than 230 000), they are negligeable.
 
 #### Immigration database 
 
