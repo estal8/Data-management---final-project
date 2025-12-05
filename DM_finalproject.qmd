@@ -228,3 +228,15 @@ wid_all |>
 
 
 
+
+#### Immigration database 
+
+```{r}
+immigration <- vroom("DATA_stateimmigration.csv")
+```
+
+```{r}
+sapply(immigration, typeof) # check this later
+```
+
+
