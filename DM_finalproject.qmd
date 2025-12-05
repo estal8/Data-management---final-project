@@ -213,6 +213,15 @@ wid_all |>
   knitr::kable()
 ```
 
+We need to pivot it. But before doing so we can clarify the variables by sorting them for each percentile : 
+
+```{r}
+wid_all <- wid_all |>
+  mutate(var_complete = str_c(new_name, percentile, sep = "_"))
+```
+
+
+
 The table that summarises this database : 
 
 ```{r}
@@ -224,8 +233,6 @@ wid_all |>
   ) |>
   knitr::kable()
 ```
-
-
 
 
 #### Immigration database 
@@ -278,4 +285,16 @@ state_income <- vroom("DATA_stateincome.csv")
 ### Merging
 
 #### Crime and WID 
+
+We can merge the WID database for all states with the crime database.
+
+```{r}
+wid_crime <- left_join(crime, wid_wide, by = c("State", "Year"))
+
+nrow(wid_crime)
+ncol(wid_crime)
+```
+
+
+
 
