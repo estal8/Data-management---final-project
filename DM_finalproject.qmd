@@ -220,12 +220,22 @@ wid_all <- wid_all |>
   mutate(var_complete = str_c(new_name, percentile, sep = "_"))
 ```
 
+Now we can pivot.
 
+```{r}
+wid_wide <- wid_all |>
+  select(State, year, var_complete, value) |>
+  pivot_wider(
+    id_cols = c(State, year),
+    names_from = var_complete,
+    values_from = value
+  )
+```
 
 The table that summarises this database : 
 
 ```{r}
-wid_all |>
+wid_wide |>
   summarise(
     nb_lines = n(),
     nb_states = n_distinct(State),
@@ -233,6 +243,8 @@ wid_all |>
   ) |>
   knitr::kable()
 ```
+
+We should check again for missing values.
 
 
 #### Immigration database 
