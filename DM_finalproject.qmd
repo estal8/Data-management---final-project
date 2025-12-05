@@ -252,4 +252,30 @@ These missing values are properly encoded and are associated to a total of refug
 
 
 
+**Don't forget the tables for each database !**
+
+
+
+#### Total per capita categorized public spending
+
+```{r}
+public_spending <- vroom("DATA_spending.csv")
+```
+
+#### Food Environment Atlas
+
+```{r}
+food_data <- vroom(here("FOOD ACCESS", "DATA_foodenvi.csv"))
+food_variables <- vroom(here("FOOD ACCESS", "DATA_foodenvi-variables.csv")) # the names of the variables, needed to clarify the variables in the main database
+```
+
+#### State GDP
+
+```{r}
+state_income <- vroom("DATA_stateincome.csv")
+```
+
+### Merging
+
+#### Crime and WID 
 
