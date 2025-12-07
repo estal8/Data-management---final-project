@@ -113,7 +113,7 @@ here::i_am("Data-management---final-project.Rproj")
 
 ### Loading and cleaning each database
 
-#### The crime database
+### The crime database
 
 ```{r}
 #| message: false
@@ -409,7 +409,7 @@ immigration_small <- immigration |>
 
 We construct a reduced immigration dataset, keeping only a few key indicators (total population, lawful permanent residents, nonimmigrants and refugees) at the state–year level.
 
-#### Total per capita categorized public spending
+### Total per capita categorized public spending
 
 ```{r}
 #| message: false
@@ -509,7 +509,7 @@ We then create a clean State–Year–gdp table by parsing GDP values as numeric
 
 ### Merging
 
-#### Crime and WID 
+### Crime and WID 
 
 Now, we can actually merge the WID database for all states with the crime database.
 
@@ -581,7 +581,7 @@ wid_crime_police_imm <- wid_crime_police |>
   left_join(immigration_small, by=c("State","Year"))
 ```
 
-#### Adding GDP
+### Adding GDP
 ```{r}
 wid_crime_police_imm_gdp <- wid_crime_police_imm |> 
   left_join(state_gdp, by=c("State","Year"))
@@ -631,4 +631,30 @@ Key *explanatory* variables include:
 
 These variables are then merged into a panel dataset at the state–year level.
 
+### Graphical representation of the main target variables
+```{r}
+library(ggplot2)
+
+crime_trends <- panel_full |>
+  group_by(Year) |>
+  summarise(
+    violent_rate_mean  = mean(`Data.Rates.Violent.All`,  na.rm = TRUE),
+    property_rate_mean = mean(`Data.Rates.Property.All`, na.rm = TRUE)
+  ) |>
+  pivot_longer(
+    cols      = c(violent_rate_mean, property_rate_mean),
+    names_to  = "type",
+    values_to = "rate"
+  )
+
+ggplot(crime_trends, aes(x = Year, y = rate, colour = type)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title  = "Average violent and property crime rates in U.S. states",
+    x      = "Year",
+    y      = "Crimes per 100,000 inhabitants",
+    colour = "Crime type"
+  ) +
+  theme_minimal()
+```
 
