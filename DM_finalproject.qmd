@@ -185,6 +185,12 @@ dict_states <- tibble(
 )
 ```
 
+```{r}
+dict_states_abbrev <- dict_etats |>
+  mutate(state = substr(country, 4, 5)) |>
+  select(state, State)
+```
+
 Now, we create a list with all the file names and download all files.
 
 ```{r}
@@ -315,6 +321,46 @@ wid_wide |>
 ```
 
 The huge number of missing values for Alaska can probably be explained by the fact it only became a US state in 1959. Since the crime database begins in 1960, these won't be considered in the analysis anyways. As for the rest of the NAs, considering the huge amount of values (more than 230 000), they are negligeable.
+
+### Police Shooting database
+```{r}
+police_shootings <- vroom("DATA_policeshootingto2024.csv")
+```
+```{r}
+sapply(police_shootings, typeof)
+```
+
+
+```{r}
+police_shootings |>
+  summarise(across(everything(), ~ sum(is.na(.)))) |>
+  pivot_longer(everything(), names_to = "variable", values_to = "nb_na") |>
+  filter(nb_na > 0) |>
+  knitr::kable()
+```
+
+We only need the year from the date : 
+```{r}
+police_shootings <- police_shootings |>
+  left_join(dict_states_abbrev, by = "state") |>
+  mutate(
+    Year = as.integer(substr(as.character(date), 1, 4))
+  ) |>
+  select(-state)   
+```
+
+Now, we calculate the number of crimes per state and per year. We also keep the data on body cameras, and the armed or unarmed status of the people who were killed by the police.
+
+```{r}
+police_shootings_final <- police_shootings |>
+  summarise(
+    nb_police_shootings = n(),
+    nb_unarmed          = sum(armed_with == "unarmed", na.rm = TRUE),
+    nb_gun              = sum(armed_with == "gun",     na.rm = TRUE),
+    nb_body_camera      = sum(body_camera,            na.rm = TRUE),
+    .by = c(State, Year)
+  )
+```
 
 ### Immigration database 
 
