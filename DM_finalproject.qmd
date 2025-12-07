@@ -186,7 +186,7 @@ dict_states <- tibble(
 ```
 
 ```{r}
-dict_states_abbrev <- dict_etats |>
+dict_states_abbrev <- dict_states |>
   mutate(state = substr(country, 4, 5)) |>
   select(state, State)
 ```
@@ -237,8 +237,6 @@ As for the types :
 ```{r}
 sapply(wid_all, typeof)
 ```
-
-**Change the type of year, value and age ???**
 
 We also want to clarify what the variable codes stand for. We use the variable list that was provided when downloading the WID data, and then join the newly created database to our **wid_all** base.
 
