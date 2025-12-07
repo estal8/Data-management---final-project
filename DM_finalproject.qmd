@@ -95,6 +95,7 @@ Finally, we perform a sequence of left joins on the common keys (`State`, `Year`
 
 ```{r}
 #| message: false
+#| echo : false
 
 library(dplyr)
 library(here)
@@ -120,10 +121,21 @@ here::i_am("Data-management---final-project.Rproj")
 crime <- vroom("DATA_statecrime.csv")
 ```
 
+```{r}
+crime |>
+  summarise(`Number of crimes` = n(), `Number of variables` = ncol(crime)) |>
+  knitr::kable()
+```
 
+```{r}
+crime |>
+  summarise(across(everything(), ~ sum(is.na(.)))) |>
+  pivot_longer(everything(), names_to = "variable", values_to = "nb_na") |>
+  knitr::kable()
+```
+There are no missing values.
 
-
-#### The WID database
+### The WID database
 
 First, we must join all 51 states bases of the WID. To do so, we are going to create a list with all the files' names to avoid having to manually download all of them.
 
@@ -304,7 +316,7 @@ wid_wide |>
 
 The huge number of missing values for Alaska can probably be explained by the fact it only became a US state in 1959. Since the crime database begins in 1960, these won't be considered in the analysis anyways. As for the rest of the NAs, considering the huge amount of values (more than 230 000), they are negligeable.
 
-#### Immigration database 
+### Immigration database 
 
 ```{r}
 #| message: false
@@ -328,9 +340,28 @@ immigration |>
 
 These missing values are properly encoded and are associated to a total of refugees equal to 0.
 
+```{r}
+immigration |>
+  summarise(
+    `Number of rows`    = n(),
+    `Number of columns` = ncol(immigration)
+  ) |>
+  knitr::kable()
+```
 
-**Don't forget the tables for each database !**
+```{r}
+immigration_small <- immigration |>
+  transmute(
+    State,
+    Year,
+    imm_population = Population,
+    lpr_total      = `Lawful Permanent Residents Total`,
+    nonimm_total   = `Nonimmigrants Total`,
+    refugees_total = `Refugees Total`
+  )
+```
 
+We construct a reduced immigration dataset, keeping only a few key indicators (total population, lawful permanent residents, nonimmigrants and refugees) at the state–year level.
 
 #### Total per capita categorized public spending
 
@@ -340,7 +371,7 @@ These missing values are properly encoded and are associated to a total of refug
 public_spending <- vroom("DATA_spending.csv")
 ```
 
-#### Food Environment Atlas
+### Food Environment Atlas
 
 ```{r}
 #| message: false
@@ -349,13 +380,86 @@ food_data <- vroom(here("FOOD ACCESS", "DATA_foodenvi.csv"))
 food_variables <- vroom(here("FOOD ACCESS", "DATA_foodenvi-variables.csv")) # the names of the variables, needed to clarify the variables in the main database
 ```
 
-#### State GDP
+```{r}
+food_data_num <- food_data |>
+  dplyr::mutate(
+    dplyr::across(
+      -c(StateFIPS, State),  
+      ~ readr::parse_number(.x)
+    )
+  )
+```
+We convert all quantitative columns stored as character strings into numeric values using parse_number, leaving only the state identifiers as text.
+
+```{r}
+food_state <- food_data_num |>
+  dplyr::transmute(
+    State,
+    wic_2015   = `WIC participants, FY 2015`,
+    nslp_2015  = `National School Lunch Program participants, FY 2015`,
+    sbp_2015   = `School Breakfast Program participants, FY 2015`
+  )
+
+food_state |>
+  summarise(nb_states = n_distinct(State)) |>
+  knitr::kable()
+```
+We extract three indicators of participation in food assistance and school meal programmes in 2015, and check that all 50 states plus DC are present.
+
+### State GDP
 
 ```{r}
 #| message: false
 
 state_income <- vroom("DATA_stateincome.csv")
+
+state_income |>
+  summarise(
+    `Number of rows`    = n(),
+    `Number of columns` = ncol(state_income)
+  ) |>
+  knitr::kable()
 ```
+We select only the rows corresponding to state-level GDP, reshape the data from wide to long format (one row per state–year), parse GDP as numeric, and summarise the coverage in terms of years and states.
+
+```{r}
+state_gdp <- state_income |>
+
+  dplyr::filter(stringr::str_detect(Description, "Gross domestic product")) |>
+
+  dplyr::mutate(
+    dplyr::across(
+      dplyr::matches("^[0-9]{4}$"),
+      as.character
+    )
+  ) |>
+
+  tidyr::pivot_longer(
+    cols      = dplyr::matches("^[0-9]{4}$"),
+    names_to  = "Year",
+    values_to = "gdp"
+  ) |>
+  dplyr::mutate(
+    Year = as.integer(Year),
+  
+    gdp  = readr::parse_number(gdp),
+    State = GeoName
+  ) |>
+  dplyr::select(State, Year, gdp) |>
+  dplyr::filter(!is.na(Year), !is.na(gdp))
+
+state_gdp |>
+  summarise(
+    nb_rows   = n(),
+    nb_states = n_distinct(State),
+    min_year  = min(Year),
+    max_year  = max(Year)
+  ) |>
+  knitr::kable()
+```
+This dataset contains many economic indicators in wide format, so we first filter the rows corresponding to “Gross domestic product”. The year columns in the original file have mixed data types (some numeric, some character), which prevents reshaping the data. To fix this, we convert all four-digit year columns to character before reshaping the dataset from wide to long format.
+
+We then create a clean State–Year–gdp table by parsing GDP values as numeric and keeping only non-missing observations. This prepares the GDP data to be merged consistently with the other state-year datasets in our panel.
 
 ### Merging
 
@@ -417,7 +521,11 @@ wid_crime |>
   knitr::kable()
 ```
 
-#### Adding police shootings 
+### Adding police shootings 
+```{r}
+
+```
+
 
 
 #### Adding immigration 
