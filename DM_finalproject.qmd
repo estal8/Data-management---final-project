@@ -76,7 +76,7 @@ https://apps.bea.gov/regional/downloadzip.htm
 Unemployment per state: https://data.bls.gov/cew/apps/table_maker/v4/table_maker.htm#type=0&year=2024&qtr=A&own=2&ind=10&supp=0 or from the census bureau : https://data.census.gov/table/ACSDP1Y2024.DP03?q=employment&g=010XX00US$0400000 
 
 
-### Data cleaning and merging
+### Data cleaning 
 
 We first import each raw CSV file and check for missing values and types.  
 For the crime dataset, we simply confirm that there are no missing values and keep the state–year level information on violent and property crime rates and total population.
@@ -523,9 +523,9 @@ wid_crime |>
 
 ### Adding police shootings 
 ```{r}
-
+wid_crime_police <- wid_crime |>
+  left_join(police_shootings_final, by = c("State", "Year"))
 ```
-
 
 
 #### Adding immigration 
