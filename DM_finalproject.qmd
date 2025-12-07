@@ -597,6 +597,18 @@ panel_full <- wid_crime_police_imm_gdp |>
   )
 ```
 
+```{r}
+
+panel_full |>
+  summarise(
+    `Number of rows`    = n(),
+    `Number of columns` = ncol(panel_full),
+    `Number of states`  = n_distinct(State),
+    `Number of years`   = n_distinct(Year)
+  ) |>
+  knitr::kable()
+```
+
 ### Selecting the variables of interest
 
 
