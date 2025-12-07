@@ -8,6 +8,26 @@ format: html
 
 The link to our github repository : https://github.com/estal8/Data-management---final-project.git
 
+## Research question
+
+Our project studies the socio-economic and demographic determinants of crime in the United States at the state level. More precisely, we ask whether economic opportunities and social inequalities are correlated with different types of crime (violent and property crime) across states and over time.
+
+Crime in the United States exhibits substantial variation across states and over time, and understanding the socio-economic factors that contribute to these differences remains a central question in both economics and public policy. Our project aims to investigate how economic conditions, demographic structure, inequality, public spending, and police behaviour correlate with violent and property crime at the state–year level. The objective is not to establish strict causal relationships—an ambitious task given the observational nature of the data—but rather to document robust associations and explore whether crime levels systematically co-evolve with structural socio-economic indicators.
+
+A first motivation for this research question is the long-standing hypothesis that economic opportunity and crime are linked. Periods of slow economic growth and labour market stress may increase incentives for certain types of offences, particularly property crime. To examine this mechanism, we combine the crime data from the CORGIS/FBI series with annual state GDP from the Bureau of Economic Analysis. GDP provides a measure of overall economic activity and allows us to test whether states experiencing strong or weak economic performance also display different crime patterns.
+
+Income inequality is another potential determinant of criminal activity. The World Inequality Database (WID) provides rich information on income shares and fiscal aggregates at the top and bottom of the distribution. High inequality may generate both economic stress and social fragmentation, potentially amplifying incentives for crime or reducing the perceived legitimacy of institutions. By merging the WID data with the crime series, we can evaluate whether states with higher income concentration or lower fiscal income shares among the majority of the population exhibit systematically different violent or property crime rates.
+
+Migration flows constitute a third dimension of interest. Public debate often assumes—sometimes incorrectly—that immigration influences crime rates. The DHS immigration data enable us to incorporate yearly state-level measures of lawful permanent residents, nonimmigrants, asylees, and refugees. Our goal is not to test politically charged claims, but to empirically examine whether changes in migration patterns are associated with changes in state crime trends once we control for other socio-economic conditions.
+
+In addition, we incorporate information on public expenditure and food assistance (from the Census and USDA Food Environment Atlas), which may proxy for the strength of social safety nets and local investment in welfare-related programmes. States with stronger social services may provide better support for vulnerable populations, potentially mitigating some of the socio-economic pressures that contribute to crime. Including these variables allows us to explore such channels empirically.
+
+Finally, we integrate data on police shootings from the Washington Post database. While this dataset does not measure police activity directly, fatal shootings can serve as a proxy for law-enforcement intensity or tension between police and residents. Investigating whether states with higher levels of fatal shootings also differ in crime trends contributes to a broader understanding of institutional and behavioural dimensions of crime.
+
+How do economic conditions, income inequality, immigration flows, public spending, and police activity correlate with violent and property crime across U.S. states?
+
+This integrated approach provides a comprehensive framework for analysing the socio-economic determinants of crime in the contemporary United States.
+
 ## Description of our data
 
 The **crime per state (1960-2019) database** from the **CORGIS Dataset Project** (Collection of Really Great, Interesting, Situated Datasets). This dataset was produced by the U.S. Department of Justice and the Federal Bureau of Investigation. The crimes described in this dataset are divided into two categories : violent crimes and property crimes (much more numerous), which encompass themselves different types of crimes : 
@@ -56,12 +76,26 @@ https://apps.bea.gov/regional/downloadzip.htm
 Unemployment per state: https://data.bls.gov/cew/apps/table_maker/v4/table_maker.htm#type=0&year=2024&qtr=A&own=2&ind=10&supp=0 or from the census bureau : https://data.census.gov/table/ACSDP1Y2024.DP03?q=employment&g=010XX00US$0400000 
 
 
-## Data cleaning
+### Data cleaning 
 
-Loading the packages we will use and starting cleaning for each base.
+We first import each raw CSV file and check for missing values and types.  
+For the crime dataset, we simply confirm that there are no missing values and keep the state–year level information on violent and property crime rates and total population.
+
+For the WID data, we download one CSV file per state, bind them into a single long table, and restrict attention to a small set of income and inequality variables. We then pivot the data to a wide state–year format (`wid_wide`) so that each row corresponds to a state–year observation.
+
+For the police shootings data, we recode state abbreviations into full state names, extract the year of each incident, and aggregate to the state–year level, computing the total number of shootings, and the number of unarmed victims, gun-related incidents, and cases with body cameras.
+
+For the immigration data, we keep a subset of relevant variables (total population, lawful permanent residents, nonimmigrants, refugees, asylees, and their per-million measures) and keep only state–year combinations with non-missing values.
+
+For the Food Environment Atlas, which is provided at the state level only, we parse all numeric variables and retain three indicators related to WIC, school lunch and school breakfast participation in 2015.
+
+For the BEA state income data, we filter the SASUMMARY table to keep only the line corresponding to Gross Domestic Product (GDP), convert year columns to long format (one row per state–year), and parse GDP values as numeric.
+
+Finally, we perform a sequence of left joins on the common keys (`State`, `Year`) to build a panel dataset combining crime, inequality, police shootings, immigration, GDP and food assistance indicators.
 
 ```{r}
 #| message: false
+#| echo : false
 
 library(dplyr)
 library(here)
@@ -79,7 +113,7 @@ here::i_am("Data-management---final-project.Rproj")
 
 ### Loading and cleaning each database
 
-#### The crime database
+### The crime database
 
 ```{r}
 #| message: false
@@ -87,10 +121,21 @@ here::i_am("Data-management---final-project.Rproj")
 crime <- vroom("DATA_statecrime.csv")
 ```
 
+```{r}
+crime |>
+  summarise(`Number of crimes` = n(), `Number of variables` = ncol(crime)) |>
+  knitr::kable()
+```
 
+```{r}
+crime |>
+  summarise(across(everything(), ~ sum(is.na(.)))) |>
+  pivot_longer(everything(), names_to = "variable", values_to = "nb_na") |>
+  knitr::kable()
+```
+There are no missing values.
 
-
-#### The WID database
+### The WID database
 
 First, we must join all 51 states bases of the WID. To do so, we are going to create a list with all the files' names to avoid having to manually download all of them.
 
@@ -138,6 +183,12 @@ dict_states <- tibble(
    "West Virginia", "Wisconsin", "Wyoming", "District of Columbia"
  )
 )
+```
+
+```{r}
+dict_states_abbrev <- dict_etats |>
+  mutate(state = substr(country, 4, 5)) |>
+  select(state, State)
 ```
 
 Now, we create a list with all the file names and download all files.
@@ -271,7 +322,47 @@ wid_wide |>
 
 The huge number of missing values for Alaska can probably be explained by the fact it only became a US state in 1959. Since the crime database begins in 1960, these won't be considered in the analysis anyways. As for the rest of the NAs, considering the huge amount of values (more than 230 000), they are negligeable.
 
-#### Immigration database 
+### Police Shooting database
+```{r}
+police_shootings <- vroom("DATA_policeshootingto2024.csv")
+```
+```{r}
+sapply(police_shootings, typeof)
+```
+
+
+```{r}
+police_shootings |>
+  summarise(across(everything(), ~ sum(is.na(.)))) |>
+  pivot_longer(everything(), names_to = "variable", values_to = "nb_na") |>
+  filter(nb_na > 0) |>
+  knitr::kable()
+```
+
+We only need the year from the date : 
+```{r}
+police_shootings <- police_shootings |>
+  left_join(dict_states_abbrev, by = "state") |>
+  mutate(
+    Year = as.integer(substr(as.character(date), 1, 4))
+  ) |>
+  select(-state)   
+```
+
+Now, we calculate the number of crimes per state and per year. We also keep the data on body cameras, and the armed or unarmed status of the people who were killed by the police.
+
+```{r}
+police_shootings_final <- police_shootings |>
+  summarise(
+    nb_police_shootings = n(),
+    nb_unarmed          = sum(armed_with == "unarmed", na.rm = TRUE),
+    nb_gun              = sum(armed_with == "gun",     na.rm = TRUE),
+    nb_body_camera      = sum(body_camera,            na.rm = TRUE),
+    .by = c(State, Year)
+  )
+```
+
+### Immigration database 
 
 ```{r}
 #| message: false
@@ -295,11 +386,30 @@ immigration |>
 
 These missing values are properly encoded and are associated to a total of refugees equal to 0.
 
+```{r}
+immigration |>
+  summarise(
+    `Number of rows`    = n(),
+    `Number of columns` = ncol(immigration)
+  ) |>
+  knitr::kable()
+```
 
-**Don't forget the tables for each database !**
+```{r}
+immigration_small <- immigration |>
+  transmute(
+    State,
+    Year,
+    imm_population = Population,
+    lpr_total      = `Lawful Permanent Residents Total`,
+    nonimm_total   = `Nonimmigrants Total`,
+    refugees_total = `Refugees Total`
+  )
+```
 
+We construct a reduced immigration dataset, keeping only a few key indicators (total population, lawful permanent residents, nonimmigrants and refugees) at the state–year level.
 
-#### Total per capita categorized public spending
+### Total per capita categorized public spending
 
 ```{r}
 #| message: false
@@ -307,7 +417,7 @@ These missing values are properly encoded and are associated to a total of refug
 public_spending <- vroom("DATA_spending.csv")
 ```
 
-#### Food Environment Atlas
+### Food Environment Atlas
 
 ```{r}
 #| message: false
@@ -316,17 +426,90 @@ food_data <- vroom(here("FOOD ACCESS", "DATA_foodenvi.csv"))
 food_variables <- vroom(here("FOOD ACCESS", "DATA_foodenvi-variables.csv")) # the names of the variables, needed to clarify the variables in the main database
 ```
 
-#### State GDP
+```{r}
+food_data_num <- food_data |>
+  dplyr::mutate(
+    dplyr::across(
+      -c(StateFIPS, State),  
+      ~ readr::parse_number(.x)
+    )
+  )
+```
+We convert all quantitative columns stored as character strings into numeric values using parse_number, leaving only the state identifiers as text.
+
+```{r}
+food_state <- food_data_num |>
+  dplyr::transmute(
+    State,
+    wic_2015   = `WIC participants, FY 2015`,
+    nslp_2015  = `National School Lunch Program participants, FY 2015`,
+    sbp_2015   = `School Breakfast Program participants, FY 2015`
+  )
+
+food_state |>
+  summarise(nb_states = n_distinct(State)) |>
+  knitr::kable()
+```
+We extract three indicators of participation in food assistance and school meal programmes in 2015, and check that all 50 states plus DC are present.
+
+### State GDP
 
 ```{r}
 #| message: false
 
 state_income <- vroom("DATA_stateincome.csv")
+
+state_income |>
+  summarise(
+    `Number of rows`    = n(),
+    `Number of columns` = ncol(state_income)
+  ) |>
+  knitr::kable()
 ```
+We select only the rows corresponding to state-level GDP, reshape the data from wide to long format (one row per state–year), parse GDP as numeric, and summarise the coverage in terms of years and states.
+
+```{r}
+state_gdp <- state_income |>
+
+  dplyr::filter(stringr::str_detect(Description, "Gross domestic product")) |>
+
+  dplyr::mutate(
+    dplyr::across(
+      dplyr::matches("^[0-9]{4}$"),
+      as.character
+    )
+  ) |>
+
+  tidyr::pivot_longer(
+    cols      = dplyr::matches("^[0-9]{4}$"),
+    names_to  = "Year",
+    values_to = "gdp"
+  ) |>
+  dplyr::mutate(
+    Year = as.integer(Year),
+  
+    gdp  = readr::parse_number(gdp),
+    State = GeoName
+  ) |>
+  dplyr::select(State, Year, gdp) |>
+  dplyr::filter(!is.na(Year), !is.na(gdp))
+
+state_gdp |>
+  summarise(
+    nb_rows   = n(),
+    nb_states = n_distinct(State),
+    min_year  = min(Year),
+    max_year  = max(Year)
+  ) |>
+  knitr::kable()
+```
+This dataset contains many economic indicators in wide format, so we first filter the rows corresponding to “Gross domestic product”. The year columns in the original file have mixed data types (some numeric, some character), which prevents reshaping the data. To fix this, we convert all four-digit year columns to character before reshaping the dataset from wide to long format.
+
+We then create a clean State–Year–gdp table by parsing GDP values as numeric and keeping only non-missing observations. This prepares the GDP data to be merged consistently with the other state-year datasets in our panel.
 
 ### Merging
 
-#### Crime and WID 
+### Crime and WID 
 
 Now, we can actually merge the WID database for all states with the crime database.
 
@@ -384,22 +567,94 @@ wid_crime |>
   knitr::kable()
 ```
 
-#### Adding police shootings 
+### Adding police shootings 
+```{r}
+wid_crime_police <- wid_crime |>
+  left_join(police_shootings_final, by = c("State", "Year"))
+```
 
+There will be a lot of missing values since the years the databases cover are different.
 
-#### Adding immigration 
+### Adding immigration 
+```{r}
+wid_crime_police_imm <- wid_crime_police |> 
+  left_join(immigration_small, by=c("State","Year"))
+```
 
+### Adding GDP
+```{r}
+wid_crime_police_imm_gdp <- wid_crime_police_imm |> 
+  left_join(state_gdp, by=c("State","Year"))
+```
+We sequentially merge the crime–WID panel with police shootings, immigration, and GDP, always using the common keys (State, Year).
 
-#### Adding GDP
+### Final panel construction
+```{r}
 
+panel_full <- wid_crime_police_imm_gdp |> #we have added the food_state data
+  left_join(
+    food_state,
+    by = "State"
+  )
+```
 
-#### Adding Food
+### Final panel construction
+```{r}
 
-
-#### Adding public spending
-
+panel_full |>
+  summarise(
+    `Number of rows`    = n(),
+    `Number of columns` = ncol(panel_full),
+    `Number of states`  = n_distinct(State),
+    `Number of years`   = n_distinct(Year)
+  ) |>
+  knitr::kable()
+```
 
 ### Selecting the variables of interest
 
+### Main variables
 
+Our main *outcome* variables are:
+
+- **Violent crime rate** (`Data.Rates.Violent.All`): number of violent crimes (assault, murder, rape, robbery) per 100,000 inhabitants at the state–year level.
+- **Property crime rate** (`Data.Rates.Property.All`): number of property crimes (burglary, larceny, motor vehicle theft) per 100,000 inhabitants.
+
+Key *explanatory* variables include:
+
+- **Income inequality and income shares** from WID (e.g. `share_pretax_income_p90p100`), capturing the share of total income accruing to the top of the distribution.
+- **Immigration stocks and flows** (e.g. `imm_population`, `lpr_total`, `nonimmigrants_total`, `refugees_total`) from DHS, measured at the state–year level.
+- **State GDP** (`gdp`) and personal income from the BEA, describing the size and dynamics of state economies.
+- **Public spending indicators** from the Census (education, welfare, health, corrections), describing the composition of state and local public expenditure.
+- **Food assistance participation** (`wic_2015`, `nslp_2015`, `sbp_2015`) from the Food Environment Atlas, as proxies for food insecurity and social protection.
+- **Police shootings** (`nb_police_shootings`, `nb_unarmed`, `nb_gun`, `nb_body_camera`), summarising the number and characteristics of fatal police shootings in each state–year.
+
+These variables are then merged into a panel dataset at the state–year level.
+
+### Graphical representation of the main target variables
+```{r}
+library(ggplot2)
+
+crime_trends <- panel_full |>
+  group_by(Year) |>
+  summarise(
+    violent_rate_mean  = mean(`Data.Rates.Violent.All`,  na.rm = TRUE),
+    property_rate_mean = mean(`Data.Rates.Property.All`, na.rm = TRUE)
+  ) |>
+  pivot_longer(
+    cols      = c(violent_rate_mean, property_rate_mean),
+    names_to  = "type",
+    values_to = "rate"
+  )
+
+ggplot(crime_trends, aes(x = Year, y = rate, colour = type)) +
+  geom_line(linewidth = 1) +
+  labs(
+    title  = "Average violent and property crime rates in U.S. states",
+    x      = "Year",
+    y      = "Crimes per 100,000 inhabitants",
+    colour = "Crime type"
+  ) +
+  theme_minimal()
+```
 
