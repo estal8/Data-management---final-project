@@ -573,9 +573,13 @@ wid_crime_police <- wid_crime |>
   left_join(police_shootings_final, by = c("State", "Year"))
 ```
 
+There will be a lot of missing values since the years the databases cover are different.
 
-#### Adding immigration 
-
+### Adding immigration 
+```{r}
+wid_crime_police_imm <- wid_crime_police |> 
+  left_join(immigration_small, by=c("State","Year"))
+```
 
 #### Adding GDP
 
