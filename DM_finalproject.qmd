@@ -588,15 +588,17 @@ wid_crime_police_imm_gdp <- wid_crime_police_imm |>
 ```
 We sequentially merge the crime–WID panel with police shootings, immigration, and GDP, always using the common keys (State, Year).
 
-#### Adding Food
+### Final panel construction
 ```{r}
-panel_full <- wid_crime_police_imm_gdp |>
+
+panel_full <- wid_crime_police_imm_gdp |> #we have added the food_state data
   left_join(
     food_state,
     by = "State"
   )
 ```
 
+### Final panel construction
 ```{r}
 
 panel_full |>
@@ -611,5 +613,22 @@ panel_full |>
 
 ### Selecting the variables of interest
 
+### Main variables
+
+Our main *outcome* variables are:
+
+- **Violent crime rate** (`Data.Rates.Violent.All`): number of violent crimes (assault, murder, rape, robbery) per 100,000 inhabitants at the state–year level.
+- **Property crime rate** (`Data.Rates.Property.All`): number of property crimes (burglary, larceny, motor vehicle theft) per 100,000 inhabitants.
+
+Key *explanatory* variables include:
+
+- **Income inequality and income shares** from WID (e.g. `share_pretax_income_p90p100`), capturing the share of total income accruing to the top of the distribution.
+- **Immigration stocks and flows** (e.g. `imm_population`, `lpr_total`, `nonimmigrants_total`, `refugees_total`) from DHS, measured at the state–year level.
+- **State GDP** (`gdp`) and personal income from the BEA, describing the size and dynamics of state economies.
+- **Public spending indicators** from the Census (education, welfare, health, corrections), describing the composition of state and local public expenditure.
+- **Food assistance participation** (`wic_2015`, `nslp_2015`, `sbp_2015`) from the Food Environment Atlas, as proxies for food insecurity and social protection.
+- **Police shootings** (`nb_police_shootings`, `nb_unarmed`, `nb_gun`, `nb_body_camera`), summarising the number and characteristics of fatal police shootings in each state–year.
+
+These variables are then merged into a panel dataset at the state–year level.
 
 
