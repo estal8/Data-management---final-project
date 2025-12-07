@@ -76,9 +76,22 @@ https://apps.bea.gov/regional/downloadzip.htm
 Unemployment per state: https://data.bls.gov/cew/apps/table_maker/v4/table_maker.htm#type=0&year=2024&qtr=A&own=2&ind=10&supp=0 or from the census bureau : https://data.census.gov/table/ACSDP1Y2024.DP03?q=employment&g=010XX00US$0400000 
 
 
-## Data cleaning
+### Data cleaning and merging
 
-Loading the packages we will use and starting cleaning for each base.
+We first import each raw CSV file and check for missing values and types.  
+For the crime dataset, we simply confirm that there are no missing values and keep the state–year level information on violent and property crime rates and total population.
+
+For the WID data, we download one CSV file per state, bind them into a single long table, and restrict attention to a small set of income and inequality variables. We then pivot the data to a wide state–year format (`wid_wide`) so that each row corresponds to a state–year observation.
+
+For the police shootings data, we recode state abbreviations into full state names, extract the year of each incident, and aggregate to the state–year level, computing the total number of shootings, and the number of unarmed victims, gun-related incidents, and cases with body cameras.
+
+For the immigration data, we keep a subset of relevant variables (total population, lawful permanent residents, nonimmigrants, refugees, asylees, and their per-million measures) and keep only state–year combinations with non-missing values.
+
+For the Food Environment Atlas, which is provided at the state level only, we parse all numeric variables and retain three indicators related to WIC, school lunch and school breakfast participation in 2015.
+
+For the BEA state income data, we filter the SASUMMARY table to keep only the line corresponding to Gross Domestic Product (GDP), convert year columns to long format (one row per state–year), and parse GDP values as numeric.
+
+Finally, we perform a sequence of left joins on the common keys (`State`, `Year`) to build a panel dataset combining crime, inequality, police shootings, immigration, GDP and food assistance indicators.
 
 ```{r}
 #| message: false
