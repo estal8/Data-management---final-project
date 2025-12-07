@@ -582,13 +582,20 @@ wid_crime_police_imm <- wid_crime_police |>
 ```
 
 #### Adding GDP
-
+```{r}
+wid_crime_police_imm_gdp <- wid_crime_police_imm |> 
+  left_join(state_gdp, by=c("State","Year"))
+```
+We sequentially merge the crime–WID panel with police shootings, immigration, and GDP, always using the common keys (State, Year).
 
 #### Adding Food
-
-
-#### Adding public spending
-
+```{r}
+panel_full <- wid_crime_police_imm_gdp |>
+  left_join(
+    food_state,
+    by = "State"
+  )
+```
 
 ### Selecting the variables of interest
 
