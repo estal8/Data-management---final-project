@@ -393,13 +393,6 @@ public_spending |>
 public_spending |> slice_head(n = 10) |> knitr::kable()
 ```
 
-```{r} 
-# Checking if all states are represented
-public_spending |>
-  distinct(GEO_ID, NAME) |>
-  head(60)
-```
-
 ```{r}
 # Removing the US category and selecting only the categories of interest within the public spending 
 public_spending_clean <- public_spending |>
@@ -430,7 +423,6 @@ public_spending_clean <- public_spending_clean |>
     amount = readr::parse_number(AMOUNT)
     ) 
 ```
-
 
 ```{r}
 # pivoting
@@ -620,17 +612,23 @@ We sequentially merge the crime–WID panel with police shootings, immigration, 
 
 ### Final panel construction
 ```{r}
-
 panel_full <- wid_crime_police_imm_gdp |> #we have added the food_state data
   left_join(
     food_state,
     by = "State"
-  )
+  ) 
+```
+
+```{r}
+panel_full <- panel_full |>
+  left_join(
+    public_spending_final,
+    by = c("State", "Year")
+    )
 ```
 
 ### Final panel construction
 ```{r}
-
 panel_full |>
   summarise(
     `Number of rows`    = n(),
