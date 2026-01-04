@@ -1,7 +1,8 @@
 ---
 title: "DM_finalproject"
 author: Paula and Esther
-format: html
+format: 
+  html:
     toc: true
     number-sections: true
 execute:
@@ -75,11 +76,6 @@ https://www.ers.usda.gov/data-products/food-environment-atlas/data-access-and-do
 **Regional Economic Accounts** from the **Bureau of Economic Analysis** of the US. We only downloaded the SASUMMARY table, that compiles State Annual Summary Statistics (Personal Income, GDP, Consumer Spending, Price Indexes, and Employment).
 
 https://apps.bea.gov/regional/downloadzip.htm
-
-
-**State unemployment** ????
-
-Unemployment per state: https://data.bls.gov/cew/apps/table_maker/v4/table_maker.htm#type=0&year=2024&qtr=A&own=2&ind=10&supp=0 or from the census bureau : https://data.census.gov/table/ACSDP1Y2024.DP03?q=employment&g=010XX00US$0400000 
 
 
 ### Data cleaning 
@@ -158,6 +154,7 @@ file_names <- here("DATA_wid", paste0("WID_data_", codes_states, ".csv"))
 Since the files don't have the full state names, we need to turn the abbreviations into the actual states names. To do so, we create a data base that associates each abbreviation to the state.
 
 ```{r}
+# Using R's built-in state.abb and state.name vectors
 dict_states <- tibble(
   country = paste0("US-", state.abb),
   State   = state.name
@@ -337,7 +334,7 @@ immigration <- vroom(here("DATA_stateimmigration.csv"))
 ```
 
 ```{r}
-sapply(immigration, typeof) # check this later
+sapply(immigration, typeof)
 ```
 
 We look at the missing values per variables to better locate them. Since there are a lot of variables (31), we won't list them as before.
