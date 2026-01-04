@@ -2,11 +2,17 @@
 title: "DM_finalproject"
 author: Paula and Esther
 format: html
+    toc: true
+    number-sections: true
+execute:
+  echo: true
+  warning: false
+  message: false
 ---
 
 ## Introduction
 
-The link to our github repository : https://github.com/estal8/Data-management---final-project.git
+The link to our github repository : <https://github.com/estal8/Data-management---final-project.git>
 
 ## Research question
 
@@ -118,7 +124,7 @@ here::i_am("Data-management---final-project.Rproj")
 ```{r}
 #| message: false
 
-crime <- vroom("DATA_statecrime.csv")
+crime <- vroom(here("DATA_statecrime.csv"))
 ```
 
 ```{r}
@@ -140,15 +146,7 @@ There are no missing values.
 First, we must join all 51 states bases of the WID. To do so, we are going to create a list with all the files' names to avoid having to manually download all of them.
 
 ```{r}
-codes_states <- c(
- "US-AL", "US-AK", "US-AZ", "US-AR", "US-CA", "US-CO", "US-CT", "US-DE",
- "US-FL", "US-GA", "US-HI", "US-ID", "US-IL", "US-IN", "US-IA", "US-KS",
- "US-KY", "US-LA", "US-ME", "US-MD", "US-MA", "US-MI", "US-MN", "US-MS",
- "US-MO", "US-MT", "US-NE", "US-NV", "US-NH", "US-NJ", "US-NM", "US-NY",
- "US-NC", "US-ND", "US-OH", "US-OK", "US-OR", "US-PA", "US-RI", "US-SC",
- "US-SD", "US-TN", "US-TX", "US-UT", "US-VT", "US-VA", "US-WA", "US-WV",
- "US-WI", "US-WY", "US-DC"
-)
+codes_states <- c(paste0("US-", state.abb), "US-DC")
 ```
 
 Here, we recreate the 51 file names.
@@ -161,48 +159,20 @@ Since the files don't have the full state names, we need to turn the abbreviatio
 
 ```{r}
 dict_states <- tibble(
- country = c(
-   "US-AL", "US-AK", "US-AZ", "US-AR", "US-CA", "US-CO", "US-CT", "US-DE",
-   "US-FL", "US-GA", "US-HI", "US-ID", "US-IL", "US-IN", "US-IA", "US-KS",
-   "US-KY", "US-LA", "US-ME", "US-MD", "US-MA", "US-MI", "US-MN", "US-MS",
-   "US-MO", "US-MT", "US-NE", "US-NV", "US-NH", "US-NJ", "US-NM", "US-NY",
-   "US-NC", "US-ND", "US-OH", "US-OK", "US-OR", "US-PA", "US-RI", "US-SC",
-   "US-SD", "US-TN", "US-TX", "US-UT", "US-VT", "US-VA", "US-WA", "US-WV",
-   "US-WI", "US-WY", "US-DC"
- ),
- State = c(
-   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
-   "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
-   "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
-   "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
-   "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
-   "New Hampshire", "New Jersey", "New Mexico", "New York",
-   "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
-   "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
-   "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
-   "West Virginia", "Wisconsin", "Wyoming", "District of Columbia"
- )
-)
-```
-
-```{r}
-dict_states_abbrev <- dict_etats |>
-  mutate(state = substr(country, 4, 5)) |>
-  select(state, State)
+  country = paste0("US-", state.abb),
+  State   = state.name
+) |>
+  bind_rows(tibble(country = "US-DC", State = "District of Columbia"))
 ```
 
 Now, we create a list with all the file names and download all files.
 
 ```{r}
-list_wid <- list()
-
-list_wid <- lapply(file_names, vroom, delim = ";", show_col_types = FALSE)
-```
-
-And now, we can bind the 51 databases by using *bind_rows* so that each of them is stacked below the previous one.
-
-```{r}
-wid_all <- bind_rows(list_wid)
+wid_all <- vroom(
+  file = file_names,
+  delim = ";",
+  show_col_types = FALSE
+)
 ```
 
 We check that we have the right number of states.
@@ -237,8 +207,6 @@ As for the types :
 ```{r}
 sapply(wid_all, typeof)
 ```
-
-**Change the type of year, value and age ???**
 
 We also want to clarify what the variable codes stand for. We use the variable list that was provided when downloading the WID data, and then join the newly created database to our **wid_all** base.
 
@@ -324,9 +292,7 @@ The huge number of missing values for Alaska can probably be explained by the fa
 
 ### Police Shooting database
 ```{r}
-police_shootings <- vroom("DATA_policeshootingto2024.csv")
-```
-```{r}
+police_shootings <- vroom(here("DATA_policeshootingto2024.csv"))
 sapply(police_shootings, typeof)
 ```
 
@@ -367,7 +333,7 @@ police_shootings_final <- police_shootings |>
 ```{r}
 #| message: false
 
-immigration <- vroom("DATA_stateimmigration.csv")
+immigration <- vroom(here("DATA_stateimmigration.csv"))
 ```
 
 ```{r}
@@ -414,7 +380,7 @@ We construct a reduced immigration dataset, keeping only a few key indicators (t
 ```{r}
 #| message: false
 
-public_spending <- vroom("DATA_spending.csv")
+public_spending <- vroom(here("DATA_spending.csv"))
 ```
 
 ### Food Environment Atlas
@@ -457,7 +423,7 @@ We extract three indicators of participation in food assistance and school meal 
 ```{r}
 #| message: false
 
-state_income <- vroom("DATA_stateincome.csv")
+state_income <- vroom(here("DATA_stateincome.csv"))
 
 state_income |>
   summarise(
@@ -646,6 +612,15 @@ crime_trends <- panel_full |>
     names_to  = "type",
     values_to = "rate"
   )
+```
+
+
+```{r}
+#| fig-cap: "Average violent and property crime rates in U.S. states"
+#| fig-width: 8
+#| fig-height: 4
+#| warning: false
+#| message: false
 
 ggplot(crime_trends, aes(x = Year, y = rate, colour = type)) +
   geom_line(linewidth = 1) +
