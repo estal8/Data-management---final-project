@@ -377,8 +377,63 @@ We construct a reduced immigration dataset, keeping only a few key indicators (t
 ```{r}
 #| message: false
 
-public_spending <- vroom(here("DATA_spending.csv"))
+public_spending <- vroom(here("DATA_publicspending", "DATA_publicspending20172023.csv"))
 ```
+
+```{r}
+public_spending |>
+  summarise(
+    `Number of rows`    = n(),
+    `Number of columns` = ncol(public_spending)
+  ) |>
+  knitr::kable()
+```
+
+```{r}
+public_spending |> slice_head(n = 10) |> knitr::kable()
+```
+
+```{r} 
+# Checking if all states are represented
+public_spending |>
+  distinct(GEO_ID, NAME) |>
+  head(60)
+```
+
+```{r}
+# Removing the US category and selecting only the categories of interest within the public spending 
+public_spending_clean <- public_spending |>
+  filter(NAME != "United States") |>
+  filter(
+    str_detect(AGG_DESC_LABEL, "Education - Total Expenditure") |
+    str_detect(AGG_DESC_LABEL, "Public Welfare - Total Expenditure") |
+    str_detect(AGG_DESC_LABEL, "Health - Total Expenditure") |
+    str_detect(AGG_DESC_LABEL, "Correction - Total Expenditure") |
+    str_detect(AGG_DESC_LABEL, "Police Protection - Total Expenditure")
+  ) 
+```
+
+```{r}
+# Clarifying the variables and sorting them by spending category
+public_spending_clean |>
+  mutate(
+    State = NAME,
+    Year = as.integer(time),
+    category = case_when(
+      str_detect(AGG_DESC_LABEL, "Education") ~ "spending_education",
+      str_detect(AGG_DESC_LABEL, "Welfare") ~ "spending_welfare",
+      str_detect(AGG_DESC_LABEL, "Health") ~ "spending_health",
+      str_detect(AGG_DESC_LABEL, "Correction") ~ "spending_corrections",
+      str_detect(AGG_DESC_LABEL, "Police") ~ "spending_police"
+    ))
+```
+
+
+```{r}
+sapply(public_spending, typeof)
+```
+
+
 
 ### Food Environment Atlas
 
