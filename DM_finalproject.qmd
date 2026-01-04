@@ -404,36 +404,48 @@ public_spending |>
 # Removing the US category and selecting only the categories of interest within the public spending 
 public_spending_clean <- public_spending |>
   filter(NAME != "United States") |>
+  filter(GOVTYPE == "001") |>
   filter(
-    str_detect(AGG_DESC_LABEL, "Education - Total Expenditure") |
-    str_detect(AGG_DESC_LABEL, "Public Welfare - Total Expenditure") |
-    str_detect(AGG_DESC_LABEL, "Health - Total Expenditure") |
-    str_detect(AGG_DESC_LABEL, "Correction - Total Expenditure") |
-    str_detect(AGG_DESC_LABEL, "Police Protection - Total Expenditure")
+    AGG_DESC_LABEL == "Expenditure - Direct Expenditure - General Expenditure - Education - Total Expenditure" |
+    AGG_DESC_LABEL == "Expenditure - Direct Expenditure - General Expenditure - Public Welfare - Total Expenditure" |
+    AGG_DESC_LABEL == "Expenditure - Direct Expenditure - General Expenditure - Health - Total Expenditure" |
+    AGG_DESC_LABEL == "Expenditure - Direct Expenditure - General Expenditure - Correction - Total Expenditure" |
+    AGG_DESC_LABEL == "Expenditure - Direct Expenditure - General Expenditure - Police Protection - Total Expenditure"
   ) 
 ```
 
 ```{r}
 # Clarifying the variables and sorting them by spending category
-public_spending_clean |>
+public_spending_clean <- public_spending_clean |>
   mutate(
     State = NAME,
     Year = as.integer(time),
     category = case_when(
-      str_detect(AGG_DESC_LABEL, "Education") ~ "spending_education",
+      str_detect(AGG_DESC_LABEL, "Education") ~ "spending_education", 
       str_detect(AGG_DESC_LABEL, "Welfare") ~ "spending_welfare",
       str_detect(AGG_DESC_LABEL, "Health") ~ "spending_health",
       str_detect(AGG_DESC_LABEL, "Correction") ~ "spending_corrections",
       str_detect(AGG_DESC_LABEL, "Police") ~ "spending_police"
-    ))
+    ),
+    amount = readr::parse_number(AMOUNT)
+    ) 
 ```
 
 
 ```{r}
-sapply(public_spending, typeof)
+# pivoting
+public_spending_final <- public_spending_clean |>
+  select(State, Year, category, amount) |>
+  pivot_wider(
+    id_cols = c(State, Year),
+    names_from = category,
+    values_from = amount
+  )
 ```
 
-
+```{r}
+sapply(public_spending, typeof)
+```
 
 ### Food Environment Atlas
 
