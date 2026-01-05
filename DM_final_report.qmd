@@ -11,7 +11,7 @@ execute:
   warning: false
 ---
 
-### Research question
+## Research question
 
 Our project studies the socio-economic and demographic determinants of crime in the United States at the state level. More precisely, we ask whether economic opportunities and social inequalities are correlated with different types of crime (violent and property crime) across states and over time.
 
@@ -29,12 +29,35 @@ Finally, we integrate data on police shootings from the Washington Post database
 
 How do economic conditions, income inequality, immigration flows, public spending, and police activity correlate with violent and property crime across U.S. states?
 
-### Data
 
-...
+### Brief dataset description
+
+We build our panel from seven sources: 
+
+- crime rates (FBI/CORGIS, 1960–2019) distinguishing violent and property offences; 
+
+- income inequality (WID, 1960–2018) providing top income shares by state; 
+
+- GDP (BEA Regional Accounts, 1997–2023); 
+
+- immigration flows (DHS, 2013–2023) covering legal residents, refugees and asylees; 
+
+- police shootings (Washington Post, 2015–2024); 
+
+- public spending (Census Bureau, 2017–2023) on education, welfare, health, corrections and police; 
+
+- and food assistance participation (USDA Food Atlas, 2015). 
+
+Full descriptions are provided in the data cleaning document (Phase 2).
 
 
-### Data analysis 
+## Data analysis 
+
+Our empirical analysis is divided into two parts, reflecting the heterogeneous temporal coverage of our sources. The crime, inequality (WID), and GDP series provide consistent state-year observations spanning nearly six decades (1960–2018), allowing us to examine long-run associations and temporal dynamics. In contrast, immigration flows (2013–2018), police shootings (2015–2018), public spending (2017–2018) and food access (2012-2023) are only available for recent years. 
+
+Rather than discarding these valuable contemporary indicators, we adopt a two-stage approach: we first exploit the full historical depth of our panel to study structural relationships between economic conditions and crime, then narrow the window to 2015–2018 to incorporate additional explanatory factors in a richer, shorter-term analysis.
+
+### Part 1. Long-run analysis (1960–2018)
 
 #### Descriptive analysis
 
@@ -42,4 +65,12 @@ How do economic conditions, income inequality, immigration flows, public spendin
 
 #### Tests
 
-### Conclusion
+### Part 2. Short-run analysis (2015–2018) - Contemporary correlates of crime
+
+#### Descriptive analysis
+
+#### Regression analysis
+
+#### Tests
+
+## Conclusion
