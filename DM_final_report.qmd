@@ -114,7 +114,7 @@ ggplot(crime_by_state, aes(x = Year, y = rate, colour = State)) +
 
 ```{r}
 panel_reg <- panel_full |>
-  mutate(log_gdp = log(gdp)) # explain why this choice !!!!
+  mutate(log_gdp = log(gdp)) # explain why this choice ?
 ```
 
 We first look at the relationship between GDP and violent / property crime rates. Economic theory suggests that GDP should be a stronger predictor of property crime (primarily motivated by financial need) than of violent crime, which is driven by more complex social and psychological factors (Becker, 1968).
@@ -144,6 +144,9 @@ The panel regression results reveal a contrast between the two types of crime, t
 For property crime, GDP explains approximately 69% of the within-state variation (R² = 0.69), which is consistent with economic theories on crime suggesting that property offences are motivated by financial need (Becker, 1968). 
 
 As for violent crime, GDP alone fails to significantly predict violent crime rates (R² = 0.15, p > 0.05), indicating that violent offences are driven by factors beyond economic conditions.
+
+Now, if we add inequalities : 
+We measure income inequality using the share of pre-tax income accruing to the top 10% of the distribution, as provided by the World Inequality Database. A higher share indicates greater income concentration at the top, which could be associated with increased social tension and crime rates. **AJOUTER UNE RÉFÉRENCE**
 
 
 #### Tests
