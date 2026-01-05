@@ -45,37 +45,37 @@ The **crime per state (1960-2019) database** from the **CORGIS Dataset Project**
 
 The database combines rates per 100 000 population and total number of crimes per states, which we will mainly focus on.
 
-https://corgis-edu.github.io/corgis/csv/state_crime/
+<https://corgis-edu.github.io/corgis/csv/state_crime/>
 
 
 The **World Inequality Database** (WID), for every US state. The WID combines national accounts with survey data and tax sources, enabling the publication of more reliable estimates of inequality covering the entire distribution of income and wealth. It was initially created in January 2011 under the name World Top Incomes Database (WTID) and offers the most comprehensive collection of historical series on wealth inequality available to date. We only downloaded data for each US state.
 
-https://wid.world/fr/donnees/
+<https://wid.world/fr/donnees/>
 
 
 The **police shootings database (2015-2024)** we used is from the Washington Post. In 2015, the Washington Post started compiling data on murders caused by police shootings. The data gathered is much larger than what we need (threat type, flee status, name and age of the victime, etc). We will calculate the number of people who have died because of a police shooting by state.
 
-https://github.com/washingtonpost/data-police-shootings/tree/master 
+<https://github.com/washingtonpost/data-police-shootings/tree/master> 
 
 
 The **immigration per state database (2013-2023)** is from the Office of Homeland Security of the United States. The tables provide totals for lawful permanent residents (LPRs), new arrivals and adjustments; nonimmigrant arrivals; naturalizations; refugee arrivals; and total asylum grants.
 
-https://ohss.dhs.gov/topics/immigration/state-immigration-data 
+<https://ohss.dhs.gov/topics/immigration/state-immigration-data>
 
 
 The **total per capita categorized public spending** (education, welfare, health, corrections, etc.) **for every US state (2017-2023)** database is from the United States Census Bureau.
 
-https://data.census.gov/table/GOVSTIMESERIES.GS00LF01?q=Local+Government+Finances&g=010XX00US,$0400000&nkd=GOVTYPE~001,time~2023  
+<https://data.census.gov/table/GOVSTIMESERIES.GS00LF01> 
 
 
 The **Food Environment Atlas (2012-2023)** from the **US Department for Agriculture** (USDA). It incorporates data from the Food Access Research Atlas, the Household Food Security in the United States, SNAP Policy Database, Atlas of Rural and Small-Town America, and Poverty Area Measures. 
 
-https://www.ers.usda.gov/data-products/food-environment-atlas/data-access-and-documentation-downloads 
+<https://www.ers.usda.gov/data-products/food-environment-atlas/data-access-and-documentation-downloads>
 
 
 **Regional Economic Accounts** from the **Bureau of Economic Analysis** of the US. We only downloaded the SASUMMARY table, that compiles State Annual Summary Statistics (Personal Income, GDP, Consumer Spending, Price Indexes, and Employment).
 
-https://apps.bea.gov/regional/downloadzip.htm
+<https://apps.bea.gov/regional/downloadzip.htm>
 
 
 ### Data cleaning 
@@ -293,6 +293,13 @@ police_shootings <- vroom(here("DATA_policeshootingto2024.csv"))
 sapply(police_shootings, typeof)
 ```
 
+```{r}
+dict_states_abbrev <- tibble(
+  state = state.abb,
+  State = state.name
+) |>
+  bind_rows(tibble(state = "DC", State = "District of Columbia"))
+```
 
 ```{r}
 police_shootings |>
