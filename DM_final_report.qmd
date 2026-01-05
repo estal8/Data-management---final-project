@@ -61,11 +61,114 @@ Rather than discarding these valuable contemporary indicators, we adopt a two-st
 
 #### Descriptive analysis
 
+```{r}
+library(ggplot2)
+library(plm)
+library(dplyr)
+library(tidyverse)
+```
+
+Evolution of violent crime and property crime in the US per states. 
+
+```{r}
+crime_by_state <- panel_full |>
+  select(State, Year, Data.Rates.Violent.All, Data.Rates.Property.All) |>
+  pivot_longer(
+    cols = c(Data.Rates.Violent.All, Data.Rates.Property.All),
+    names_to = "type",
+    values_to = "rate"
+  ) |>
+  mutate(
+    type = case_when(
+      type == "Data.Rates.Violent.All" ~ "Violent crime",
+      type == "Data.Rates.Property.All" ~ "Property crime"
+    )
+  )
+```
+
+```{r}
+#| fig-cap: "Violent and property crime rates by U.S. state"
+#| fig-width: 10
+#| fig-height: 5
+#| warning: false
+#| message: false
+
+ggplot(crime_by_state, aes(x = Year, y = rate, colour = State)) +
+  geom_line(linewidth = 0.7) +
+  facet_wrap(~type, scales = "free_y") +
+  labs(
+    title = "Crime rates by U.S. state (1960–2018)",
+    x = "Year",
+    y = "Crimes per 100,000 inhabitants"
+  ) +
+  theme_minimal()
+```
+
+
+**ATTENTION : The colors make it very hard to read, maybe it would be better to have one graph with no colors and the mean in red ?**
+
+
+
+
 #### Regression analysis
+
+```{r}
+panel_reg <- panel_full |>
+  mutate(log_gdp = log(gdp)) # explain why this choice !!!!
+```
+
+We first look at the relationship between GDP and violent / property crime rates. Economic theory suggests that GDP should be a stronger predictor of property crime (primarily motivated by financial need) than of violent crime, which is driven by more complex social and psychological factors (Becker, 1968).
+
+```{r}
+model_violent <- plm(
+  Data.Rates.Violent.All ~ log(gdp),
+  data = panel_full |> filter(!is.na(gdp), !is.na(Data.Rates.Violent.All)),
+  index = c("State", "Year"),
+  model = "within"
+)
+summary(model_violent)
+```
+
+```{r}
+model_property <- plm(
+  Data.Rates.Property.All ~ log(gdp),
+  data = panel_full |> filter(!is.na(gdp), !is.na(Data.Rates.Property.All)),
+  index = c("State", "Year"),
+  model = "within"
+)
+summary(model_property)
+```
+
+The panel regression results reveal a contrast between the two types of crime, that we had planned.
+
+For property crime, GDP explains approximately 69% of the within-state variation (R² = 0.69), which is consistent with economic theories on crime suggesting that property offences are motivated by financial need (Becker, 1968). 
+
+As for violent crime, GDP alone fails to significantly predict violent crime rates (R² = 0.15, p > 0.05), indicating that violent offences are driven by factors beyond economic conditions.
+
 
 #### Tests
 
 ### Part 2. Short-run analysis (2015–2018) - Contemporary correlates of crime
+
+```{r}
+panel_recent <- panel_full |>
+  filter(Year >= 2015, Year <= 2018) |>
+  filter(!is.na(nb_police_shootings), !is.na(lpr_total))
+```
+
+Summary statistics : 
+
+```{r}
+panel_recent |>
+  summarise(
+    across(
+      c(Data.Rates.Violent.All, gdp, nb_police_shootings, lpr_total),
+      list(mean = ~mean(., na.rm = TRUE), sd = ~sd(., na.rm = TRUE))
+    )
+  ) |>
+  knitr::kable()
+```
+
 
 #### Descriptive analysis
 
