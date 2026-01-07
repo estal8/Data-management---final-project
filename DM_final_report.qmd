@@ -288,9 +288,12 @@ summary(model_between)
 ```
 
 
-##### Combination of the 2?
+##### Random model
 
-#### Tests
+=> include both the within-entity and between-entity effects
+
+#### Tests (Hausman)
+
 
 ### Part 2. Short-run analysis (2015–2018) - Contemporary correlates of crime
 
