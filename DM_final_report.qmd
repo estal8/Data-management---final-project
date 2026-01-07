@@ -7,7 +7,7 @@ format:
     number-sections: true
 execute:
   echo: false
-  message: false 
+  message: false # à enlever ?
   warning: false
 ---
 
@@ -15,7 +15,7 @@ execute:
 
 Our project studies the socio-economic and demographic determinants of crime in the United States at the state level. More precisely, we ask whether economic opportunities and social inequalities are correlated with different types of crime (violent and property crime) across states and over time.
 
-Crime in the United States exhibits substantial variation across states and over time, and understanding the socio-economic factors that contribute to these differences remains a central question in both economics and public policy. Our project aims to investigate how economic conditions, demographic structure, inequality, public spending, and police behaviour correlate with violent and property crime at the state–year level. The objective is not to establish strict causal relationships—an ambitious task given the observational nature of the data but rather to document robust associations and explore whether crime levels systematically co-evolve with structural socio-economic indicators.
+Crime in the United States exhibits substantial variation across states and over time, and understanding the socio-economic factors that contribute to these differences remains a central question in both economics and public policy. Our project aims to investigate how economic conditions, demographic structure, inequality, public spending, and police behaviour correlate with violent and property crime at the state–year level. The objective is not to establish strict causal relationships—an ambitious task given the observational nature of the data—but rather to document robust associations and explore whether crime levels systematically co-evolve with structural socio-economic indicators.
 
 A first motivation for this research question is the long-standing hypothesis that economic opportunity and crime are linked. Periods of slow economic growth and labour market stress may increase incentives for certain types of offences, particularly property crime. To examine this mechanism, we combine the crime data from the CORGIS/FBI series with annual state GDP from the Bureau of Economic Analysis. GDP provides a measure of overall economic activity and allows us to test whether states experiencing strong or weak economic performance also display different crime patterns.
 
@@ -61,35 +61,14 @@ Rather than discarding these valuable contemporary indicators, we adopt a two-st
 
 #### Descriptive analysis
 
-```{r}
-#| message: false
-
-library(ggplot2)
-library(plm)
-library(dplyr)
-library(tidyverse)
-library(here)
-library(vroom)
-library(modelsummary)
-library(kableExtra)
-```
-
-```{r}
-#| message: false
-
-here::i_am("Data-management---final-project.Rproj")
-panel_full <- vroom(here("DATA_panel_full.csv"))
-```
-
-```{r}
-panel_long <- panel_full |> filter(Year <= 2018)
-```
-
 ##1. National long-run trends in crime (1960-2018)
 
 To establish a benchmark for the subsequent analysis, we first document the long-run evolution of violent and property crime across U.S. states. Figure 1 displays the average crime rate across states together with the 10th–90th percentile range, providing a synthetic view of both aggregate dynamics and cross-state heterogeneity.
 
+
 ```{r}
+panel_long <- panel_full |>
+  filter(Year <= 2018)
 crime_distribution <- panel_long |>
   group_by(Year) |>
   summarise(
@@ -114,7 +93,10 @@ crime_distribution <- panel_long |>
                   property = "Property crime")
   ) |>
   pivot_wider(names_from = stat, values_from = value)
+```
 
+
+```{r}
 #| fig-cap: "National crime trends and cross-state dispersion (mean and 10th–90th percentiles, 1960–2018)"
 #| fig-width: 10
 #| fig-height: 5
@@ -132,6 +114,7 @@ ggplot(crime_distribution, aes(x = Year)) +
   ) +
   theme_minimal()
 ```
+
 First of all, both crime categories exhibit a pronounced common time profile, with a strong increase from the 1960s to the late 1980s or early 1990s, followed by a sustained decline.
 
 In second place, despite these shared national trends, cross-state heterogeneity remains large throughout the entire period, as illustrated by the wide percentile bands.
@@ -139,7 +122,28 @@ Evolution of violent crime and property crime in the US per states.
 
 Property crime displays a particularly strong rise and fall, whereas violent crime peaks later and declines more gradually, suggesting distinct underlying mechanisms. The persistence of substantial dispersion across states indicates that national trends alone cannot account for observed crime dynamics and highlights the relevance of state-specific factors. These descriptive findings motivate the use of panel models with both state and time fixed effects in the subsequent analysis.
 
-Evolution of violent crime and property crime in the US per states
+```{r}
+#| message: false
+
+library(ggplot2)
+library(plm)
+library(dplyr)
+library(tidyverse)
+library(here)
+library(vroom)
+library(modelsummary)
+library(kableExtra)
+```
+
+```{r}
+#| message: false
+
+here::i_am("Data-management---final-project.Rproj")
+panel_full <- vroom(here("DATA_panel_full.csv"))
+```
+
+Evolution of violent crime and property crime in the US per states. 
+
 ```{r}
 crime_by_state <- panel_full |>
   select(State, Year, Data.Rates.Violent.All, Data.Rates.Property.All) |>
@@ -173,8 +177,6 @@ ggplot(crime_by_state, aes(x = Year, y = rate, colour = State)) +
   ) +
   theme_minimal()
 ```
-
-
 ```{r}
 top_states <- panel_full |>
   filter(Year <= 2018) |>
@@ -218,6 +220,7 @@ ggplot(crime_by_state_top, aes(x = Year, y = rate, colour = State)) +
   ) +
   theme_minimal()
 ```
+
 
 **ATTENTION : The colors make it very hard to read, maybe it would be better to have one graph with no colors and the mean in red ?**
 
@@ -373,11 +376,28 @@ modelsummary(
 
 For violent crime (Table 2), the results confirm our theoretical expectations: GDP has a weaker association ($β ≈ -100$, $R² = 0.15$), and inequality is only marginally significant ($p < 0.10$). Economic factors alone cannot explain violent crime patterns.
 
-##### Between model ?
+##### Between model
 
-##### Combination of the 2?
+```{r}
+model_between <- plm(
+  Data.Rates.Property.All ~ log(gdp) + share_pretax_income_p90p100,
+  data = panel_reg,
+  index = c("State", "Year"),
+  model = "between"
+)
+```
 
-#### Tests
+```{r}
+summary(model_between)
+```
+
+
+##### Random model
+
+=> include both the within-entity and between-entity effects
+
+#### Tests (Hausman)
+
 
 ### Part 2. Short-run analysis (2015–2018) - Contemporary correlates of crime
 
@@ -399,6 +419,10 @@ panel_recent |>
   ) |>
   knitr::kable()
 ```
+
+#### Descriptive analysis
+
+#### Regression analysis
 
 #### Tests
 
