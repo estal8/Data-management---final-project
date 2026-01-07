@@ -125,6 +125,16 @@ ggplot(crime_by_state, aes(x = Year, y = rate, colour = State)) +
 
 #### Regression analysis
 
+##### Fixed effects (within)
+
+We estimate the association between economic conditions, inequality, and crime using fixed effects panel regressions:
+
+$$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequalities_{it} + \epsilon_{it}$$
+
+where $\alpha_i$ denotes state fixed effects. The coefficients are identified from within-state variation over time.
+
+First, we examine the bivariate relationship between GDP and crime (Model 1). Second, we add income inequality to test whether income concentration is independently associated with crime (Model 2). Third, as a robustness check, we include year fixed effects to control for national trends such as federal policies (Model 3).
+
 ```{r}
 panel_reg <- panel_full |>
   filter(!is.na(gdp), !is.na(Data.Rates.Violent.All), 
@@ -240,7 +250,7 @@ modelsummary(
   kable_styling(latex_options = "HOLD_position")
 ```
 
-For property crime (Table 1), GDP shows a strong negative association (β ≈ -1875, p < 0.001), explaining about 70% of within-state variation (Model 1). Adding inequality improves the fit marginally, with higher income concentration associated with lower property crime (β = -874, p < 0.05).
+For property crime (Table 1), GDP shows a strong negative association ($β ≈ -1875$, $p < 0.001$), explaining about 70% of within-state variation (Model 1). Adding inequality improves the fit marginally, with higher income concentration associated with lower property crime ($β = -874$, $p < 0.05$).
 
 As a robustness check, Model 3 adds year fixed effects. The R² drops substantially (0.005), indicating that the GDP-crime relationship primarily reflects shared national trends rather than state-specific dynamics. This is consistent with the well-documented "great crime decline" - also visible in our first graph - that affected all U.S. states from the 1990s onward.
 
@@ -260,8 +270,11 @@ modelsummary(
   kable_styling(latex_options = "HOLD_position")
 ```
 
-For violent crime (Table 2), the results confirm our theoretical expectations: GDP has a weaker association (β ≈ -100, R² = 0.15), and inequality is only marginally significant  (p < 0.10). Economic factors alone cannot explain violent crime patterns.
+For violent crime (Table 2), the results confirm our theoretical expectations: GDP has a weaker association ($β ≈ -100$, $R² = 0.15$), and inequality is only marginally significant ($p < 0.10$). Economic factors alone cannot explain violent crime patterns.
 
+##### Between model ?
+
+##### Combination of the 2?
 
 #### Tests
 
