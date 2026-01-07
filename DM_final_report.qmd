@@ -30,7 +30,7 @@ Finally, we integrate data on police shootings from the Washington Post database
 How do economic conditions, income inequality, immigration flows, public spending, and police activity correlate with violent and property crime across U.S. states?
 
 
-### Brief dataset description
+## Brief dataset description
 
 We build our panel from seven sources: 
 
@@ -62,10 +62,23 @@ Rather than discarding these valuable contemporary indicators, we adopt a two-st
 #### Descriptive analysis
 
 ```{r}
+#| message: false
+
 library(ggplot2)
 library(plm)
 library(dplyr)
 library(tidyverse)
+library(here)
+library(vroom)
+library(modelsummary)
+library(kableExtra)
+```
+
+```{r}
+#| message: false
+
+here::i_am("Data-management---final-project.Rproj")
+panel_full <- vroom(here("DATA_panel_full.csv"))
 ```
 
 Evolution of violent crime and property crime in the US per states. 
@@ -137,8 +150,12 @@ model_violent_1 <- plm(
 )
 ```
 
+
+**ATTENTION : remember to delete all of these summaries, it's just so that we can see the results quicker for now !**
+
+
 ```{r}
-summary(model_property_1)
+summary(model_property_1) 
 ```
 
 ```{r}
@@ -208,6 +225,44 @@ summary(model_violent_3)
 Model 3 shows that the GDP-inequalities-crime relationship is mainly driven by the common temporal trend (all states are becoming wealthier and are seeing a decline in crime at the same time), rather than by dynamics specific to each state.
 
 
+```{r}
+modelsummary(
+  list(
+    "Model 1" = model_property_1,
+    "Model 2" = model_property_2,
+    "Model 3" = model_property_3
+  ),
+  title = "Property crime: Panel regression results",
+  stars = TRUE,
+  gof_omit = "IC|Log|RMSE",
+  output = "kableExtra"
+) |>
+  kable_styling(latex_options = "HOLD_position")
+```
+
+For property crime (Table 1), GDP shows a strong negative association (β ≈ -1875, p < 0.001), explaining about 70% of within-state variation (Model 1). Adding inequality improves the fit marginally, with higher income concentration associated with lower property crime (β = -874, p < 0.05).
+
+As a robustness check, Model 3 adds year fixed effects. The R² drops substantially (0.005), indicating that the GDP-crime relationship primarily reflects shared national trends rather than state-specific dynamics. This is consistent with the well-documented "great crime decline" - also visible in our first graph - that affected all U.S. states from the 1990s onward.
+
+
+```{r}
+modelsummary(
+  list(
+    "Model 1" = model_violent_1,
+    "Model 2" = model_violent_2,
+    "Model 3" = model_violent_3
+  ),
+  title = "Violent crime: Panel regression results",
+  stars = TRUE,
+  gof_omit = "IC|Log|RMSE",
+  output = "kableExtra"
+) |>
+  kable_styling(latex_options = "HOLD_position")
+```
+
+For violent crime (Table 2), the results confirm our theoretical expectations: GDP has a weaker association (β ≈ -100, R² = 0.15), and inequality is only marginally significant  (p < 0.10). Economic factors alone cannot explain violent crime patterns.
+
+
 #### Tests
 
 ### Part 2. Short-run analysis (2015–2018) - Contemporary correlates of crime
@@ -230,7 +285,6 @@ panel_recent |>
   ) |>
   knitr::kable()
 ```
-
 
 #### Descriptive analysis
 
