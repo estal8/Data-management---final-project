@@ -272,7 +272,21 @@ modelsummary(
 
 For violent crime (Table 2), the results confirm our theoretical expectations: GDP has a weaker association ($β ≈ -100$, $R² = 0.15$), and inequality is only marginally significant ($p < 0.10$). Economic factors alone cannot explain violent crime patterns.
 
-##### Between model ?
+##### Between model
+
+```{r}
+model_between <- plm(
+  Data.Rates.Property.All ~ log(gdp) + share_pretax_income_p90p100,
+  data = panel_reg,
+  index = c("State", "Year"),
+  model = "between"
+)
+```
+
+```{r}
+summary(model_between)
+```
+
 
 ##### Combination of the 2?
 
