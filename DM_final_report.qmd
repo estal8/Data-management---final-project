@@ -151,7 +151,7 @@ For property crime, GDP explains approximately 69% of the within-state variation
 
 As for violent crime, GDP alone fails to significantly predict violent crime rates (R² = 0.15), indicating that violent offences are driven by factors beyond economic conditions.
 
-We then add income inequality, using the share of pre-tax income accruing to the top 10% of the distribution, as provided by the World Inequality Database. A higher share indicates greater income concentration at the top, which could be associated with increased social tension and crime rates. **AJOUTER UNE RÉFÉRENCE**
+We then add income inequality, using the share of pre-tax income accruing to the top 10% of the distribution, as provided by the World Inequality Database. A higher share indicates greater income concentration at the top, which could be associated with increased social tension and crime rates (Fajnzylber, Lederman, and Loayza, 2002).
 
 ```{r}
 model_property_2 <- plm(
@@ -176,6 +176,36 @@ summary(model_property_2)
 ```{r}
 summary(model_violent_2)
 ```
+
+Finally, we add year fixed effects to control for national trends (e.g., federal policies, economic cycles) that affect all states simultaneously.
+
+```{r}
+model_property_3 <- plm(
+  Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100,
+  data = panel_reg,
+  index = c("State", "Year"),
+  model = "within",
+  effect = "twoways"
+)
+
+model_violent_3 <- plm(
+  Data.Rates.Violent.All ~ log_gdp + share_pretax_income_p90p100,
+  data = panel_reg,
+  index = c("State", "Year"),
+  model = "within",
+  effect = "twoways"
+)
+```
+
+```{r}
+summary(model_property_3)
+```
+
+```{r}
+summary(model_violent_3)
+```
+
+Model 3 shows that the GDP-inequalities-crime relationship is mainly driven by the common temporal trend (all states are becoming wealthier and are seeing a decline in crime at the same time), rather than by dynamics specific to each state.
 
 
 #### Tests
