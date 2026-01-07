@@ -1,7 +1,8 @@
 ---
 title: "DM_finalproject"
 author: Paula and Esther
-format: html
+format: 
+  html:
     toc: true
     number-sections: true
 execute:
@@ -44,42 +45,37 @@ The **crime per state (1960-2019) database** from the **CORGIS Dataset Project**
 
 The database combines rates per 100 000 population and total number of crimes per states, which we will mainly focus on.
 
-https://corgis-edu.github.io/corgis/csv/state_crime/
+<https://corgis-edu.github.io/corgis/csv/state_crime/>
 
 
 The **World Inequality Database** (WID), for every US state. The WID combines national accounts with survey data and tax sources, enabling the publication of more reliable estimates of inequality covering the entire distribution of income and wealth. It was initially created in January 2011 under the name World Top Incomes Database (WTID) and offers the most comprehensive collection of historical series on wealth inequality available to date. We only downloaded data for each US state.
 
-https://wid.world/fr/donnees/
+<https://wid.world/fr/donnees/>
 
 
 The **police shootings database (2015-2024)** we used is from the Washington Post. In 2015, the Washington Post started compiling data on murders caused by police shootings. The data gathered is much larger than what we need (threat type, flee status, name and age of the victime, etc). We will calculate the number of people who have died because of a police shooting by state.
 
-https://github.com/washingtonpost/data-police-shootings/tree/master 
+<https://github.com/washingtonpost/data-police-shootings/tree/master> 
 
 
 The **immigration per state database (2013-2023)** is from the Office of Homeland Security of the United States. The tables provide totals for lawful permanent residents (LPRs), new arrivals and adjustments; nonimmigrant arrivals; naturalizations; refugee arrivals; and total asylum grants.
 
-https://ohss.dhs.gov/topics/immigration/state-immigration-data 
+<https://ohss.dhs.gov/topics/immigration/state-immigration-data>
 
 
 The **total per capita categorized public spending** (education, welfare, health, corrections, etc.) **for every US state (2017-2023)** database is from the United States Census Bureau.
 
-https://data.census.gov/table/GOVSTIMESERIES.GS00LF01?q=Local+Government+Finances&g=010XX00US,$0400000&nkd=GOVTYPE~001,time~2023  
+<https://data.census.gov/table/GOVSTIMESERIES.GS00LF01> 
 
 
 The **Food Environment Atlas (2012-2023)** from the **US Department for Agriculture** (USDA). It incorporates data from the Food Access Research Atlas, the Household Food Security in the United States, SNAP Policy Database, Atlas of Rural and Small-Town America, and Poverty Area Measures. 
 
-https://www.ers.usda.gov/data-products/food-environment-atlas/data-access-and-documentation-downloads 
+<https://www.ers.usda.gov/data-products/food-environment-atlas/data-access-and-documentation-downloads>
 
 
 **Regional Economic Accounts** from the **Bureau of Economic Analysis** of the US. We only downloaded the SASUMMARY table, that compiles State Annual Summary Statistics (Personal Income, GDP, Consumer Spending, Price Indexes, and Employment).
 
-https://apps.bea.gov/regional/downloadzip.htm
-
-
-**State unemployment** ????
-
-Unemployment per state: https://data.bls.gov/cew/apps/table_maker/v4/table_maker.htm#type=0&year=2024&qtr=A&own=2&ind=10&supp=0 or from the census bureau : https://data.census.gov/table/ACSDP1Y2024.DP03?q=employment&g=010XX00US$0400000 
+<https://apps.bea.gov/regional/downloadzip.htm>
 
 
 ### Data cleaning 
@@ -158,6 +154,7 @@ file_names <- here("DATA_wid", paste0("WID_data_", codes_states, ".csv"))
 Since the files don't have the full state names, we need to turn the abbreviations into the actual states names. To do so, we create a data base that associates each abbreviation to the state.
 
 ```{r}
+# Using R's built-in state.abb and state.name vectors
 dict_states <- tibble(
   country = paste0("US-", state.abb),
   State   = state.name
@@ -296,6 +293,13 @@ police_shootings <- vroom(here("DATA_policeshootingto2024.csv"))
 sapply(police_shootings, typeof)
 ```
 
+```{r}
+dict_states_abbrev <- tibble(
+  state = state.abb,
+  State = state.name
+) |>
+  bind_rows(tibble(state = "DC", State = "District of Columbia"))
+```
 
 ```{r}
 police_shootings |>
@@ -337,7 +341,7 @@ immigration <- vroom(here("DATA_stateimmigration.csv"))
 ```
 
 ```{r}
-sapply(immigration, typeof) # check this later
+sapply(immigration, typeof)
 ```
 
 We look at the missing values per variables to better locate them. Since there are a lot of variables (31), we won't list them as before.
@@ -380,7 +384,66 @@ We construct a reduced immigration dataset, keeping only a few key indicators (t
 ```{r}
 #| message: false
 
-public_spending <- vroom(here("DATA_spending.csv"))
+public_spending <- vroom(here("DATA_publicspending", "DATA_publicspending20172023.csv"))
+```
+
+```{r}
+public_spending |>
+  summarise(
+    `Number of rows`    = n(),
+    `Number of columns` = ncol(public_spending)
+  ) |>
+  knitr::kable()
+```
+
+```{r}
+public_spending |> slice_head(n = 10) |> knitr::kable()
+```
+
+```{r}
+# Removing the US category and selecting only the categories of interest within the public spending 
+public_spending_clean <- public_spending |>
+  filter(NAME != "United States") |>
+  filter(GOVTYPE == "001") |>
+  filter(
+    AGG_DESC_LABEL == "Expenditure - Direct Expenditure - General Expenditure - Education - Total Expenditure" |
+    AGG_DESC_LABEL == "Expenditure - Direct Expenditure - General Expenditure - Public Welfare - Total Expenditure" |
+    AGG_DESC_LABEL == "Expenditure - Direct Expenditure - General Expenditure - Health - Total Expenditure" |
+    AGG_DESC_LABEL == "Expenditure - Direct Expenditure - General Expenditure - Correction - Total Expenditure" |
+    AGG_DESC_LABEL == "Expenditure - Direct Expenditure - General Expenditure - Police Protection - Total Expenditure"
+  ) 
+```
+
+```{r}
+# Clarifying the variables and sorting them by spending category
+public_spending_clean <- public_spending_clean |>
+  mutate(
+    State = NAME,
+    Year = as.integer(time),
+    category = case_when(
+      str_detect(AGG_DESC_LABEL, "Education") ~ "spending_education", 
+      str_detect(AGG_DESC_LABEL, "Welfare") ~ "spending_welfare",
+      str_detect(AGG_DESC_LABEL, "Health") ~ "spending_health",
+      str_detect(AGG_DESC_LABEL, "Correction") ~ "spending_corrections",
+      str_detect(AGG_DESC_LABEL, "Police") ~ "spending_police"
+    ),
+    amount = readr::parse_number(AMOUNT)
+    ) 
+```
+
+```{r}
+# pivoting
+public_spending_final <- public_spending_clean |>
+  select(State, Year, category, amount) |>
+  pivot_wider(
+    id_cols = c(State, Year),
+    names_from = category,
+    values_from = amount
+  )
+```
+
+```{r}
+sapply(public_spending, typeof)
 ```
 
 ### Food Environment Atlas
@@ -556,17 +619,23 @@ We sequentially merge the crime–WID panel with police shootings, immigration, 
 
 ### Final panel construction
 ```{r}
-
 panel_full <- wid_crime_police_imm_gdp |> #we have added the food_state data
   left_join(
     food_state,
     by = "State"
-  )
+  ) 
+```
+
+```{r}
+panel_full <- panel_full |>
+  left_join(
+    public_spending_final,
+    by = c("State", "Year")
+    )
 ```
 
 ### Final panel construction
 ```{r}
-
 panel_full |>
   summarise(
     `Number of rows`    = n(),
