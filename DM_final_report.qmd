@@ -139,6 +139,42 @@ Evolution of violent crime and property crime in the US per states.
 
 Property crime displays a particularly strong rise and fall, whereas violent crime peaks later and declines more gradually, suggesting distinct underlying mechanisms. The persistence of substantial dispersion across states indicates that national trends alone cannot account for observed crime dynamics and highlights the relevance of state-specific factors. These descriptive findings motivate the use of panel models with both state and time fixed effects in the subsequent analysis.
 
+Evolution of violent crime and property crime in the US per states
+```{r}
+crime_by_state <- panel_full |>
+  select(State, Year, Data.Rates.Violent.All, Data.Rates.Property.All) |>
+  pivot_longer(
+    cols = c(Data.Rates.Violent.All, Data.Rates.Property.All),
+    names_to = "type",
+    values_to = "rate"
+  ) |>
+  mutate(
+    type = case_when(
+      type == "Data.Rates.Violent.All" ~ "Violent crime",
+      type == "Data.Rates.Property.All" ~ "Property crime"
+    )
+  )
+```
+
+```{r}
+#| fig-cap: "Violent and property crime rates by U.S. state"
+#| fig-width: 10
+#| fig-height: 5
+#| warning: false
+#| message: false
+
+ggplot(crime_by_state, aes(x = Year, y = rate, colour = State)) +
+  geom_line(linewidth = 0.7) +
+  facet_wrap(~type, scales = "free_y") +
+  labs(
+    title = "Crime rates by U.S. state (1960–2018)",
+    x = "Year",
+    y = "Crimes per 100,000 inhabitants"
+  ) +
+  theme_minimal()
+```
+
+
 ```{r}
 top_states <- panel_full |>
   filter(Year <= 2018) |>
