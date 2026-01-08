@@ -54,11 +54,31 @@ Our empirical analysis is divided into two parts, reflecting the heterogeneous t
 
 Rather than discarding these valuable contemporary indicators, we adopt a two-stage approach: we first exploit the full historical depth of our panel to study structural relationships between economic conditions and crime, then narrow the window to 2015–2018 to incorporate additional explanatory factors in a richer, shorter-term analysis.
 
-## Part 1. Long-run analysis (1960–2018)
+### **Long-run analysis (1960–2018)**
 
 #### Descriptive analysis
 
-#### 1. National long-run trends in crime (1960-2018)
+```{r}
+#| message: false
+
+library(ggplot2)
+library(plm)
+library(dplyr)
+library(tidyverse)
+library(here)
+library(vroom)
+library(modelsummary)
+library(kableExtra)
+```
+
+```{r}
+#| message: false
+
+here::i_am("Data-management---final-project.Rproj")
+panel_full <- vroom(here("DATA_panel_full.csv"))
+```
+
+##### National long-run trends in crime (1960-2018)
 
 To establish a benchmark for the subsequent analysis, we first document the long-run evolution of violent and property crime across U.S. states. Figure 1 displays the average crime rate across states together with the 10th–90th percentile range, providing a synthetic view of both aggregate dynamics and cross-state heterogeneity.
 
@@ -116,27 +136,8 @@ Despite these shared national trends, cross-state heterogeneity remains large th
 
 Property crime displays a particularly strong rise and fall, whereas violent crime peaks later and declines more gradually, suggesting distinct underlying mechanisms. The persistence of substantial dispersion across states indicates that national trends alone cannot account for observed crime dynamics and highlights the relevance of state-specific factors. These descriptive findings motivate the use of panel models with both state and time fixed effects in the subsequent analysis.
 
-```{r}
-#| message: false
 
-library(ggplot2)
-library(plm)
-library(dplyr)
-library(tidyverse)
-library(here)
-library(vroom)
-library(modelsummary)
-library(kableExtra)
-```
-
-```{r}
-#| message: false
-
-here::i_am("Data-management---final-project.Rproj")
-panel_full <- vroom(here("DATA_panel_full.csv"))
-```
-
-#### 2.1 Evolution of violent crime and property crime in the US per states.
+##### Evolution of violent crime and property crime in the US per states.
 
 ```{r}
 crime_by_state <- panel_full |>
@@ -172,7 +173,7 @@ ggplot(crime_by_state, aes(x = Year, y = rate, colour = State)) +
   theme_minimal()
 ```
 
-#### 2.2 Evolution of violent crime and property crime among high-crime states
+##### Evolution of violent crime and property crime among high-crime states
 
 ```{r}
 top_states <- panel_full |>
@@ -218,7 +219,7 @@ ggplot(crime_by_state_top, aes(x = Year, y = rate, colour = State)) +
   theme_minimal()
 ```
 
-#### 3. Descriptive co-movement with economic structure
+##### Descriptive co-movement with economic structure
 
 ```{r}
 #Before imposing a linear model, do crime rates co-move with economic conditions and inequality in the raw data, once we pool state–year observations?
@@ -314,7 +315,7 @@ Violent crime: It displays a more pronounced association with inequality. Crime 
 
 Taken together, the descriptive evidence suggests that crime rates in U.S. states co-evolve with economic conditions and income inequality, but that these relationships are heterogeneous and potentially confounded by persistent state-specific characteristics and common national shocks. To account for these factors and move beyond raw correlations, we now estimate panel regressions with state and year fixed effects, which exploit within-state variation over time while controlling for unobserved heterogeneity.
 
-##### 1.Fixed effects (within)
+##### Fixed effects (within)
 
 We estimate the association between economic conditions, inequality, and crime using fixed effects panel regressions:
 
@@ -457,7 +458,7 @@ modelsummary(
 
 For violent crime (Table 2), the results confirm our theoretical expectations: GDP has a weaker association ($β ≈ -100$, $R² = 0.15$), and inequality is only marginally significant ($p < 0.10$). Economic factors alone cannot explain violent crime patterns.
 
-##### 2.Between model
+##### Between model
 
 ```{r}
 model_between <- plm(
@@ -472,7 +473,7 @@ model_between <- plm(
 summary(model_between)
 ```
 
-##### 3.Random model
+##### Random model
 
 ```{r}
 model_random_property <- plm(
@@ -495,7 +496,7 @@ summary(model_random_property)
 summary(model_random_violent)
 ```
 
-##### 4.Test de Hausman
+##### Test de Hausman
 
 ```{r}
 hausman_property <- phtest(
@@ -515,11 +516,11 @@ hausman_violent <- phtest(
 hausman_violent
 ```
 
-## Part 2. Short-run analysis (2015–2018) - Contemporary correlates of crime
+### **Short-run analysis (2015–2018) - Contemporary correlates of crime**
 
-### Descriptive analysis
+#### Descriptive analysis
 
-#### 1. Descriptive overview of crime and new covariates
+##### Descriptive overview of crime and new covariates
 
 Summary statistics :
 
@@ -610,7 +611,7 @@ summary_recent |>
   kableExtra::kable_styling(latex_options = "HOLD_position")
 ```
 
-#### 2. Contemporary heterogeneity and structural correlates (2015–2018)
+##### Contemporary heterogeneity and structural correlates (2015–2018)
 
 ```{r}
 panel_recent <- panel_full |>
@@ -713,7 +714,7 @@ property_quartiles_tbl |>
   kableExtra::kable_styling(latex_options = "HOLD_position")
 ```
 
-### Regression analysis
+#### Regression analysis
 
 ## Conclusion and limitations
 
