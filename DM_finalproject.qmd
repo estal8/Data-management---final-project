@@ -481,7 +481,7 @@ food_state |>
 ```
 We extract three indicators of participation in food assistance and school meal programmes in 2015, and check that all 50 states plus DC are present.
 
-### State GDP
+### State GDP and Consumption spending 
 
 ```{r}
 #| message: false
@@ -495,7 +495,7 @@ state_income |>
   ) |>
   knitr::kable()
 ```
-We select only the rows corresponding to state-level GDP, reshape the data from wide to long format (one row per state–year), parse GDP as numeric, and summarise the coverage in terms of years and states.
+We select only the rows corresponding to state-level GDP and consumption expenditures per capita per state, reshape the data from wide to long format (one row per state–year), parse GDP as numeric, and summarise the coverage in terms of years and states.
 
 ```{r}
 state_gdp <- state_income |>
@@ -536,6 +536,44 @@ This dataset contains many economic indicators in wide format, so we first filte
 
 We then create a clean State–Year–gdp table by parsing GDP values as numeric and keeping only non-missing observations. This prepares the GDP data to be merged consistently with the other state-year datasets in our panel.
 
+We do the same for per capita consumption : 
+
+```{r}
+state_consumption <- state_income |>
+
+  dplyr::filter(stringr::str_detect(Description, "Per capita personal consumption expenditures")) |>
+
+  dplyr::mutate(
+    dplyr::across(
+      dplyr::matches("^[0-9]{4}$"),
+      as.character
+    )
+  ) |>
+
+  tidyr::pivot_longer(
+    cols      = dplyr::matches("^[0-9]{4}$"),
+    names_to  = "Year",
+    values_to = "Consumption"
+  ) |>
+  dplyr::mutate(
+    Year = as.integer(Year),
+  
+    gdp  = readr::parse_number(Consumption),
+    State = GeoName
+  ) |>
+  dplyr::select(State, Year, Consumption) |>
+  dplyr::filter(!is.na(Year), !is.na(Consumption))
+
+state_consumption |>
+  summarise(
+    nb_rows   = n(),
+    nb_states = n_distinct(State),
+    min_year  = min(Year),
+    max_year  = max(Year)
+  ) |>
+  knitr::kable()
+```
+
 ### Unemployment 
 
 ```{r}
@@ -565,11 +603,14 @@ colnames(state_unemployment) <- c(
 ```
 
 ```{r}
+#| message: false
+
 state_unemployment <- state_unemployment |>
   mutate(
-    year = as.integer(year),
+    State = state,
+    Year = as.integer(year),
     month = as.integer(month),
-    unemployment_rate = as.numeric(unemployment_rate) / 10 # the comma was removed 
+    unemployment_rate = as.numeric(unemployment_rate) / 10 # the comma was removed
   )
 ```
 
@@ -580,8 +621,8 @@ state_unemployment <- state_unemployment |>
 
 ```{r}
 state_annual_unemployment <- state_unemployment |>
-  select(state, year, unemployment_rate) |>
-  group_by(state, year) |>
+  select(State, Year, unemployment_rate) |>
+  group_by(State, Year) |>
   summarise(
     unemployment_rate = mean(unemployment_rate, na.rm = TRUE),
     .groups = "drop"
@@ -651,7 +692,7 @@ wid_crime |>
 ### Adding police shootings 
 ```{r}
 wid_crime_police <- wid_crime |>
-  left_join(police_shootings_final, by = c("State", "Year"))
+  left_join(police_shootings_final, by = c("State", "Year")) 
 ```
 
 There will be a lot of missing values since the years the databases cover are different.
@@ -665,8 +706,10 @@ wid_crime_police_imm <- wid_crime_police |>
 ### Adding GDP
 ```{r}
 wid_crime_police_imm_gdp <- wid_crime_police_imm |> 
-  left_join(state_gdp, by=c("State","Year"))
+  left_join(state_gdp, by=c("State","Year")) |>
+  left_join(state_consumption, by=c("State","Year"))
 ```
+
 We sequentially merge the crime–WID panel with police shootings, immigration, and GDP, always using the common keys (State, Year).
 
 ### Final panel construction
@@ -682,6 +725,14 @@ panel_full <- wid_crime_police_imm_gdp |> #we have added the food_state data
 panel_full <- panel_full |>
   left_join(
     public_spending_final,
+    by = c("State", "Year")
+    )
+```
+
+```{r}
+panel_full <- panel_full |>
+  left_join(
+    state_annual_unemployment,
     by = c("State", "Year")
     )
 ```
@@ -712,9 +763,11 @@ Key *explanatory* variables include:
 - **Income inequality and income shares** from WID (e.g. `share_pretax_income_p90p100`), capturing the share of total income accruing to the top of the distribution.
 - **Immigration stocks and flows** (e.g. `imm_population`, `lpr_total`, `nonimmigrants_total`, `refugees_total`) from DHS, measured at the state–year level.
 - **State GDP** (`gdp`) and personal income from the BEA, describing the size and dynamics of state economies.
+- **Per capita personal consumption expenditures** also from the BEA (`Consumption`).
 - **Public spending indicators** from the Census (education, welfare, health, corrections), describing the composition of state and local public expenditure.
 - **Food assistance participation** (`wic_2015`, `nslp_2015`, `sbp_2015`) from the Food Environment Atlas, as proxies for food insecurity and social protection.
 - **Police shootings** (`nb_police_shootings`, `nb_unarmed`, `nb_gun`, `nb_body_camera`), summarising the number and characteristics of fatal police shootings in each state–year.
+- **Unemployment rates** per states (1976-2025) (`unemployment_rate`) from the BLS.
 
 These variables are then merged into a panel dataset at the state–year level.
 
