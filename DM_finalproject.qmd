@@ -634,6 +634,47 @@ state_annual_unemployment <- state_unemployment |>
   )
 ```
 
+#### Poverty
+
+```{r}
+#| message: false
+
+state_poverty <- vroom(here("DATA_poverty.csv"))
+```
+
+```{r}
+state_poverty <- state_poverty |>
+  slice(-(1:3)) # to remove title lines
+```
+
+```{r}
+new_names <- as.character(state_poverty[1, ])
+colnames(state_poverty) <- new_names
+state_poverty <- state_poverty[-1, ]
+```
+
+Since the population is expressed in thousands : 
+Bad excel file structure, difficult
+
+#### Prison population
+
+```{r}
+#| message: false
+
+state_prisonpop <- vroom(here("DATA_prisonpopulation.csv"))
+```
+
+
+#### Alcohol (potentially very difficult to clean)
+
+```{r}
+#| message: false
+
+state_alcohol <- vroom(here("DATA_alcohol.csv"))
+```
+
+
+
 ### Merging
 
 #### Crime and WID 
