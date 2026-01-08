@@ -115,7 +115,7 @@ here::i_am("Data-management---final-project.Rproj")
 
 ### Loading and cleaning each database
 
-### The crime database
+#### The crime database
 
 ```{r}
 #| message: false
@@ -137,7 +137,7 @@ crime |>
 ```
 There are no missing values.
 
-### The WID database
+#### The WID database
 
 First, we must join all 51 states bases of the WID. To do so, we are going to create a list with all the files' names to avoid having to manually download all of them.
 
@@ -287,8 +287,10 @@ wid_wide |>
 
 The huge number of missing values for Alaska can probably be explained by the fact it only became a US state in 1959. Since the crime database begins in 1960, these won't be considered in the analysis anyways. As for the rest of the NAs, considering the huge amount of values (more than 230 000), they are negligeable.
 
-### Police Shooting database
+#### Police Shooting database
 ```{r}
+#| message: false
+
 police_shootings <- vroom(here("DATA_policeshootingto2024.csv"))
 sapply(police_shootings, typeof)
 ```
@@ -332,7 +334,7 @@ police_shootings_final <- police_shootings |>
   )
 ```
 
-### Immigration database 
+#### Immigration database 
 
 ```{r}
 #| message: false
@@ -379,7 +381,7 @@ immigration_small <- immigration |>
 
 We construct a reduced immigration dataset, keeping only a few key indicators (total population, lawful permanent residents, nonimmigrants and refugees) at the state–year level.
 
-### Total per capita categorized public spending
+#### Total per capita categorized public spending
 
 ```{r}
 #| message: false
@@ -446,7 +448,7 @@ public_spending_final <- public_spending_clean |>
 sapply(public_spending, typeof)
 ```
 
-### Food Environment Atlas
+#### Food Environment Atlas
 
 ```{r}
 #| message: false
@@ -481,7 +483,7 @@ food_state |>
 ```
 We extract three indicators of participation in food assistance and school meal programmes in 2015, and check that all 50 states plus DC are present.
 
-### State GDP and Consumption spending 
+#### State GDP and Consumption spending 
 
 ```{r}
 #| message: false
@@ -574,7 +576,7 @@ state_consumption |>
   knitr::kable()
 ```
 
-### Unemployment 
+#### Unemployment 
 
 ```{r}
 #| message: false 
@@ -631,7 +633,7 @@ state_annual_unemployment <- state_unemployment |>
 
 ### Merging
 
-### Crime and WID 
+#### Crime and WID 
 
 Now, we can actually merge the WID database for all states with the crime database.
 
@@ -689,55 +691,25 @@ wid_crime |>
   knitr::kable()
 ```
 
-### Adding police shootings 
+#### Final panel construction
+
+We sequentially merge the crime–WID panel with police shootings, immigration, consumption, public spendings and GDP, always using the common keys (State, Year). There will be a lot of missing values since the years the databases cover are different.
+
 ```{r}
-wid_crime_police <- wid_crime |>
-  left_join(police_shootings_final, by = c("State", "Year")) 
-```
-
-There will be a lot of missing values since the years the databases cover are different.
-
-### Adding immigration 
-```{r}
-wid_crime_police_imm <- wid_crime_police |> 
-  left_join(immigration_small, by=c("State","Year"))
-```
-
-### Adding GDP
-```{r}
-wid_crime_police_imm_gdp <- wid_crime_police_imm |> 
-  left_join(state_gdp, by=c("State","Year")) |>
-  left_join(state_consumption, by=c("State","Year"))
-```
-
-We sequentially merge the crime–WID panel with police shootings, immigration, and GDP, always using the common keys (State, Year).
-
-### Final panel construction
-```{r}
-panel_full <- wid_crime_police_imm_gdp |> #we have added the food_state data
-  left_join(
-    food_state,
-    by = "State"
-  ) 
+panel_full <- wid_crime |>
+  left_join(police_shootings_final, by = c("State", "Year")) |>
+  left_join(immigration_small,      by = c("State", "Year")) |>
+  left_join(state_gdp,               by = c("State", "Year")) |>
+  left_join(state_consumption,       by = c("State", "Year")) |>
+  left_join(public_spending_final,   by = c("State", "Year")) |>
+  left_join(state_annual_unemployment, by = c("State", "Year"))
 ```
 
 ```{r}
 panel_full <- panel_full |>
-  left_join(
-    public_spending_final,
-    by = c("State", "Year")
-    )
+  left_join(food_state, by = "State")
 ```
 
-```{r}
-panel_full <- panel_full |>
-  left_join(
-    state_annual_unemployment,
-    by = c("State", "Year")
-    )
-```
-
-### Final panel construction
 ```{r}
 panel_full |>
   summarise(
@@ -751,7 +723,7 @@ panel_full |>
 
 ### Selecting the variables of interest
 
-### Main variables
+#### Main variables
 
 Our main *outcome* variables are:
 
@@ -771,7 +743,8 @@ Key *explanatory* variables include:
 
 These variables are then merged into a panel dataset at the state–year level.
 
-### Graphical representation of the main target variables
+#### Graphical representation of the main target variables
+
 ```{r}
 library(ggplot2)
 
