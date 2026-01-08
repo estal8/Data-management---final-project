@@ -44,7 +44,7 @@ We build our panel from seven sources:
 
 -   public spending (Census Bureau, 2017–2023) on education, welfare, health, corrections and police;
 
--   and food assistance participation (USDA Food Atlas, 2015).
+-   and food assistance participation (USDA Food Environment Atlas, 2012-2023).
 
 Full descriptions are provided in the data cleaning document (Phase 2).
 
