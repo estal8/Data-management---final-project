@@ -743,6 +743,61 @@ Key *explanatory* variables include:
 
 These variables are then merged into a panel dataset at the state–year level.
 
+```{r}
+panel_full_final <- panel_full |>
+  filter(Year >= 1998) |>
+  select(
+    State,
+    Year,
+
+    # Crime rates
+    Data.Rates.Violent.All,
+    Data.Rates.Property.All,
+
+    # Crime totals
+    Data.Totals.Violent.All,
+    Data.Totals.Property.All,
+
+    # Population & income
+    Data.Population,
+    gdp,
+    Consumption,
+    share_pretax_income_p90p100,
+
+    # Police shootings
+    nb_police_shootings,
+    nb_unarmed,
+    nb_gun,
+    nb_body_camera,
+
+    # Labor market
+    unemployment_rate,
+
+    # Immigration
+    imm_population,
+    refugees_total,
+    nonimm_total,
+    lpr_total,
+
+    # Public spending
+    spending_corrections,
+    spending_education,
+    spending_welfare,
+    spending_health,
+    spending_police,
+
+    # Food programs
+    wic_2015,
+    nslp_2015,
+    sbp_2015
+  )
+```
+
+```{r}
+write_csv(panel_full_final, here("DATA_panel_full_final.csv"))
+```
+
+
 #### Graphical representation of the main target variables
 
 ```{r}
