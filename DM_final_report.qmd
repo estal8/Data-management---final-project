@@ -136,7 +136,7 @@ here::i_am("Data-management---final-project.Rproj")
 panel_full <- vroom(here("DATA_panel_full.csv"))
 ```
 
-## 2. Evolution of violent crime and property crime in the US per states.
+## 2.1 Evolution of violent crime and property crime in the US per states.
 
 ```{r}
 crime_by_state <- panel_full |>
@@ -172,7 +172,7 @@ ggplot(crime_by_state, aes(x = Year, y = rate, colour = State)) +
   theme_minimal()
 ```
 
-## 2.1 Evolution of violent crime and property crime among high-crime states
+## 2.2 Evolution of violent crime and property crime among high-crime states
 
 ```{r}
 top_states <- panel_full |>
@@ -314,7 +314,7 @@ Violent crime: It displays a more pronounced association with inequality. Crime 
 
 Taken together, the descriptive evidence suggests that crime rates in U.S. states co-evolve with economic conditions and income inequality, but that these relationships are heterogeneous and potentially confounded by persistent state-specific characteristics and common national shocks. To account for these factors and move beyond raw correlations, we now estimate panel regressions with state and year fixed effects, which exploit within-state variation over time while controlling for unobserved heterogeneity.
 
-##### Fixed effects (within)
+##### 1.Fixed effects (within)
 
 We estimate the association between economic conditions, inequality, and crime using fixed effects panel regressions:
 
@@ -457,7 +457,7 @@ modelsummary(
 
 For violent crime (Table 2), the results confirm our theoretical expectations: GDP has a weaker association ($β ≈ -100$, $R² = 0.15$), and inequality is only marginally significant ($p < 0.10$). Economic factors alone cannot explain violent crime patterns.
 
-##### Between model
+##### 2.Between model
 
 ```{r}
 model_between <- plm(
@@ -472,7 +472,7 @@ model_between <- plm(
 summary(model_between)
 ```
 
-##### Random model
+##### 3.Random model
 
 ```{r}
 model_random_property <- plm(
@@ -495,7 +495,7 @@ summary(model_random_property)
 summary(model_random_violent)
 ```
 
-#### Tests (Hausman)
+##### 4.Test de Hausman
 
 ```{r}
 hausman_property <- phtest(
@@ -505,6 +505,7 @@ hausman_property <- phtest(
 
 hausman_property
 ```
+
 ```{r}
 hausman_violent <- phtest(
   model_violent_3,
@@ -514,27 +515,97 @@ hausman_violent <- phtest(
 hausman_violent
 ```
 
-
 ### Part 2. Short-run analysis (2015–2018) - Contemporary correlates of crime
 
-```{r}
-panel_recent <- panel_full |>
-  filter(Year >= 2015, Year <= 2018) |>
-  filter(!is.na(nb_police_shootings), !is.na(lpr_total))
-```
+#### 1. Descriptive overview of crime and new covariates
 
 Summary statistics :
 
 ```{r}
-panel_recent |>
-  summarise(
-    across(
-      c(Data.Rates.Violent.All, gdp, nb_police_shootings, lpr_total),
-      list(mean = ~mean(., na.rm = TRUE), sd = ~sd(., na.rm = TRUE))
-    )
-  ) |>
-  knitr::kable()
-```
 
+panel_recent <- panel_full |>
+  filter(Year >= 2015, Year <= 2018)
+
+panel_recent_tbl <- panel_recent |>
+  mutate(
+    log_gdp = log(gdp),
+    shootings_per_million = 1e6 * nb_police_shootings / Data.Population,
+    lpr_per_million       = 1e6 * lpr_total / imm_population
+  )
+
+vars_2 <- c(
+  # Crime
+  "Data.Rates.Violent.All",
+  "Data.Rates.Property.All",
+
+  # Economic structure
+  "log_gdp",
+  "share_pretax_income_p90p100",
+
+  # Immigration & police
+  "lpr_per_million",
+  "shootings_per_million",
+
+  # Public spending
+  "spending_education",
+  "spending_welfare",
+  "spending_health",
+  "spending_corrections",
+  "spending_police",
+
+  # Food assistance (USDA)
+  "wic_2015",
+  "nslp_2015",
+  "sbp_2015"
+)
+
+summary_recent <- panel_recent_tbl |>
+  select(any_of(vars_2)) |>
+  pivot_longer(everything(), names_to = "variable", values_to = "value") |>
+  summarise(
+    N      = sum(!is.na(value)),
+    Mean   = mean(value, na.rm = TRUE),
+    SD     = sd(value, na.rm = TRUE),
+    P10    = quantile(value, 0.10, na.rm = TRUE),
+    Median = median(value, na.rm = TRUE),
+    P90    = quantile(value, 0.90, na.rm = TRUE),
+    .by = variable
+  ) |>
+  mutate(
+    variable = recode(variable,
+      # Crime
+      "Data.Rates.Violent.All"      = "Violent crime rate (per 100k)",
+      "Data.Rates.Property.All"     = "Property crime rate (per 100k)",
+
+      # Economy / inequality
+      "log_gdp"                     = "Log GDP",
+      "share_pretax_income_p90p100" = "Top 10% pretax income share",
+
+      # Immigration & police
+      "lpr_per_million"             = "Lawful permanent residents per million",
+      "shootings_per_million"       = "Police shootings per million",
+
+      # Public spending
+      "spending_education"          = "Public spending: education",
+      "spending_welfare"            = "Public spending: welfare",
+      "spending_health"             = "Public spending: health",
+      "spending_corrections"        = "Public spending: corrections",
+      "spending_police"             = "Public spending: police",
+
+      # Food assistance
+      "wic_2015"                    = "WIC participants (2015)",
+      "nslp_2015"                   = "School lunch participants (2015)",
+      "sbp_2015"                    = "School breakfast participants (2015)"
+    )
+  )
+
+summary_recent |>
+  knitr::kable(
+    caption = "Summary statistics, short-run panel (2015–2018)",
+    digits = 2,
+    booktabs = TRUE
+  ) |>
+  kableExtra::kable_styling(latex_options = "HOLD_position")
+```
 
 ## Conclusion
