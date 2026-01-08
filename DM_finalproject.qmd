@@ -43,7 +43,7 @@ The **crime per state (1960-2019) database** from the **CORGIS Dataset Project**
 
 - property crimes : burglaries, larcenies, and motor crimes.
 
-The database combines rates per 100 000 population and total number of crimes per states, which we will mainly focus on.
+The database combines rates per 100 000 population and total number of crimes per states, which we will mainly focus on. We also obtain data on the total state population for each year.
 
 <https://corgis-edu.github.io/corgis/csv/state_crime/>
 
@@ -77,6 +77,9 @@ The **Food Environment Atlas (2012-2023)** from the **US Department for Agricult
 
 <https://apps.bea.gov/regional/downloadzip.htm>
 
+**Local Area Unemployment Statistics (LAUS)** from the **US Bureau of Labor Statistics (BLS)**. It spans from 1976 to 2025. We directly downloaded it from the BLS website.
+
+<https://www.bls.gov/web/laus/ststdsadata.zip>
 
 ### Data cleaning 
 
@@ -792,11 +795,6 @@ panel_full_final <- panel_full |>
     sbp_2015
   )
 ```
-
-```{r}
-write_csv(panel_full_final, here("DATA_panel_full_final.csv"))
-```
-
 
 #### Graphical representation of the main target variables
 
