@@ -132,7 +132,7 @@ ggplot(crime_distribution, aes(x = Year)) +
 
 Both crime categories exhibit a pronounced common time profile, with a strong increase from the 1960s to the late 1980s or early 1990s, followed by a sustained decline.
 
-Despite these shared national trends, cross-state heterogeneity remains large throughout the entire period, as illustrated by the wide percentile bands. Evolution of violent crime and property crime in the US per states.
+Despite these shared national trends, cross-state heterogeneity remains large throughout the entire period, as illustrated by the wide percentile bands.
 
 Property crime displays a particularly strong rise and fall, whereas violent crime peaks later and declines more gradually, suggesting distinct underlying mechanisms. The persistence of substantial dispersion across states indicates that national trends alone cannot account for observed crime dynamics and highlights the relevance of state-specific factors. These descriptive findings motivate the use of panel models with both state and time fixed effects in the subsequent analysis.
 
@@ -360,7 +360,7 @@ summary(model_property_1)
 summary(model_violent_1)
 ```
 
-The panel regression results reveal a contrast between the two types of crime, that we had planned.
+The panel regression results reveal a contrast between the two types of crime, that we had initially planned.
 
 For property crime, GDP explains approximately 69% of the within-state variation (R² = 0.69), which is consistent with economic theories on crime suggesting that property offences are motivated by financial need (Becker, 1968).
 
