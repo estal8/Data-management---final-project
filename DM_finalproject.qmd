@@ -536,6 +536,58 @@ This dataset contains many economic indicators in wide format, so we first filte
 
 We then create a clean State–Year–gdp table by parsing GDP values as numeric and keeping only non-missing observations. This prepares the GDP data to be merged consistently with the other state-year datasets in our panel.
 
+### Unemployment 
+
+```{r}
+#| message: false 
+state_unemployment_raw <- vroom(here("DATA_unemployment_BLS.csv"))
+```
+
+```{r}
+state_unemployment <- state_unemployment_raw |>
+  slice(-(1:7)) # to remove title lines
+```
+
+```{r}
+colnames(state_unemployment) <- c(
+  "fips",
+  "state",
+  "year",
+  "month",
+  "civilian_pop",
+  "labor_force",
+  "labor_force_pct",
+  "employment",
+  "employment_pct",
+  "unemployment_level",
+  "unemployment_rate"
+)
+```
+
+```{r}
+state_unemployment <- state_unemployment |>
+  mutate(
+    year = as.integer(year),
+    month = as.integer(month),
+    unemployment_rate = as.numeric(unemployment_rate) / 10 # the comma was removed 
+  )
+```
+
+```{r}
+state_unemployment <- state_unemployment |>
+  filter(nchar(fips) == 2) # removing the counties that have FIPS with 3 numbers
+```
+
+```{r}
+state_annual_unemployment <- state_unemployment |>
+  select(state, year, unemployment_rate) |>
+  group_by(state, year) |>
+  summarise(
+    unemployment_rate = mean(unemployment_rate, na.rm = TRUE),
+    .groups = "drop"
+  )
+```
+
 ### Merging
 
 ### Crime and WID 
