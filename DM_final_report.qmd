@@ -589,7 +589,10 @@ hausman_violent <- phtest(
 hausman_violent
 ```
 
-Hypothesis : crime inertia ?
+#### Hypothesis : crime inertia ???
+
+To look into crime persistence (i.e., the tendency of high-crime states to remain high-crime), we estimate a dynamic panel model including lagged crime rates as an explanatory variable.
+
 ```{r}
 panel_reg <- panel_reg |>
   group_by(State) |>
@@ -598,7 +601,9 @@ panel_reg <- panel_reg |>
   ungroup()
 
 model_dynamic <- plm(
-  Data.Rates.Property.All ~ crime_lag + log_gdp + share_pretax_income_p90p100,
+  Data.Rates.Property.All ~ crime_lag + 
+    log_gdp + 
+    share_pretax_income_p90p100,
   data = panel_reg |> filter(!is.na(crime_lag)),
   index = c("State", "Year"),
   model = "within"
