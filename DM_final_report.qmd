@@ -54,11 +54,11 @@ Our empirical analysis is divided into two parts, reflecting the heterogeneous t
 
 Rather than discarding these valuable contemporary indicators, we adopt a two-stage approach: we first exploit the full historical depth of our panel to study structural relationships between economic conditions and crime, then narrow the window to 2015–2018 to incorporate additional explanatory factors in a richer, shorter-term analysis.
 
-### Part 1. Long-run analysis (1960–2018)
+## Part 1. Long-run analysis (1960–2018)
 
 #### Descriptive analysis
 
-##1. National long-run trends in crime (1960-2018)
+#### 1. National long-run trends in crime (1960-2018)
 
 To establish a benchmark for the subsequent analysis, we first document the long-run evolution of violent and property crime across U.S. states. Figure 1 displays the average crime rate across states together with the 10th–90th percentile range, providing a synthetic view of both aggregate dynamics and cross-state heterogeneity.
 
@@ -136,7 +136,7 @@ here::i_am("Data-management---final-project.Rproj")
 panel_full <- vroom(here("DATA_panel_full.csv"))
 ```
 
-## 2.1 Evolution of violent crime and property crime in the US per states.
+#### 2.1 Evolution of violent crime and property crime in the US per states.
 
 ```{r}
 crime_by_state <- panel_full |>
@@ -172,7 +172,7 @@ ggplot(crime_by_state, aes(x = Year, y = rate, colour = State)) +
   theme_minimal()
 ```
 
-## 2.2 Evolution of violent crime and property crime among high-crime states
+#### 2.2 Evolution of violent crime and property crime among high-crime states
 
 ```{r}
 top_states <- panel_full |>
@@ -218,7 +218,7 @@ ggplot(crime_by_state_top, aes(x = Year, y = rate, colour = State)) +
   theme_minimal()
 ```
 
-## 3. Descriptive co-movement with economic structure
+#### 3. Descriptive co-movement with economic structure
 
 ```{r}
 #Before imposing a linear model, do crime rates co-move with economic conditions and inequality in the raw data, once we pool state–year observations?
@@ -515,7 +515,9 @@ hausman_violent <- phtest(
 hausman_violent
 ```
 
-### Part 2. Short-run analysis (2015–2018) - Contemporary correlates of crime
+## Part 2. Short-run analysis (2015–2018) - Contemporary correlates of crime
+
+### Descriptive analysis
 
 #### 1. Descriptive overview of crime and new covariates
 
@@ -608,4 +610,110 @@ summary_recent |>
   kableExtra::kable_styling(latex_options = "HOLD_position")
 ```
 
-## Conclusion
+#### 2. Contemporary heterogeneity and structural correlates (2015–2018)
+
+```{r}
+panel_recent <- panel_full |>
+  filter(Year >= 2015, Year <= 2018) |>
+  mutate(
+    violent_rate  = Data.Rates.Violent.All,
+    property_rate = Data.Rates.Property.All,
+    log_gdp       = log(gdp),
+    lpr_per_million = 1e6 * lpr_total / imm_population,
+    shootings_per_million = 1e6 * nb_police_shootings / Data.Population
+  )
+  
+```
+
+```{r}
+panel_recent <- panel_recent |>
+  mutate(
+    violent_quartile = ntile(violent_rate, 4)
+  )
+
+panel_recent <- panel_recent |>
+  mutate(
+    property_quartile = ntile(property_rate, 4)
+  )
+```
+
+```{r}
+quartile_table <- panel_recent |>
+  group_by(violent_quartile) |>
+  summarise(
+    Mean_violent_crime = mean(violent_rate, na.rm = TRUE),
+    Mean_property_crime = mean(property_rate, na.rm = TRUE),
+
+    Log_GDP = mean(log_gdp, na.rm = TRUE),
+    Inequality_top10 = mean(share_pretax_income_p90p100, na.rm = TRUE),
+
+    LPR_per_million = mean(lpr_per_million, na.rm = TRUE),
+    Police_shootings_per_million = mean(shootings_per_million, na.rm = TRUE),
+
+    Welfare_spending = mean(spending_welfare, na.rm = TRUE),
+    Police_spending  = mean(spending_police, na.rm = TRUE),
+
+    WIC_participation  = mean(wic_2015, na.rm = TRUE),
+    School_lunch_participation = mean(nslp_2015, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    violent_quartile = factor(
+      violent_quartile,
+      labels = c("Low crime", "Mid-low", "Mid-high", "High crime")
+    )
+  )
+```
+
+```{r}
+quartile_table |>
+  knitr::kable(
+    caption = "Contemporary socio-economic characteristics by violent crime quartile (2015–2018)",
+    digits = 2,
+    booktabs = TRUE
+  ) |>
+  kableExtra::kable_styling(latex_options = "HOLD_position")
+```
+
+```{r}
+property_quartiles_tbl <- panel_recent |>
+  group_by(property_quartile) |>
+  summarise(
+    Mean_property_crime = mean(property_rate, na.rm = TRUE),
+    Mean_violent_crime  = mean(violent_rate, na.rm = TRUE),
+
+    Log_GDP = mean(log_gdp, na.rm = TRUE),
+    Inequality_top10 = mean(share_pretax_income_p90p100, na.rm = TRUE),
+
+    LPR_per_million = mean(lpr_per_million, na.rm = TRUE),
+    Police_shootings_per_million = mean(shootings_per_million, na.rm = TRUE),
+
+    Welfare_spending = mean(spending_welfare, na.rm = TRUE),
+    Police_spending  = mean(spending_police, na.rm = TRUE),
+
+    WIC_participation  = mean(wic_2015, na.rm = TRUE),
+    School_lunch_participation = mean(nslp_2015, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    property_quartile = factor(
+      property_quartile,
+      labels = c("Low crime", "Mid-low", "Mid-high", "High crime")
+    )
+  )
+```
+
+```{r}
+property_quartiles_tbl |>
+  knitr::kable(
+    caption = "Contemporary socio-economic characteristics by property crime quartile (2015–2018)",
+    digits = 2,
+    booktabs = TRUE
+  ) |>
+  kableExtra::kable_styling(latex_options = "HOLD_position")
+```
+
+### Regression analysis
+
+## Conclusion and limitations
+
