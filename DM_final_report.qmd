@@ -30,33 +30,41 @@ How do economic conditions, income inequality, immigration flows, public spendin
 
 ## Brief dataset description
 
-We build our panel from eight sources:
+We build our panel from nine sources : 
 
--   crime rates (FBI/CORGIS, 1960–2019) distinguishing violent and property offences, and state population ;
+- Crime rates (FBI/CORGIS, 1960–2019) distinguishing violent and property offences, and state population ;
 
--   income inequality (WID, 1960–2018) providing top income shares by state;
+- Income inequality (WID, 1960–2018) providing top income shares by state;
 
--   GDP and Consumption per capita (BEA Regional Accounts, 1998–2023);
+- GDP and consumption per capita (BEA Regional Accounts, 1998–2023);
 
--   immigration flows (DHS, 2013–2023) covering legal residents, refugees and asylees;
+- Unemployment rate (BLS, 1976-2025);
 
--   police shootings (Washington Post, 2015–2024);
+- Prison population (The Sentencing Project, 1980–2022);
 
--   public spending (Census Bureau, 2017–2023) on education, welfare, health, corrections and police;
+- Poverty rates (Census Bureau, 1980–2023);
 
--  food assistance participation (USDA Food Environment Atlas, 2012-2023)
+- Beer consumption per capita (NIAAA, 1970–2022);
 
-- unemployment rate (BLS, 1976-2025)
+- Immigration flows (DHS, 2013–2023) covering legal residents, refugees and asylees;
+
+- Police shootings (Washington Post, 2015–2024);
+
+- Public spending (Census Bureau, 2017–2023) on education, welfare, health, corrections and police;
+
+- Food assistance participation (USDA Food Environment Atlas, 2012-2023).
 
 Full descriptions are provided in the data cleaning document (Phase 2).
 
 ## Data analysis
 
-Our empirical analysis is divided into two parts, reflecting the heterogeneous temporal coverage of our sources. The crime, inequality (WID), and GDP series provide consistent state-year observations spanning nearly six decades (1960–2018), allowing us to examine long-run associations and temporal dynamics. In contrast, immigration flows (2013–2018), police shootings (2015–2018), public spending (2017–2018) and food access (2012-2023) are only available for recent years.
+Our empirical analysis is divided into two parts, reflecting the heterogeneous temporal coverage of our sources. 
 
-Rather than discarding these valuable contemporary indicators, we adopt a two-stage approach: we first exploit the full historical depth of our panel to study structural relationships between economic conditions and crime, then narrow the window to 2015–2018 to incorporate additional explanatory factors in a richer, shorter-term analysis.
+The crime, inequality, GDP, consumption, unemployment, prison population, poverty, and alcohol series provide consistent state-year observations between 1998-2018. It allows us to examine the structural relationships between economic conditions and crime using fixed effects panel regressions. 
 
-### **Long-run analysis (1960–2018)**
+In contrast, immigration flows (2013–2018), police shootings (2015–2018), public spending (2017–2018) and food access (2012-2023) are only available for recent years. Rather than discarding these valuable contemporary indicators, we adopt a two-stage approach: we first exploit the full historical depth of our panel to study structural relationships between economic conditions and crime, then narrow the window to a shorter period to incorporate additional explanatory factors in a richer, shorter-term analysis.
+
+### **Long-run analysis (1998–2018)**
 
 #### Descriptive analysis
 
@@ -318,22 +326,43 @@ Violent crime: It displays a more pronounced association with inequality. Crime 
 
 Taken together, the descriptive evidence suggests that crime rates in U.S. states co-evolve with economic conditions and income inequality, but that these relationships are heterogeneous and potentially confounded by persistent state-specific characteristics and common national shocks. To account for these factors and move beyond raw correlations, we now estimate panel regressions with state and year fixed effects, which exploit within-state variation over time while controlling for unobserved heterogeneity.
 
-##### Fixed effects (within)
+We test the following hypotheses:
 
-We estimate the association between economic conditions, inequality, and crime using fixed effects panel regressions:
+- **H1 (opportunity cost)** : Higher GDP and lower unemployment are associated with lower crime rates, particularly for property crime.
+- **H2 (inequality)** : Greater income concentration at the top of the distribution is associated with higher crime rates.
+- **H3 (deterrence)** : Larger prison populations are associated with lower crime rates because of incapacitation of criminals.
+- **H4 (alcohol as a criminogenic factor)** : Higher alcohol consumption is associated with higher violent crime rates.
+- **H5 (crime persistence)** : Crime rates exhibit temporal inertia, i.e. past crime is a strong predictor of current crime (it encourages or discourages entry, it owerwhelms law enforcers…).
 
-$$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequalities_{it} + \epsilon_{it}$$
+We estimate different models for property and violent crime, as property crime is more directly linked to economic incentives (Becker, 1968), while violent crime may be more linked to specific social factors.
 
-where $\alpha_i$ denotes state fixed effects. The coefficients are identified from within-state variation over time.
-
-First, we examine the bivariate relationship between GDP and crime (Model 1). Second, we add income inequality to test whether income concentration is independently associated with crime (Model 2). Third, as a robustness check, we include year fixed effects to control for national trends such as federal policies (Model 3).
+##### Fixed effects
 
 ```{r}
 panel_reg <- panel_full_final |>
+  filter(Year >= 1998 & Year <= 2018) |>
   filter(!is.na(gdp), !is.na(Data.Rates.Violent.All), 
          !is.na(Data.Rates.Property.All), !is.na(share_pretax_income_p90p100), !is.na(Consumption), !is.na(unemployment_rate), !is.na(Data.Population)) |>
-  mutate(log_gdp = log(gdp))
+  mutate(log_gdp = log(gdp), 
+         log_pop = log(Data.Population))
 ```
+
+First we test for model that suits our data best.
+
+```{r}
+model_pooled <- plm(
+  Data.Rates.Property.All ~ log_gdp_lag + share_pretax_income_p90p100 + 
+    unemployment_lag + prison_lag + beer_lag + log(Data.Population),
+  data = panel_reg,
+  model = "pooling"
+)
+```
+
+
+where $\alpha_i$ denotes state fixed effects. The coefficients are identified from within-state variation over time.
+
+First, we examine the relationship between GDP and crime (Model 1). Second, we add income inequality to test whether income concentration is independently associated with crime (Model 2). Third, as a robustness check, we include year fixed effects to control for national trends such as federal policies (Model 3).
+
 
 We first examine the relationship between GDP and violent / property crime rates. Economic theory suggests that GDP should be a stronger predictor of property crime (primarily motivated by financial need) than of violent crime, which is driven by more complex social and psychological factors (Becker, 1968).
 
@@ -589,7 +618,7 @@ hausman_violent <- phtest(
 hausman_violent
 ```
 
-#### Hypothesis : crime inertia ???
+Hypothesis : crime inertia ???
 
 To look into crime persistence (i.e., the tendency of high-crime states to remain high-crime), we estimate a dynamic panel model including lagged crime rates as an explanatory variable.
 
@@ -625,6 +654,8 @@ model_gmm <- pgmm(
 summary(model_gmm)
 ```
 
+
+Our estimates capture associations, not causal effects. Indeed, high crime may reduce GDP or increase prison population, which implies reverse causality. Moreover, there are omitted variables in our work, for instance time-varying factors like policing strategies, population structure and demographic shift may confounf our estimates.
 
 
 ### **Short-run analysis (2015–2018) - Contemporary correlates of crime**
