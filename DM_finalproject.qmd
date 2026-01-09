@@ -106,7 +106,7 @@ Finally, we perform a sequence of left joins on the common keys (`State`, `Year`
 
 ```{r}
 #| message: false
-#| echo : false
+#| echo: false
 
 library(dplyr)
 library(here)
@@ -114,6 +114,7 @@ library(vroom)
 library(ggplot2)
 library(tidyr)
 library(stringr)
+library(readr)
 ```
 
 ```{r}
@@ -782,18 +783,105 @@ state_prisonpop_final |>
 
 There are 25 missing values because DC is not included.
 
-#### Alcohol (potentially very difficult to clean)
+#### Alcohol per capita
+
+The following data is provided as a fixed-width text file containing state-level information on gallons of ethanol consumed, population estimates, and per capita consumption for both the 14+ and 21+ age groups.
 
 ```{r}
 #| message: false
 
-state_alcohol <- vroom(here("DATA_alcohol.csv"))
+state_alcohol_raw <- read_lines(here("DATA_alcohol.txt"))
 ```
 
 ```{r}
-
+data_start <- which(str_detect(state_alcohol_raw, "^\\d{4}\\s+\\d+\\s+\\d"))[1]
+data_lines <- state_alcohol_raw[data_start:length(state_alcohol_raw)]
+data_lines <- data_lines[str_length(str_trim(data_lines)) > 0]
 ```
 
+We parse the fixed-width file according to the informations provided in the txt file, by extracting year, state FIPS code, beverage type, and per capita ethanol consumption. 
+
+```{r}
+state_alcohol <- read_fwf(
+  I(data_lines),
+  fwf_cols(
+    Year = c(1, 4),
+    state_code = c(6, 7),
+    beverage_type = c(9, 9),
+    gallons_beverage = c(11, 20),
+    gallons_ethanol = c(22, 30), 
+    pop_14plus = c(32, 40),
+    ethanol_per_capita_14_raw = c(43, 47), # divide per capita gallons by 10,000 to obtain correct value)**
+    decile_14 = c(49, 50),
+    pop_21plus = c(52, 60),
+    ethanol_per_capita_21_raw = c(63, 67), # divide per capita gallons by 10,000 to obtain correct value
+    decile_21 = c(69, 70)
+  ),
+  col_types = cols(.default = "c"),
+  na = c("", ".", "NA")
+)
+```
+
+```{r}
+state_codes <- tibble(
+  state_code = c("1", "2", "4", "5", "6", "8", "9", "10", "11", "12",
+                 "13", "15", "16", "17", "18", "19", "20", "21", "22", "23",
+                 "24", "25", "26", "27", "28", "29", "30", "31", "32", "33",
+                 "34", "35", "36", "37", "38", "39", "40", "41", "42", "44",
+                 "45", "46", "47", "48", "49", "50", "51", "53", "54", "55", "56"),
+  State = c("Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+            "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia",
+            "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
+            "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+            "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
+            "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota",
+            "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+            "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia",
+            "Washington", "West Virginia", "Wisconsin", "Wyoming")
+)
+```
+
+We only keep observations corresponding to beer (beverage type 3) and exclude regional aggregates (Northeast, Midwest, South, West) and national totals.
+
+```{r}
+state_alcohol_clean <- state_alcohol |>
+  filter(as.integer(state_code) < 60) |> # we only keep the states
+  filter(beverage_type == "3") |> # all beveradges
+  mutate(
+    Year = as.integer(Year),
+    state_code = str_trim(state_code),
+    beer_per_capita_14plus = as.numeric(str_trim(ethanol_per_capita_14_raw)) / 10000,
+    pop_14plus = as.numeric(str_trim(pop_14plus)),
+    pop_21plus = as.numeric(str_trim(pop_21plus))
+  ) |>
+  left_join(state_codes, by = "state_code")
+```
+
+We chose to construct the variable `beer_per_capita_14plus` using the gallons of ethanol per capita for age 14 and older, to capture all beer consumption, not only the legal one.
+
+```{r}
+state_alcohol_clean <- state_alcohol_clean |>
+  select(
+    State,
+    Year,
+    beer_per_capita_14plus, 
+    pop_14plus
+  ) |>
+  filter(!is.na(State))
+```
+
+```{r}
+state_alcohol_clean |>
+  summarise(
+    nb_rows = n(),
+    nb_states = n_distinct(State),
+    nb_years = n_distinct(Year),
+    min_year = min(Year),
+    max_year = max(Year),
+    nb_na = sum(is.na(beer_per_capita_14plus))
+  ) |>
+  knitr::kable()
+```
 
 ### Merging
 
@@ -868,7 +956,8 @@ panel_full <- wid_crime |>
   left_join(public_spending_final,   by = c("State", "Year")) |>
   left_join(state_annual_unemployment, by = c("State", "Year")) |>
   left_join(state_prisonpop_final, by = c("State", "Year")) |>
-  left_join(state_poverty, by = c("State", "Year"))
+  left_join(state_poverty, by = c("State", "Year")) |>
+  left_join(state_alcohol_clean, by = c("State", "Year"))
 ```
 
 ```{r}
@@ -908,6 +997,7 @@ Key *explanatory* variables include:
 - **Unemployment rates** per states (1976-2025) (`unemployment_rate`) from the BLS.
 - **Prison population** per states (1980-2022) (`prison_population`).
 - **Poverty rates and number** per states (1980-2023) (`nb_poor`, `Percent in poverty`).
+- **Alcohol consumption** per states (1970-2022), more specifically beer consumption (`beer_per_capita_14plus`).
 
 These variables are then merged into a panel dataset at the state–year level.
 
@@ -964,7 +1054,10 @@ panel_full_final <- panel_full |>
     
     # Poverty
     nb_poor, 
-    percent_poor
+    percent_poor,
+    
+    # Alcohol
+    beer_per_capita_14plus
   )
 ```
 
