@@ -369,19 +369,7 @@ $$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it}
 
 
 
-
-
-
-Model 4 : we add year fixed effects (two-way FE) to control for national trends (e.g., federal policies, economic cycles) that affect all states simultaneously.
-
-$$Crime_{it} = \alpha_i + \delta_t + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
-
-
-
-
-
-
-To look into crime persistence (i.e., the tendency of high-crime states to remain high-crime), we estimate a dynamic panel model including lagged crime rates as an explanatory variable (Model 5).
+To look into crime persistence (i.e., the tendency of high-crime states to remain high-crime), we estimate a dynamic panel model including lagged crime rates as an explanatory variable (Model 4).
 
 $$Crime_{it} = \alpha_i + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 
@@ -393,7 +381,7 @@ panel_reg <- panel_reg |>
   ungroup() |>
   filter(!is.na(crime_lag), log_gdp > 0)
 
-model_dynamic <- plm(
+model_property_4 <- plm(
   Data.Rates.Property.All ~ crime_lag + 
     log_gdp + 
     share_pretax_income_p90p100 +
@@ -406,9 +394,66 @@ model_dynamic <- plm(
   model = "within"
 )
 
-summary(model_dynamic)
+summary(model_property_4)
 ```
 
+The model explains 91,7% ($R^2 = 0.9177$) of the variation in crime rates within states over time. 
+
+
+```{r}
+model_gmm <- pgmm(
+  Data.Rates.Property.All ~ lag(Data.Rates.Property.All, 1) + log_gdp + share_pretax_income_p90p100 | 
+    lag(Data.Rates.Property.All, 2:4),
+  data = panel_reg,
+  index = c("State", "Year"),
+  effect = "individual",
+  model = "onestep"
+)
+
+summary(model_gmm)
+```
+
+We add year fixed effects ($\delta_t$) to control for national trends (e.g., federal policies, economic cycles) that affect all states simultaneously.
+
+$$Crime_{it} = \alpha_i + \delta_t + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+
+```{r}
+# Property
+model_property_5 <- plm(
+  Data.Rates.Property.All ~ crime_lag +
+    log_gdp + # or consumption
+    share_pretax_income_p90p100 +
+    unemployment_rate + # or poverty, depends on the best
+    prison_population +
+    beer_per_capita_14plus +
+    log_pop,
+  data = panel_reg,
+  index = c("State", "Year"),
+  model = "within",
+  effect = "twoways"
+)
+
+summary(model_property_5)
+```
+
+```{r}
+# Violent
+model_violent_5 <- plm(
+  Data.Rates.Violent.All ~ crime_lag +
+    log_gdp + 
+    share_pretax_income_p90p100 +
+    unemployment_rate +
+    prison_population +
+    beer_per_capita_14plus +
+    log_pop,
+  data = panel_reg,
+  index = c("State", "Year"),
+  model = "within",
+  effect = "twoways"
+)
+
+summary(model_violent_5)
+```
 
 
 
@@ -462,6 +507,7 @@ model_violent_2 <- plm(
 
 
 $$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequalities_{it} + \beta_3 \cdot Consumption_{it} + \beta_4 \cdot Unemployment_{it} + \beta_5 \cdot Population_{it} + \epsilon_{it}$$
+
 
 ```{r}
 test_property <- plm(
@@ -670,21 +716,8 @@ hausman_violent <- phtest(
 hausman_violent
 ```
 
-#####Hypothesis : crime inertia ???
 
 
-```{r}
-model_gmm <- pgmm(
-  Data.Rates.Property.All ~ lag(Data.Rates.Property.All, 1) + log_gdp + share_pretax_income_p90p100 | 
-    lag(Data.Rates.Property.All, 2:4),
-  data = panel_reg,
-  index = c("State", "Year"),
-  effect = "individual",
-  model = "onestep"
-)
-
-summary(model_gmm)
-```
 
 
 Our estimates capture associations, not causal effects. Indeed, high crime may reduce GDP or increase prison population, which implies reverse causality. Moreover, there are omitted variables in our work, for instance time-varying factors like policing strategies, population structure and demographic shift may confounf our estimates.
