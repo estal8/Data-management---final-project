@@ -347,19 +347,33 @@ panel_reg <- panel_full_final |>
          log_pop = log(Data.Population))
 ```
 
-First we test for model that suits our data best.
+First we test for the model that best suits our data.
 
-```{r}
-model_pooled <- plm(
-  Data.Rates.Property.All ~ log_gdp_lag + share_pretax_income_p90p100 + 
-    unemployment_lag + prison_lag + beer_lag + log(Data.Population),
-  data = panel_reg,
-  model = "pooling"
-)
-```
+Our baseline model looks like this : 
 
+$$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 
 where $\alpha_i$ denotes state fixed effects. The coefficients are identified from within-state variation over time.
+
+Model 2 : we replace $log(GDP)$ by $Consumption$ to test another measure of economic conditions.
+
+$$Crime_{it} = \alpha_i + \beta_1 \log(Consumption_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+
+Model 3 :  we replace $Unemployment$ by $Poverty rate$ to test another measure of economic difficulties
+
+$$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Poverty_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+
+Model 4 : we add year fixed effects (two-way FE) to control for national trends (e.g., federal policies, economic cycles) that affect all states simultaneously.
+
+$$Crime_{it} = \alpha_i + \delta_t + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+
+Model 5 : we include lagged crime (or at the beginning????)
+
+$$Crime_{it} = \alpha_i + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+
+PROBLEM : reverse causality !!
+
+
 
 First, we examine the relationship between GDP and crime (Model 1). Second, we add income inequality to test whether income concentration is independently associated with crime (Model 2). Third, as a robustness check, we include year fixed effects to control for national trends such as federal policies (Model 3).
 
