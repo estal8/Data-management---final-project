@@ -30,41 +30,31 @@ How do economic conditions, income inequality, immigration flows, public spendin
 
 ## Brief dataset description
 
-We build our panel from nine sources : 
+We build our panel from seven sources:
 
-- Crime rates (FBI/CORGIS, 1960–2019) distinguishing violent and property offences, and state population ;
+-   crime rates (FBI/CORGIS, 1960–2019) distinguishing violent and property offences;
 
-- Income inequality (WID, 1960–2018) providing top income shares by state;
+-   income inequality (WID, 1960–2018) providing top income shares by state;
 
-- GDP and consumption per capita (BEA Regional Accounts, 1998–2023);
+-   GDP (BEA Regional Accounts, 1997–2023);
 
-- Unemployment rate (BLS, 1976-2025);
+-   immigration flows (DHS, 2013–2023) covering legal residents, refugees and asylees;
 
-- Prison population (The Sentencing Project, 1980–2022);
+-   police shootings (Washington Post, 2015–2024);
 
-- Poverty rates (Census Bureau, 1980–2023);
+-   public spending (Census Bureau, 2017–2023) on education, welfare, health, corrections and police;
 
-- Beer consumption per capita (NIAAA, 1970–2022);
-
-- Immigration flows (DHS, 2013–2023) covering legal residents, refugees and asylees;
-
-- Police shootings (Washington Post, 2015–2024);
-
-- Public spending (Census Bureau, 2017–2023) on education, welfare, health, corrections and police;
-
-- Food assistance participation (USDA Food Environment Atlas, 2012-2023).
+-   and food assistance participation (USDA Food Atlas, 2015).
 
 Full descriptions are provided in the data cleaning document (Phase 2).
 
 ## Data analysis
 
-Our empirical analysis is divided into two parts, reflecting the heterogeneous temporal coverage of our sources. 
+Our empirical analysis is divided into two parts, reflecting the heterogeneous temporal coverage of our sources. The crime, inequality (WID), and GDP series provide consistent state-year observations spanning nearly six decades (1960–2018), allowing us to examine long-run associations and temporal dynamics. In contrast, immigration flows (2013–2018), police shootings (2015–2018), public spending (2017–2018) and food access (2012-2023) are only available for recent years.
 
-The crime, inequality, GDP, consumption, unemployment, prison population, poverty, and alcohol series provide consistent state-year observations between 1998-2018. It allows us to examine the structural relationships between economic conditions and crime using fixed effects panel regressions. 
+Rather than discarding these valuable contemporary indicators, we adopt a two-stage approach: we first exploit the full historical depth of our panel to study structural relationships between economic conditions and crime, then narrow the window to 2015–2018 to incorporate additional explanatory factors in a richer, shorter-term analysis.
 
-In contrast, immigration flows (2013–2018), police shootings (2015–2018), public spending (2017–2018) and food access (2012-2023) are only available for recent years. Rather than discarding these valuable contemporary indicators, we adopt a two-stage approach: we first exploit the full historical depth of our panel to study structural relationships between economic conditions and crime, then narrow the window to a shorter period to incorporate additional explanatory factors in a richer, shorter-term analysis.
-
-### **Long-run analysis (1998–2018)**
+## **Part 1. Long-run analysis (1960–2018)**
 
 #### Descriptive analysis
 
@@ -89,7 +79,7 @@ panel_full <- vroom(here("DATA_panel_full.csv"))
 panel_full_final <- vroom(here("DATA_panel_full_final.csv"))
 ```
 
-##### National long-run trends in crime (1960-2018)
+#### 1. National long-run trends in crime (1960-2018)
 
 To establish a benchmark for the subsequent analysis, we first document the long-run evolution of violent and property crime across U.S. states. Figure 1 displays the average crime rate across states together with the 10th–90th percentile range, providing a synthetic view of both aggregate dynamics and cross-state heterogeneity.
 
@@ -143,12 +133,31 @@ ggplot(crime_distribution, aes(x = Year)) +
 
 Both crime categories exhibit a pronounced common time profile, with a strong increase from the 1960s to the late 1980s or early 1990s, followed by a sustained decline.
 
-Despite these shared national trends, cross-state heterogeneity remains large throughout the entire period, as illustrated by the wide percentile bands.
+Despite these shared national trends, cross-state heterogeneity remains large throughout the entire period, as illustrated by the wide percentile bands. Evolution of violent crime and property crime in the US per states.
 
 Property crime displays a particularly strong rise and fall, whereas violent crime peaks later and declines more gradually, suggesting distinct underlying mechanisms. The persistence of substantial dispersion across states indicates that national trends alone cannot account for observed crime dynamics and highlights the relevance of state-specific factors. These descriptive findings motivate the use of panel models with both state and time fixed effects in the subsequent analysis.
 
+```{r}
+#| message: false
 
-##### Evolution of violent crime and property crime in the US per states.
+library(ggplot2)
+library(plm)
+library(dplyr)
+library(tidyverse)
+library(here)
+library(vroom)
+library(modelsummary)
+library(kableExtra)
+```
+
+```{r}
+#| message: false
+
+here::i_am("Data-management---final-project.Rproj")
+panel_full <- vroom(here("DATA_panel_full.csv"))
+```
+
+#### 2.1 Evolution of violent crime and property crime in the US per states.
 
 ```{r}
 crime_by_state <- panel_full |>
@@ -184,7 +193,7 @@ ggplot(crime_by_state, aes(x = Year, y = rate, colour = State)) +
   theme_minimal()
 ```
 
-##### Evolution of violent crime and property crime among high-crime states
+#### 2.2 Evolution of violent crime and property crime among high-crime states
 
 ```{r}
 top_states <- panel_full |>
@@ -230,7 +239,7 @@ ggplot(crime_by_state_top, aes(x = Year, y = rate, colour = State)) +
   theme_minimal()
 ```
 
-##### Descriptive co-movement with economic structure
+#### 3. Descriptive co-movement with economic structure
 
 ```{r}
 #Before imposing a linear model, do crime rates co-move with economic conditions and inequality in the raw data, once we pool state–year observations?
@@ -326,57 +335,22 @@ Violent crime: It displays a more pronounced association with inequality. Crime 
 
 Taken together, the descriptive evidence suggests that crime rates in U.S. states co-evolve with economic conditions and income inequality, but that these relationships are heterogeneous and potentially confounded by persistent state-specific characteristics and common national shocks. To account for these factors and move beyond raw correlations, we now estimate panel regressions with state and year fixed effects, which exploit within-state variation over time while controlling for unobserved heterogeneity.
 
-We test the following hypotheses:
+##### 1.Fixed effects (within)
 
-- **H1 (opportunity cost)** : Higher GDP and lower unemployment are associated with lower crime rates, particularly for property crime.
-- **H2 (inequality)** : Greater income concentration at the top of the distribution is associated with higher crime rates.
-- **H3 (deterrence)** : Larger prison populations are associated with lower crime rates because of incapacitation of criminals.
-- **H4 (alcohol as a criminogenic factor)** : Higher alcohol consumption is associated with higher violent crime rates.
-- **H5 (crime persistence)** : Crime rates exhibit temporal inertia, i.e. past crime is a strong predictor of current crime (it encourages or discourages entry, it owerwhelms law enforcers…).
+We estimate the association between economic conditions, inequality, and crime using fixed effects panel regressions:
 
-We estimate different models for property and violent crime, as property crime is more directly linked to economic incentives (Becker, 1968), while violent crime may be more linked to specific social factors.
-
-##### Fixed effects
-
-```{r}
-panel_reg <- panel_full_final |>
-  filter(Year >= 1998 & Year <= 2018) |>
-  filter(!is.na(gdp), !is.na(Data.Rates.Violent.All), 
-         !is.na(Data.Rates.Property.All), !is.na(share_pretax_income_p90p100), !is.na(Consumption), !is.na(unemployment_rate), !is.na(Data.Population)) |>
-  mutate(log_gdp = log(gdp), 
-         log_pop = log(Data.Population))
-```
-
-First we test for the model that best suits our data.
-
-Our baseline model looks like this : 
-
-$$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+$$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequalities_{it} + \epsilon_{it}$$
 
 where $\alpha_i$ denotes state fixed effects. The coefficients are identified from within-state variation over time.
 
-Model 2 : we replace $log(GDP)$ by $Consumption$ to test another measure of economic conditions.
+First, we examine the bivariate relationship between GDP and crime (Model 1). Second, we add income inequality to test whether income concentration is independently associated with crime (Model 2). Third, as a robustness check, we include year fixed effects to control for national trends such as federal policies (Model 3).
 
-$$Crime_{it} = \alpha_i + \beta_1 \log(Consumption_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
-
-Model 3 :  we replace $Unemployment$ by $Poverty rate$ to test another measure of economic difficulties
-
-$$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Poverty_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
-
-Model 4 : we add year fixed effects (two-way FE) to control for national trends (e.g., federal policies, economic cycles) that affect all states simultaneously.
-
-$$Crime_{it} = \alpha_i + \delta_t + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
-
-Model 5 : we include lagged crime (or at the beginning????)
-
-$$Crime_{it} = \alpha_i + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
-
-PROBLEM : reverse causality !!
-
-
-
-First, we examine the relationship between GDP and crime (Model 1). Second, we add income inequality to test whether income concentration is independently associated with crime (Model 2). Third, as a robustness check, we include year fixed effects to control for national trends such as federal policies (Model 3).
-
+```{r}
+panel_reg <- panel_full |>
+  filter(!is.na(gdp), !is.na(Data.Rates.Violent.All), 
+         !is.na(Data.Rates.Property.All), !is.na(share_pretax_income_p90p100)) |>
+  mutate(log_gdp = log(gdp))
+```
 
 We first examine the relationship between GDP and violent / property crime rates. Economic theory suggests that GDP should be a stronger predictor of property crime (primarily motivated by financial need) than of violent crime, which is driven by more complex social and psychological factors (Becker, 1968).
 
@@ -398,7 +372,15 @@ model_violent_1 <- plm(
 
 **ATTENTION : remember to delete all of these summaries, it's just so that we can see the results quicker for now !**
 
-The panel regression results reveal a contrast between the two types of crime, that we had initially planned.
+```{r}
+summary(model_property_1) 
+```
+
+```{r}
+summary(model_violent_1)
+```
+
+The panel regression results reveal a contrast between the two types of crime, that we had planned.
 
 For property crime, GDP explains approximately 69% of the within-state variation (R² = 0.69), which is consistent with economic theories on crime suggesting that property offences are motivated by financial need (Becker, 1968).
 
@@ -422,91 +404,13 @@ model_violent_2 <- plm(
 )
 ```
 
-
-$$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequalities_{it} + \beta_3 \cdot Consumption_{it} + \beta_4 \cdot Unemployment_{it} + \beta_5 \cdot Population_{it} + \epsilon_{it}$$
-
 ```{r}
-test_property <- plm(
-  Data.Rates.Property.All ~ log_gdp +
-    share_pretax_income_p90p100 +
-    Consumption +
-    unemployment_rate + 
-    Data.Population,
-  data  = panel_reg,
-  index = c("State", "Year"),
-  model = "within"
-)
+summary(model_property_2)
 ```
 
 ```{r}
-test_violent <- plm(
-  Data.Rates.Violent.All ~ log_gdp +
-    share_pretax_income_p90p100 +
-    Consumption +
-    unemployment_rate + 
-    Data.Population,
-  data  = panel_reg,
-  index = c("State", "Year"),
-  model = "within"
-)
+summary(model_violent_2)
 ```
-
-```{r}
-summary(test_violent)
-```
-
-```{r}
-test_property_2 <- plm(
-  Data.Rates.Property.All ~ log_gdp +
-    share_pretax_income_p90p100 +
-    Consumption +
-    unemployment_rate + 
-    Data.Population,
-  data  = panel_reg,
-  index = c("State", "Year"),
-  model = "within",
-  effect = "twoways"
-)
-```
-
-```{r}
-summary(test_property_2)
-```
-
-```{r}
-test_violent_2 <- plm(
-  Data.Rates.Violent.All ~ log_gdp +
-    share_pretax_income_p90p100 +
-    Consumption +
-    unemployment_rate + 
-    Data.Population,
-  data  = panel_reg,
-  index = c("State", "Year"),
-  model = "within",
-  effect = "twoways"
-)
-```
-
-```{r}
-summary(test_violent_2)
-```
-
-```{r}
-modelsummary(
-  list(
-    "Model 1" = test_property,
-    "Model 2" = test_property_2,
-    "Model 3" = test_violent,
-    "Model 4" = test_violent_2
-  ),
-  title = "Property crime: Panel regression results",
-  stars = TRUE,
-  gof_omit = "IC|Log|RMSE",
-  output = "kableExtra"
-) |>
-  kable_styling(latex_options = "HOLD_position")
-```
-
 
 Finally, we add year fixed effects to control for national trends (e.g., federal policies, economic cycles) that affect all states simultaneously.
 
@@ -574,7 +478,7 @@ modelsummary(
 
 For violent crime (Table 2), the results confirm our theoretical expectations: GDP has a weaker association ($β ≈ -100$, $R² = 0.15$), and inequality is only marginally significant ($p < 0.10$). Economic factors alone cannot explain violent crime patterns.
 
-##### Between model
+##### 2.Between model
 
 ```{r}
 model_between <- plm(
@@ -589,7 +493,7 @@ model_between <- plm(
 summary(model_between)
 ```
 
-##### Random model
+##### 3.Random model
 
 ```{r}
 model_random_property <- plm(
@@ -612,7 +516,7 @@ summary(model_random_property)
 summary(model_random_violent)
 ```
 
-##### Test de Hausman
+##### 4.Test de Hausman
 
 ```{r}
 hausman_property <- phtest(
@@ -631,8 +535,7 @@ hausman_violent <- phtest(
 
 hausman_violent
 ```
-
-Hypothesis : crime inertia ???
+#### Hypothesis : crime inertia ???
 
 To look into crime persistence (i.e., the tendency of high-crime states to remain high-crime), we estimate a dynamic panel model including lagged crime rates as an explanatory variable.
 
@@ -668,15 +571,11 @@ model_gmm <- pgmm(
 summary(model_gmm)
 ```
 
+## **Part 2. Short-run analysis (2015–2018) - Contemporary correlates of crime**
 
-Our estimates capture associations, not causal effects. Indeed, high crime may reduce GDP or increase prison population, which implies reverse causality. Moreover, there are omitted variables in our work, for instance time-varying factors like policing strategies, population structure and demographic shift may confounf our estimates.
+### Descriptive analysis
 
-
-### **Short-run analysis (2015–2018) - Contemporary correlates of crime**
-
-#### Descriptive analysis
-
-##### Descriptive overview of crime and new covariates
+#### 1. Descriptive overview of crime and new covariates
 
 Summary statistics :
 
@@ -767,7 +666,7 @@ summary_recent |>
   kableExtra::kable_styling(latex_options = "HOLD_position")
 ```
 
-##### Contemporary heterogeneity and structural correlates (2015–2018)
+#### 2. Contemporary heterogeneity and structural correlates (2015–2018)
 
 ```{r}
 panel_recent <- panel_full |>
@@ -870,7 +769,79 @@ property_quartiles_tbl |>
   kableExtra::kable_styling(latex_options = "HOLD_position")
 ```
 
-#### Regression analysis
+### Regression analysis
+
+In contrast to the long-run analysis, the short-run period (2015–2018) offers limited time variation and a smaller effective sample size. As a result, the objective of this section is not to establish causal relationships, but to document conditional associations between crime and a small set of contemporaneous socio-economic variables that are frequently discussed in the recent literature.
+
+```{r}
+panel_recent <- panel_full |>
+  filter(Year >= 2015, Year <= 2018) |>
+  mutate(log_gdp = log(gdp)) |>
+  filter(!is.na(log_gdp),
+         !is.na(share_pretax_income_p90p100))
+```
+
+```{r}
+m2_property_base <- plm(
+  Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100,
+  data   = panel_recent,
+  index  = c("State", "Year"),
+  model  = "within",
+  effect = "twoways"   # state FE + year FE
+)
+```
+
+```{r}
+m2_violent_base <- plm(
+  Data.Rates.Violent.All ~ log_gdp + share_pretax_income_p90p100,
+  data   = panel_recent,
+  index  = c("State", "Year"),
+  model  = "within",
+  effect = "twoways"
+)
+```
+
+```{r}
+m2_property_police <- plm(
+  Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + nb_police_shootings,
+  data   = panel_recent |> filter(!is.na(nb_police_shootings)),
+  index  = c("State", "Year"),
+  model  = "within",
+  effect = "twoways"
+)
+```
+
+```{r}
+m2_property_imm <- plm(
+  Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + lpr_total,
+  data   = panel_recent |> filter(!is.na(lpr_total)),
+  index  = c("State", "Year"),
+  model  = "within",
+  effect = "twoways"
+)
+```
+
+```{r}
+m2_violent_police <- plm(
+  Data.Rates.Violent.All ~ log_gdp + share_pretax_income_p90p100 + nb_police_shootings,
+  data   = panel_recent |> filter(!is.na(nb_police_shootings)),
+  index  = c("State", "Year"),
+  model  = "within",
+  effect = "twoways"
+)
+```
+
+```{r}
+m2_violent_imm <- plm(
+  Data.Rates.Violent.All ~ log_gdp + share_pretax_income_p90p100 + lpr_total,
+  data   = panel_recent |> filter(!is.na(lpr_total)),
+  index  = c("State", "Year"),
+  model  = "within",
+  effect = "twoways"
+)
+```
+
+
 
 ## Conclusion and limitations
 
