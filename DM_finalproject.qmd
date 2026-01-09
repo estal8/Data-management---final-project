@@ -146,6 +146,7 @@ crime |>
 ```
 There are no missing values.
 
+
 #### The WID database
 
 First, we must join all 51 states bases of the WID. To do so, we are going to create a list with all the files' names to avoid having to manually download all of them.
@@ -468,6 +469,7 @@ food_variables <- vroom(here("FOOD ACCESS", "DATA_foodenvi-variables.csv")) # th
 
 ```{r}
 food_data_num <- food_data |>
+  drop_na() |> # the NA are full lines
   dplyr::mutate(
     dplyr::across(
       -c(StateFIPS, State),  
@@ -475,6 +477,7 @@ food_data_num <- food_data |>
     )
   )
 ```
+
 We convert all quantitative columns stored as character strings into numeric values using parse_number, leaving only the state identifiers as text.
 
 ```{r}
@@ -539,7 +542,8 @@ state_gdp |>
     nb_rows   = n(),
     nb_states = n_distinct(State),
     min_year  = min(Year),
-    max_year  = max(Year)
+    max_year  = max(Year),
+    nb_na_gdp = sum(is.na(gdp)),
   ) |>
   knitr::kable()
 ```
@@ -580,7 +584,8 @@ state_consumption |>
     nb_rows   = n(),
     nb_states = n_distinct(State),
     min_year  = min(Year),
-    max_year  = max(Year)
+    max_year  = max(Year),
+    nb_na_consumption = sum(is.na(Consumption)),
   ) |>
   knitr::kable()
 ```
@@ -589,7 +594,7 @@ state_consumption |>
 
 ```{r}
 #| message: false 
-state_unemployment_raw <- vroom(here("DATA_unemployment_BLS.csv"))
+state_unemployment_raw <- vroom(here("DATA_unemployment_BLS.csv"), na = c("-", "–", "NA"))
 ```
 
 ```{r}
@@ -619,7 +624,8 @@ colnames(state_unemployment) <- c(
 state_unemployment <- state_unemployment |>
   mutate(
     State = state,
-    Year = as.integer(year),
+    Year = as.character(year),
+    Year = as.integer(Year),
     month = as.integer(month),
     unemployment_rate = as.numeric(unemployment_rate) / 10 # the comma was removed
   )
@@ -686,8 +692,12 @@ Since the population is expressed in thousands :
 ```{r}
 state_poverty <- state_poverty |>
   mutate(
+    Year = as.integer(Year),
     nb_poor = str_replace_all(`Number in poverty`, "[^0-9.]", ""),
-    nb_poor = as.numeric(nb_poor) * 1000
+    nb_poor = as.numeric(nb_poor) * 1000,
+    percent_poor = str_replace_all(`Percent in poverty`, " ", ""),
+    percent_poor = str_replace_all(percent_poor, ",", "."),
+    percent_poor = as.numeric(percent_poor)
     )
 ```
 
@@ -699,7 +709,7 @@ state_poverty |>
     min_year   = min(Year, na.rm = TRUE),
     max_year   = max(Year, na.rm = TRUE),
     nb_na_nb_poor = sum(is.na(nb_poor)),
-    nb_na_percentage_poor = sum(is.na(`Percent in poverty`))
+    nb_na_percent_poor = sum(is.na(percent_poor))
   ) |>
   knitr::kable()
 ```
@@ -714,7 +724,7 @@ The missing values seem to be linked to the last lines of the table.
 
 ```{r}
 state_poverty <- state_poverty |>
-  filter(!is.na(nb_poor))
+  filter(!is.na(nb_poor)) 
 ```
 
 #### Prison population
@@ -722,7 +732,9 @@ state_poverty <- state_poverty |>
 ```{r}
 #| message: false
 
-state_prisonpop <- vroom(here("DATA_prisonpopulation.csv"))
+state_prisonpop <- vroom(here("DATA_prisonpopulation.csv"),
+                         col_types = cols(.default = "c")
+                         )
 ```
 
 ```{r}
@@ -731,13 +743,44 @@ state_prisonpop <- state_prisonpop |>
 ```
 
 ```{r}
-new_names <- as.character(state_prisonpop[1, ]) # Column Year is named NA
+new_names <- as.character(state_prisonpop[1, ]) 
 colnames(state_prisonpop) <- new_names
 state_prisonpop <- state_prisonpop[-1, ]
+colnames(state_prisonpop)[1] <- "Year" # Column Year is named NA
 ```
 
+```{r}
+state_prisonpop_final <- state_prisonpop |>
+  mutate(across(everything(), ~ na_if(., "-")),
+         Year = as.integer(Year),
+         across(-Year, ~ str_remove_all(., " "))
+         ) |> # The NA are encoded as "-"
+  filter(Year >= 1998) 
+```
 
+```{r}
+state_prisonpop_final <- state_prisonpop_final |>
+  select(-`U.S. Total`, -Federal) |>
+  pivot_longer(
+    cols = -Year,
+    names_to = "State",
+    values_to = "prison_population"
+  )
+```
 
+```{r}
+state_prisonpop_final |>
+  summarise(
+    nb_rows    = n(),
+    nb_states  = n_distinct(State),
+    min_year   = min(Year, na.rm = TRUE),
+    max_year   = max(Year, na.rm = TRUE),
+    nb_na_prison_population = sum(is.na(prison_population)),
+  ) |>
+  knitr::kable()
+```
+
+There are 25 missing values because DC is not included.
 
 #### Alcohol (potentially very difficult to clean)
 
@@ -823,7 +866,9 @@ panel_full <- wid_crime |>
   left_join(state_gdp,               by = c("State", "Year")) |>
   left_join(state_consumption,       by = c("State", "Year")) |>
   left_join(public_spending_final,   by = c("State", "Year")) |>
-  left_join(state_annual_unemployment, by = c("State", "Year"))
+  left_join(state_annual_unemployment, by = c("State", "Year")) |>
+  left_join(state_prisonpop_final, by = c("State", "Year")) |>
+  left_join(state_poverty, by = c("State", "Year"))
 ```
 
 ```{r}
@@ -861,6 +906,8 @@ Key *explanatory* variables include:
 - **Food assistance participation** (`wic_2015`, `nslp_2015`, `sbp_2015`) from the Food Environment Atlas, as proxies for food insecurity and social protection.
 - **Police shootings** (`nb_police_shootings`, `nb_unarmed`, `nb_gun`, `nb_body_camera`), summarising the number and characteristics of fatal police shootings in each state–year.
 - **Unemployment rates** per states (1976-2025) (`unemployment_rate`) from the BLS.
+- **Prison population** per states (1980-2022) (`prison_population`).
+- **Poverty rates and number** per states (1980-2023) (`nb_poor`, `Percent in poverty`).
 
 These variables are then merged into a panel dataset at the state–year level.
 
@@ -910,7 +957,14 @@ panel_full_final <- panel_full |>
     # Food programs
     wic_2015,
     nslp_2015,
-    sbp_2015
+    sbp_2015,
+    
+    # Prison
+    `prison_population`,
+    
+    # Poverty
+    nb_poor, 
+    percent_poor
   )
 ```
 
