@@ -634,6 +634,18 @@ state_annual_unemployment <- state_unemployment |>
   )
 ```
 
+```{r}
+state_annual_unemployment |>
+  summarise(
+    nb_rows    = n(),
+    nb_states  = n_distinct(State),
+    min_year   = min(Year, na.rm = TRUE),
+    max_year   = max(Year, na.rm = TRUE),
+    nb_na = sum(is.na(unemployment_rate))
+  ) |>
+  knitr::kable()
+```
+
 #### Poverty
 
 ```{r}
@@ -671,6 +683,31 @@ state_poverty <- state_poverty |>
     nb_poor = str_replace_all(`Number in poverty`, "[^0-9.]", ""),
     nb_poor = as.numeric(nb_poor) * 1000
     )
+```
+
+```{r}
+state_poverty |>
+  summarise(
+    nb_rows    = n(),
+    nb_states  = n_distinct(State),
+    min_year   = min(Year, na.rm = TRUE),
+    max_year   = max(Year, na.rm = TRUE),
+    nb_na_nb_poor = sum(is.na(nb_poor)),
+    nb_na_percentage_poor = sum(is.na(`Percent in poverty`))
+  ) |>
+  knitr::kable()
+```
+
+```{r}
+state_poverty |>
+  filter(is.na(nb_poor))
+```
+
+The missing values seem to be linked to the last lines of the table.
+
+```{r}
+state_poverty <- state_poverty |>
+  filter(!is.na(nb_poor))
 ```
 
 #### Prison population
