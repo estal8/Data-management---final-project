@@ -700,7 +700,8 @@ state_poverty |>
 
 ```{r}
 state_poverty |>
-  filter(is.na(nb_poor))
+  filter(is.na(nb_poor)) |>
+  knitr::kable()
 ```
 
 The missing values seem to be linked to the last lines of the table.
@@ -718,6 +719,19 @@ state_poverty <- state_poverty |>
 state_prisonpop <- vroom(here("DATA_prisonpopulation.csv"))
 ```
 
+```{r}
+state_prisonpop <- state_prisonpop |>
+  slice(-(1)) # to remove title lines
+```
+
+```{r}
+new_names <- as.character(state_prisonpop[1, ]) # Column Year is named NA
+colnames(state_prisonpop) <- new_names
+state_prisonpop <- state_prisonpop[-1, ]
+```
+
+
+
 
 #### Alcohol (potentially very difficult to clean)
 
@@ -727,6 +741,9 @@ state_prisonpop <- vroom(here("DATA_prisonpopulation.csv"))
 state_alcohol <- vroom(here("DATA_alcohol.csv"))
 ```
 
+```{r}
+
+```
 
 
 ### Merging
