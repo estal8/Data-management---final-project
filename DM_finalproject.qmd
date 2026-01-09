@@ -754,7 +754,7 @@ colnames(state_prisonpop)[1] <- "Year" # Column Year is named NA
 state_prisonpop_final <- state_prisonpop |>
   mutate(across(everything(), ~ na_if(., "-")),
          Year = as.integer(Year),
-         across(-Year, ~ str_remove_all(., " "))
+         across(-Year, ~ str_remove_all(., " ")),
          ) |> # The NA are encoded as "-"
   filter(Year >= 1998) 
 ```
@@ -767,6 +767,13 @@ state_prisonpop_final <- state_prisonpop_final |>
     names_to = "State",
     values_to = "prison_population"
   )
+```
+
+```{r}
+state_prisonpop_final <- state_prisonpop_final |>
+  mutate(prison_population = str_replace_all(prison_population, "[^0-9.-]", ""),
+         prison_population = as.numeric(prison_population)
+         )
 ```
 
 ```{r}
