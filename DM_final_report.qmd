@@ -326,6 +326,8 @@ Violent crime: It displays a more pronounced association with inequality. Crime 
 
 Taken together, the descriptive evidence suggests that crime rates in U.S. states co-evolve with economic conditions and income inequality, but that these relationships are heterogeneous and potentially confounded by persistent state-specific characteristics and common national shocks. To account for these factors and move beyond raw correlations, we now estimate panel regressions with state and year fixed effects, which exploit within-state variation over time while controlling for unobserved heterogeneity.
 
+##### Hypotheses
+
 We test the following hypotheses:
 
 - **H1 (opportunity cost)** : Higher GDP and lower unemployment are associated with lower crime rates, particularly for property crime.
@@ -336,7 +338,7 @@ We test the following hypotheses:
 
 We estimate different models for property and violent crime, as property crime is more directly linked to economic incentives (Becker, 1968), while violent crime may be more linked to specific social factors.
 
-##### Fixed effects
+##### Fixed effects 
 
 ```{r}
 panel_reg <- panel_full_final |>
