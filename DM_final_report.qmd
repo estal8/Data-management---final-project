@@ -343,6 +343,7 @@ We estimate different models for property and violent crime, as property crime i
 ```{r}
 panel_reg <- panel_full_final |>
   filter(Year >= 1998 & Year <= 2018) |>
+  filter(State != "District of Columbia") |>
   filter(!is.na(gdp), !is.na(Data.Rates.Violent.All), 
          !is.na(Data.Rates.Property.All), !is.na(share_pretax_income_p90p100), !is.na(Consumption), !is.na(unemployment_rate), !is.na(Data.Population)) |>
   mutate(log_gdp = log(gdp), 
@@ -354,16 +355,18 @@ First we test for the model that best suits our data.
 Our baseline model looks like this : 
 
 $$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
-
-where $\alpha_i$ denotes state fixed effects. The coefficients are identified from within-state variation over time.
+where $\alpha_i$ denotes state fixed effects. The coefficients are identified from within-state variation over time. 
 
 Model 2 : we replace $log(GDP)$ by $Consumption$ to test another measure of economic conditions.
 
 $$Crime_{it} = \alpha_i + \beta_1 \log(Consumption_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 
+
+
 Model 3 :  we replace $Unemployment$ by $Poverty rate$ to test another measure of economic difficulties
 
 $$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Poverty_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+
 
 
 
@@ -386,15 +389,18 @@ $$Crime_{it} = \alpha_i + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + 
 panel_reg <- panel_reg |>
   group_by(State) |>
   arrange(Year) |>
-  mutate(crime_lag = lag(Data.Rates.Property.All, 1)) |>
-  ungroup()
+  mutate(crime_lag = lag(Data.Rates.Property.All)) |>
+  ungroup() |>
+  filter(!is.na(crime_lag), log_gdp > 0)
 
 model_dynamic <- plm(
   Data.Rates.Property.All ~ crime_lag + 
     log_gdp + 
     share_pretax_income_p90p100 +
     unemployment_rate +
-    prison_,
+    prison_population +
+    beer_per_capita_14plus +
+    log_pop,
   data = panel_reg |> filter(!is.na(crime_lag)),
   index = c("State", "Year"),
   model = "within"
