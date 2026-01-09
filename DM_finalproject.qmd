@@ -574,11 +574,17 @@ state_consumption <- state_income |>
   dplyr::mutate(
     Year = as.integer(Year),
   
-    gdp  = readr::parse_number(Consumption),
+    Consumption  = readr::parse_number(Consumption),
     State = GeoName
   ) |>
   dplyr::select(State, Year, Consumption) |>
   dplyr::filter(!is.na(Year), !is.na(Consumption))
+
+state_consumption <- state_consumption |>
+  mutate(Consumption = str_replace_all(Consumption, "[^0-9.-]", ""), 
+         Consumption = str_replace_all(Consumption, ",", "."),
+         Consumption = as.numeric(Consumption)
+         )
 
 state_consumption |>
   summarise(
@@ -590,6 +596,9 @@ state_consumption |>
   ) |>
   knitr::kable()
 ```
+
+
+
 
 #### Unemployment 
 
@@ -1104,4 +1113,5 @@ ggplot(crime_trends, aes(x = Year, y = rate, colour = type)) +
   ) +
   theme_minimal()
 ```
+
 
