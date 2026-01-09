@@ -653,8 +653,25 @@ colnames(state_poverty) <- new_names
 state_poverty <- state_poverty[-1, ]
 ```
 
+```{r}
+state_poverty <- state_poverty |>
+  select(State, `Number in poverty`, `Percent in poverty`) |>
+  slice(-(1:51)) |> # making sure the first line begins with a year
+  mutate(Year = ifelse(str_detect(State, "^\\d{4}"), str_extract(State, "^\\d{4}"), NA)) |>
+  fill(Year) |>
+  filter(!str_detect(State, "^\\d{4}") & !str_detect(State, "^State$")) |>
+  distinct(State, Year, .keep_all = TRUE)
+```
+
 Since the population is expressed in thousands : 
-Bad excel file structure, difficult
+
+```{r}
+state_poverty <- state_poverty |>
+  mutate(
+    nb_poor = str_replace_all(`Number in poverty`, "[^0-9.]", ""),
+    nb_poor = as.numeric(nb_poor) * 1000
+    )
+```
 
 #### Prison population
 
