@@ -880,13 +880,21 @@ modelsummary(
   kable_styling(latex_options = "HOLD_position")
 ```
 
-The panel regression results reveal a contrast between the two types of crime, that we had initially planned.
+The first three models fail to significantly predict violent crime rates as they explain only about 31% of within-state variation (R² = 0.31), which is substantially less than for property crime ($R^2 ≈ 0.76$). This might indicate that violent offences are driven by factors beyond economic conditions alone. 
 
-For property crime, our variables explains approximately 76% of the within-state variation (R² = 0.76), which is consistent with economic theories on crime, suggesting for instance that property offences are motivated by financial need (Becker, 1968), that unemployment and alcohol consumption also increase crime rates (retrouver les articles lus là-dessus).
+Unlike property crime, `log_gdp` shows no significant correlation with violent crime. Personal consumption is also non-significant. These findings imply that violent crimes are less motivated by economic need than property crimes, and might be more likely to be driven by conflicts or social disorganization.
 
-As for violent crime, our variables fails to significantly predict violent crime rates (R² = 0.31), indicating that violent offences are driven by factors beyond economic conditions alone.
+Interestingly, unemployment rate is significantly and negatively correlated with violent crime in Models 1-4 ($p < 0.001$). This could capture omitted variable bias.
 
-Our estimates capture associations, not causal effects. Indeed, high crime may reduce GDP or increase prison population, which implies reverse causality. Moreover, there are omitted variables in our work, for instance time-varying factors like policing strategies, population structure and demographic shift may confounf our estimates.
+The top 10% income share is not significantly correlated with violent crime ($p > 0.05$ in all models), contrary to theoretical predictions linking inequality to social tension and violence.
+
+Prison population per 100,000 inhabitants shows a small but positive and significant correlation with violent crime ($β ≈ 3.2 $, $p < 0.05$ in Models 1-3). This might not imply that incarceration fail to decrease crime, but could reveal reverse causality issues, as states with higher violent crime rates incarcerate more people.
+
+As for beer consumption, it is again strongly and positively correlated with violent crime.
+
+It's interesting to notice that adding lagged crime dramatically improves the models' fit ($R^2 ≈ 0.8$ in model 4 and 5). The crime persistence coefficient is large and highly significant ($θ = 0.833$). It indicates that violent crime exhibits even stronger inertia than property crime. Indeed, holding other factors constant, a state with 100 more violent crimes per 100 000 the past year will have 83 more violent crime the following year. But in these models, almost all variables that previously were significant lose their significance. This might indicate that their effect was linked to crime inertia. In the two-way fixed effect model (Model 5), only poverty remains slightly significant aside from lagged crime, but it has a negative coefficient.
+
+Our estimates capture associations, not causal effects. Indeed, high crime may reduce GDP or increase prison population, which implies reverse causality. Moreover, there are omitted variables in our work, for instance time-varying factors like policing strategies, population structure and demographic shift may confound our estimates.
 
 ### **Short-run analysis (2015–2018) - Contemporary correlates of crime**
 
