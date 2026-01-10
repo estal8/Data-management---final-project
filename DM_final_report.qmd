@@ -79,6 +79,7 @@ library(here)
 library(vroom)
 library(car)
 library(modelsummary)
+library(sandwich)
 library(kableExtra)
 library(lmtest)
 ```
@@ -117,10 +118,11 @@ crime_distribution <- panel_long |>
     values_to = "value"
   ) |>
   mutate(
-    type = recode(type,
-                  violent = "Violent crime",
-                  property = "Property crime")
-  ) |>
+    type = dplyr::recode(
+    type,
+    violent  = "Violent crime",
+    property = "Property crime")
+    ) |>
   pivot_wider(names_from = stat, values_from = value)
 ```
 
@@ -251,11 +253,11 @@ crime_gdp <- panel_long |>
     values_to = "crime"
   ) |>
   mutate(
-    type = recode(type,
-      property = "Property crime",
-      violent  = "Violent crime"
+    type = dplyr::recode(
+    type,
+    violent  = "Violent crime",
+    property = "Property crime")
     )
-  )
 ```
 
 ```{r}
@@ -295,11 +297,11 @@ crime_ineq <- panel_long |>
     values_to = "crime"
   ) |>
   mutate(
-    type = recode(type,
-      property = "Property crime",
-      violent  = "Violent crime"
+    type = dplyr::recode(
+    type,
+    violent  = "Violent crime",
+    property = "Property crime")
     )
-  )
 ```
 
 ```{r}
@@ -376,6 +378,8 @@ model_re <- plm(
 )
 ```
 
+The first question is whether state-level heterogeneity exists. We test this using two complementary approaches.
+
 ```{r} 
 # F-test (pooled vs fixed effects)
 f_test <- pFtest(model_fe, model_pooled)
@@ -384,11 +388,27 @@ print(f_test)
 # Breusch-Pagan LM (pooled vs random affects)
 bp_test <- plmtest(model_pooled, type = "bp")
 print(bp_test)
+```
 
+The F-test compares the fixed effects model against pooled OLS. The null hypothesis is that all state fixed effects are jointly equal to zero ($H_0 = \alpha_{1} = … = \alpha_{2}$). We obtain $F=148.9$ with $p<0.001$.
+Thus, the F-test strongly rejects the null hypothesis that state fixed effects are jointly zero, indicating that pooled OLS is inappropriate. 
+
+The Breusch-Pagan Lagrange Multiplier test provides a complementary check. It tests whether the variance of individual effects is zero ($H_0: \sigma^2_\alpha = 0$). We obtain $\chi^2 = 3047.7$ with $p<0.001$, which allows us to reject the null hypothesis.
+
+These tests confirm that individual effects are present and statistically significant. Having established that, we still have to choose between random effects and fixed effects. To do so, we use the Hausman test : 
+
+```{r}
 #Hausman (fixed vs random effects)
 hausman_test <- phtest(model_fe, model_re)
 print(hausman_test)
+```
 
+Under $H_0$, both fixed effects and random effects are consistent, but random effects is more efficient; under $H_1$, only fixed effects is consistent.
+We obtain $\chi^2 = 595.9$ with $p<0.001$, so we reject $H_0$. This indicates that state-specific effects are correlated with our explanatory variables (GDP, inequality, etc.), which makes sense since wealthier states likely have different unobserved characteristics than poorer states.
+
+Next, we test for autocorrelation and heteroscedasticity. Because of the nature of crime according to our hypothesis (persistence), and of our explanatory variables (GDP, inequalities, prison population, etc change slowly over time), we may expect serial correlation. Moreover, heteroscedasticity is also plausible given the variation in state size and crime levels. Smaller states might experience more volatility in their crime rates because small absolute changes translate into large percentage changes.
+
+```{r}
 # Autocorrelation test (Breusch-Godfrey)
 bg_test <- pbgtest(model_fe, order = 1)
 print(bg_test)
@@ -396,7 +416,13 @@ print(bg_test)
 # Heteroscedasticity test (Breusch-Pagan)
 bp_hetero <- bptest(model_fe)
 print(bp_hetero)
+```
 
+The specification tests reveal two issues, serial correlation and heteroscedasticity. 
+
+Finally, we test for multicolinearity, using Variance Inflation Factors (VIF).
+
+```{r}
 model_ols <- lm(
   Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + 
     unemployment_rate + prison_population + beer_per_capita_14plus,
@@ -404,6 +430,8 @@ model_ols <- lm(
 )
 vif(model_ols)
 ```
+
+All VIF values are below 5, the conventional threshold for concern, so our explanatory variables are sufficiently independent.
 
 ```{r}
 tests_summary <- tibble(
@@ -431,18 +459,9 @@ tests_summary |>
   knitr::kable(booktabs = TRUE, caption = "Model specification tests")
 ```
 
-The first question is whether state-level heterogeneity exists. We test this using two complementary approaches.The F-test compares the fixed effects model against pooled OLS. The null hypothesis is that all state fixed effects are jointly equal to zero ($H_0 = \alpha_{1} = … = \alpha_{2}$). We obtain $F=148.9$ with $p<0.001$.
-Thus, the F-test strongly rejects the null hypothesis that state fixed effects are jointly zero, indicating that pooled OLS is inappropriate. 
-
-The Breusch-Pagan Lagrange Multiplier test provides a complementary check. It tests whether the variance of individual effects is zero ($H_0: \sigma^2_\alpha = 0$). We obtain $\chi^2 = 3047.7$ with $p<0.001$, which allows us to reject the null hypothesis.
-
-These tests confirm that individual effects are present and statistically significant. Having established that, we still have to choose between random effects and fixed effects. To do so, we use the Hausman test : under $H_0$, both fixed effects and random effects are consistent, but random effects is more efficient; under $H_1$, only fixed effects is consistent.
-We obtain $\chi^2 = 595.9$ with $p<0.001$, so we reject $H_0$. This indicates that state-specific effects are correlated with our explanatory variables (GDP, inequality, etc.), which makes sense since wealthier states likely have different unobserved characteristics than poorer states.
-
-Next, we test for autocorrelation and heteroscedasticity. 
-
-
 ##### Models with fixed effects
+
+Our objective is to document robust correlations between socio-economic variables and crime rates, not to establish causal effects. Considering our tests conclusions, we employ fixed effects panel regressions to control for time-invariant state characteristics. 
 
 **Faire une annonce de plan résumant tous les modèles**
 
