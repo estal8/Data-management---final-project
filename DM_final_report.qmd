@@ -622,7 +622,20 @@ We estimate five panel specifications with state fixed effects to assess the rob
 
 Model 1 (Baseline) includes log GDP, income inequality, unemployment rate, prison population per capita, beer consumption, and log population. This specification tests the baseline correlations between economic conditions and crime.
 
-$$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$ where $\alpha_i$ denotes state fixed effects. The coefficients are identified from within-state variation over time.
+$$
+\begin{aligned}
+Crime_{it} =\ & \alpha_i 
++ \beta_1 \log(GDP_{it}) 
++ \beta_2 \cdot Inequality_{it} \\
+& + \beta_3 \cdot Unemployment_{it} 
++ \beta_4 \cdot Prison_{it} \\
+& + \gamma_1 \cdot Beer_{it} 
++ \gamma_2 \cdot \log(Pop_{it}) 
++ \epsilon_{it}
+\end{aligned}
+$$
+
+where $\alpha_i$ denotes state fixed effects. The coefficients are identified from within-state variation over time.
 
 We measure inequalities by using the share of pre-tax income accruing to the top 10% of the distribution, as provided by the World Inequality Database. A higher share indicates greater income concentration at the top, which could be associated with increased social tension and crime rates (Fajnzylber, Lederman, and Loayza, 2002).
 
@@ -660,7 +673,18 @@ model_violent_1 <- plm(
 
 Model 2 (Consumption) replaces $log(GDP)$ by $Consumption$. While GDP measures the size of the state economy, per capita consumption better captures household living standards. Comparing the two allows us to assess which dimension of economic conditions matters most for crime.
 
-$$Crime_{it} = \alpha_i + \beta_1 \log(Consumption_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+$$
+\begin{aligned}
+Crime_{it} =\ & \alpha_i 
++ \beta_1 \log(Consumption_{it}) 
++ \beta_2 \cdot Inequality_{it} \\
+& + \beta_3 \cdot Unemployment_{it} 
++ \beta_4 \cdot Prison_{it} \\
+& + \gamma_1 \cdot Beer_{it} 
++ \gamma_2 \cdot \log(Pop_{it}) 
++ \varepsilon_{it}
+\end{aligned}
+$$
 
 ```{r}
 model_property_2 <- plm(
@@ -692,7 +716,17 @@ model_violent_2 <- plm(
 
 Model 3 (Population) replaces $log(GDP)$ by $log(Pop)$, to test whether the size of the state population is associated with property crime. This allows to compare the influence of the total population per state to the GDP.
 
-$$Crime_{it} = \alpha_i + \beta_1 \log(Pop_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Poverty_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \epsilon_{it}$$
+$$
+\begin{aligned}
+Crime_{it} =\ & \alpha_i 
++ \beta_1 \log(Pop_{it}) 
++ \beta_2 \cdot Inequality_{it} \\
+& + \beta_3 \cdot Poverty_{it} 
++ \beta_4 \cdot Prison_{it} \\
+& + \gamma_1 \cdot Beer_{it} 
++ \varepsilon_{it}
+\end{aligned}
+$$
 
 ```{r}
 model_property_3 <- plm(
@@ -724,7 +758,19 @@ model_violent_3 <- plm(
 
 Model 4 (Dynamic) adds lagged crime as an explanatory variable to test the persistence hypothesis (H5) (i.e., the tendency of high-crime states to remain high-crime). If crime exhibits inertia, the lagged coefficient should be positive and significant. We acknowledge that including a lagged dependent variable in fixed effects models may introduce Nickell bias, which attenuates the coefficient toward zero when T is small. With T = 20 years, this bias is modest but not negligible.
 
-$$Crime_{it} = \alpha_i + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+$$
+\begin{aligned}
+Crime_{it} =\ & \alpha_i 
++ \theta \cdot Crime_{i,t-1} 
++ \beta_1 \log(GDP_{it}) \\
+& + \beta_2 \cdot Inequality_{it} 
++ \beta_3 \cdot Unemployment_{it} \\
+& + \beta_4 \cdot Prison_{it} 
++ \gamma_1 \cdot Beer_{it} \\
+& + \gamma_2 \cdot \log(Pop_{it}) 
++ \varepsilon_{it}
+\end{aligned}
+$$
 
 ```{r}
 panel_dynamic <- panel_reg |>
@@ -769,7 +815,20 @@ model_violent_4 <- plm(
 
 Model 5 (Two-ways) adds year fixed effects ($\delta_t$) to control for national trends affecting all states simultaneously (e.g., federal policies, economic cycles).
 
-$$Crime_{it} = \alpha_i + \delta_t + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+$$
+\begin{aligned}
+Crime_{it} =\ & \alpha_i 
++ \delta_t 
++ \theta \cdot Crime_{i,t-1} \\
+& + \beta_1 \log(GDP_{it}) 
++ \beta_2 \cdot Inequality_{it} \\
+& + \beta_3 \cdot Unemployment_{it} 
++ \beta_4 \cdot Prison_{it} \\
+& + \gamma_1 \cdot Beer_{it} 
++ \gamma_2 \cdot \log(Pop_{it}) 
++ \varepsilon_{it}
+\end{aligned}
+$$
 
 ```{r}
 model_property_5 <- plm(
