@@ -981,6 +981,16 @@ panel_full <- panel_full |>
   left_join(food_state, by = "State")
 ```
 
+Since we are using crime rates, we can also calculate the carceral population per 100 000 inhabitants.
+
+```{r}
+panel_full <- panel_full |>
+  mutate(
+    prison_per_100k = prison_population / Data.Population * 100000
+  )
+```
+
+
 ```{r}
 panel_full |>
   summarise(
@@ -1011,7 +1021,7 @@ Key *explanatory* variables include:
 - **Food assistance participation** (`wic_2015`, `nslp_2015`, `sbp_2015`) from the Food Environment Atlas, as proxies for food insecurity and social protection.
 - **Police shootings** (`nb_police_shootings`, `nb_unarmed`, `nb_gun`, `nb_body_camera`), summarising the number and characteristics of fatal police shootings in each state–year.
 - **Unemployment rates** per states (1976-2025) (`unemployment_rate`) from the BLS.
-- **Prison population** per states (1980-2022) (`prison_population`).
+- **Prison population** per states and per 100 000 inhabitants (1980-2022) (`prison_population`).
 - **Poverty rates and number** per states (1980-2023) (`nb_poor`, `Percent in poverty`).
 - **Alcohol consumption** per states (1970-2022), more specifically beer consumption (`beer_per_capita_14plus`).
 
@@ -1066,7 +1076,8 @@ panel_full_final <- panel_full |>
     sbp_2015,
     
     # Prison
-    `prison_population`,
+    prison_population,
+    prison_per_100k,
     
     # Poverty
     nb_poor, 
@@ -1114,4 +1125,7 @@ ggplot(crime_trends, aes(x = Year, y = rate, colour = type)) +
   theme_minimal()
 ```
 
+```{r}
+write_csv(panel_full_final, here("DATA_panel_full_final.csv"))
+```
 
