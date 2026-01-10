@@ -502,11 +502,27 @@ Next, we test for autocorrelation and heteroscedasticity. Because of the nature 
 ```{r}
 # Autocorrelation test (Breusch-Godfrey)
 bg_test <- pbgtest(model_fe, order = 1)
-print(bg_test)
 
 # Heteroscedasticity test (Breusch-Pagan)
 bp_hetero <- bptest(model_fe)
-print(bp_hetero)
+
+tests_table <- tibble(
+  Test = c("Breusch–Godfrey, AR(1)", "Breusch–Pagan"),
+  Statistic = c(
+    as.numeric(bg_test$statistic),
+    as.numeric(bp_hetero$statistic)
+  ),
+  `p-value` = c(bg_test$p.value, bp_hetero$p.value)
+)
+
+tests_table |>
+  mutate(
+    `p-value` = ifelse(`p-value` < 1e-4, "< 0.0001", round(`p-value`, 4))
+  ) |>
+  knitr::kable(
+    digits = 4,
+    caption = "Specification tests for the fixed-effects model"
+  )
 ```
 
 The specification tests reveal two issues, serial correlation and heteroscedasticity. They do not bias our coefficient estimates but invalidate classic standard errors, potentially leading to misleading significance levels. So, we compute robust standard errors, clustered at the state level, and compare them with the correlated and heterodastic standard errors.
@@ -516,16 +532,27 @@ robust_se <- vcovHC(model_fe, type = "HC1", cluster = "group")
 ```
 
 ```{r}
+var_labels <- c(
+  "log_gdp" = "Log(GDP)",
+  "Consumption" = "Consumption",
+  "share_pretax_income_p90p100" = "Inequality (top 10%)",
+  "unemployment_rate" = "Unemployment rate",
+  "prison_per_100k" = "Prison per 100k",
+  "beer_per_capita_14plus" = "Beer per capita (14+)",
+  "log_pop" = "Log(Population)"
+)
+
 comparison <- tibble(
   Variable = names(coef(model_fe)),
   Coefficient = coef(model_fe),
-  SE_classical = sqrt(diag(vcov(model_fe))),
+  SE = sqrt(diag(vcov(model_fe))),
   SE_robust = sqrt(diag(robust_se))
 ) |>
   mutate(
-    t_classical = Coefficient / SE_classical,
+    Variable = dplyr::recode(Variable, !!!var_labels),
+    t = Coefficient / SE,
     t_robust = Coefficient / SE_robust,
-    p_classical = 2 * pt(-abs(t_classical), df = model_fe$df.residual),
+    p = 2 * pt(-abs(t), df = model_fe$df.residual),
     p_robust = 2 * pt(-abs(t_robust), df = model_fe$df.residual)
   )
 
@@ -552,12 +579,25 @@ model_all <- plm(
   model = "within"
 )
 
-car::vif(lm(Data.Rates.Property.All ~ log_gdp + Consumption + unemployment_rate + 
-            percent_poor + share_pretax_income_p90p100 + prison_per_100k + 
-            beer_per_capita_14plus + log_pop, data = panel_reg))
+vif_all <- car::vif(
+  lm(
+    Data.Rates.Property.All ~ log_gdp + Consumption + unemployment_rate +
+      percent_poor + share_pretax_income_p90p100 + prison_per_100k +
+      beer_per_capita_14plus + log_pop,
+    data = panel_reg
+  )
+)
+
+knitr::kable(
+  round(vif_all, 2),
+  col.names = "VIF",
+  caption = "Variance inflation factors for all covariates"
+)
 ```
 
 We do not include GDP, consumption and population simultaneously because of the multicollinearity it clearly introduces. Instead, we will estimate alternative specifications to assess which measure is most strongly associated with crime (see following models).
+
+For now, we look at the VIF when we only keep one variable among log(gdp), log(pop) and consumption.
 
 ```{r}
 model_ols <- lm(
@@ -565,7 +605,11 @@ model_ols <- lm(
     unemployment_rate + prison_population + percent_poor + beer_per_capita_14plus,
   data = panel_reg
 )
-vif(model_ols)
+knitr::kable(
+  round(vif(model_ols), 2),
+  col.names = "VIF",
+  caption = "Variance inflation factors with log(gdp)"
+)
 ```
 
 ```{r}
@@ -574,7 +618,11 @@ model_ols_2 <- lm(
     unemployment_rate + prison_population + percent_poor + beer_per_capita_14plus,
   data = panel_reg
 )
-vif(model_ols_2)
+knitr::kable(
+  round(vif(model_ols_2), 2),
+  col.names = "VIF",
+  caption = "Variance inflation factors with log(pop)"
+)
 ```
 
 ```{r}
@@ -583,7 +631,12 @@ model_ols_3 <- lm(
     unemployment_rate + prison_population + percent_poor + beer_per_capita_14plus,
   data = panel_reg
 )
-vif(model_ols_3)
+
+knitr::kable(
+  round(vif(model_ols_3), 2),
+  col.names = "VIF",
+  caption = "Variance inflation factors with consumption"
+)
 ```
 
 Without consumption, population, and GDP being included simultaneously, all VIF values are below 5, the conventional threshold for concern, so our explanatory variables are sufficiently independent.
