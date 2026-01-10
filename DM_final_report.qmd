@@ -805,14 +805,16 @@ model_violent_5 <- plm(
 
 ##### Results
 
+This table condensates all of our regression results for property crime : 
+
 ```{r}
 modelsummary(
   list(
-    "Model 1: Baseline" = model_property_1,
-    "Model 2: Consumption" = model_property_2,
-    "Model 3: Population" = model_property_3,
-    "Model 4: Dynamic" = model_property_4,
-    "Model 5: Two-ways fixed effects" = model_property_5
+    "Model 1" = model_property_1,
+    "Model 2" = model_property_2,
+    "Model 3" = model_property_3,
+    "Model 4" = model_property_4,
+    "Model 5" = model_property_5
   ),
   vcov = robust_vcov,
   stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
@@ -834,25 +836,31 @@ modelsummary(
 
 This table presents the results of our 5 models for property crime, using robust standard errors clustered by state to account for serial correlation and heteroscedasticity.
 
-The variable `log_gdp` shows a strong and consistent negative correlation with property crime. For instance, in the baseline model, a 10% increase in per state GDP is associated to about 151 fewer property crimes per 100 000 inhabitants ($β = -1,510$, $p < 0.001$). This effect is attenuated but remains significant when controlling for crime persistence in Model 4 ($β = -244$, $p < 0.001$), and becomes non-significant in the two-way fixed effects specification in Model 5, $β = -105$, $p > 0.05$). This suggests that the crime-GDP relationship reflects national trends rather than state-specific dynamics.
+The variable `log_gdp` shows a strong and consistent negative correlation with property crime. For instance, in the baseline model, a 10% increase in per state GDP is associated to about 151 fewer property crimes per 100 000 inhabitants ($β = -1.510$, $p < 0.001$). This effect is attenuated but remains significant when controlling for crime persistence in Model 4 ($β = -244$, $p < 0.001$), and becomes non-significant in the two-way fixed effects specification in Model 5, $β = -105$, $p > 0.05$). This suggests that the crime-GDP relationship reflects national trends rather than state-specific dynamics.
 
 Personal consumption expenditures, tested as an alternative measure to GDP in Model 2, shows a significant but smaller negative correlation ($β = -0.061$, $p < 0.001$). This confirms that household living standards, not just aggregate output, are negatively associated with property crime.
 
 Neither unemployment rate nor poverty rate shows a significant correlation with property crime after controlling for other factors. In a similar fashion, the prison population per 100 000 inhabitants is not significantly correlated to property crime. These null findings contrasts with theoretical expectations. For unemployment, it is not consistent with the literature that shows that, during the 1990s, unemployment dropping caused, in part, an decrease in property crimes (Raphael & Winter-Ebmer, 2001).
 
-Beer consumption per capita is positively and significantly correlated with property crime across all specifications, from $β = 1,833$ ($p < 0.001$) in Model 1 to $β = 226$ ($p > 0.05$) in Model 5. The attenuation in Model 5 could be linked to the absorption of common trends by year fixed effects.
+Beer consumption per capita is positively and significantly correlated with property crime across all specifications, from $β = 1.833$ ($p < 0.001$) in Model 1 to $β = 226$ ($p > 0.05$) in Model 5. The attenuation in Model 5 could be linked to the absorption of common trends by year fixed effects.
 
 The lagged crime rate is the strongest predictor in dynamic specifications : in Model 4, a one-unit increase in the previous year's property crime rate is associated with a 0.80-unit increase in the current rate ($ρ = 0.795$, $θ < 0.001$).
 This coefficient remains stable in Model 5 ($θ = 0.811$, $p < 0.001$), confirming substantial crime inertia.
 
+The baseline model explains 76% of within state variation ($R^2=0.761$). Adding lagged crime in models 4 and 5 increases $R^2$ up to 91%, indicating that past crime is a powerful predictor of current crime.
+
+Thus, for property crime, GDP and consumption are negatively correlated with property crime, which partially confirms our first hypothesis. Alcohol consumption is positively correlated with property crime, supporting $H_4$. Finally, the crime persistence hypothesis ($H_5$) is strongly supported by our results.
+
+
+This second table condensates our results for violent crimes : 
 ```{r}
 modelsummary(
   list(
-    "Model 1: Baseline" = model_violent_1,
-    "Model 2: Consumption" = model_violent_2,
-    "Model 3: Population" = model_violent_3,
-    "Model 4: Dynamic" = model_violent_4,
-    "Model 5: Two-ways fixed effects" = model_violent_5
+    "Model 1" = model_violent_1,
+    "Model 2" = model_violent_2,
+    "Model 3" = model_violent_3,
+    "Model 4" = model_violent_4,
+    "Model 5" = model_violent_5
   ),
   vcov = robust_vcov,
   stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
