@@ -30,27 +30,27 @@ How do economic conditions, income inequality, immigration flows, public spendin
 
 ## Brief dataset description
 
-We build our panel from nine sources :
+We built our panel by usind nine different sources :
 
--   Crime rates (FBI/CORGIS, 1960–2019) distinguishing violent and property offences, and state population ;
+-   Crime rates distinguishing violent and property offences, and state population (FBI/CORGIS, 1960–2019) ;
 
--   Income inequality (WID, 1960–2018) providing top income shares by state;
+-   Income inequality providing top income shares by state (WID, 1960–2018);
 
 -   GDP and consumption per capita (BEA Regional Accounts, 1998–2023);
 
 -   Unemployment rate (BLS, 1976-2025);
 
--   Prison population (The Sentencing Project, 1980–2022);
+-   Prison population (The Sentencing Project, 1980–2022), used to produce data on prison population per 100 000 inhabitants ;
 
 -   Poverty rates (Census Bureau, 1980–2023);
 
--   Beer consumption per capita (NIAAA, 1970–2022);
+-   Beer consumption per capita for population aged 14 and older (NIAAA, 1970–2022);
 
--   Immigration flows (DHS, 2013–2023) covering legal residents, refugees and asylees;
+-   Immigration flows covering legal residents, refugees and asylees (DHS, 2013–2023);
 
 -   Police shootings (Washington Post, 2015–2024);
 
--   Public spending (Census Bureau, 2017–2023) on education, welfare, health, corrections and police;
+-   Public spending on education, welfare, health, corrections and police (Census Bureau, 2017–2023);
 
 -   Food assistance participation (USDA Food Environment Atlas, 2012-2023).
 
@@ -1206,9 +1206,9 @@ panel_short_inst <- panel_full_final |>
 
 Given the short time dimension, we use a parsimonious pooled OLS specification and include year fixed effects to absorb nationwide shocks common to all states.
 
-$$Crime\_{it} = \beta_0 + \beta_1 \log(GDP_{it}) + \beta_2 Unemployment_{it} + \beta_3 Poverty_{it} + \beta_4 Inequality_{it} + \beta_5 \log(Pop{it}) + \delta_t + \varepsilon_{it}$$
+$$Crime\_{it} = \beta_0 + \beta_1 log(GDP_{it}) + \beta_2 Unemployment_{it} + \beta_3 Poverty_{it} + \beta_4 Inequality_{it} + \beta_5 log(Pop{it}) + \delta_t + \varepsilon_{it}$$
 
-where: Crime\_{it} denotes either violent or property crime in state i and year t, $\delta\_t$ are year fixed effects capturing nationwide shocks.
+where: $Crime_{it}$ denotes either violent or property crime in state i and year t, $\delta_t$ are year fixed effects capturing nationwide shocks.
 
 This specification captures short-run associations between economic stress and crime without conditioning on potentially endogenous institutional responses.
 
@@ -1241,7 +1241,7 @@ summary(ols_violent_econ)
 
 We estimate a separate specification focusing on contemporaneous institutional intensity and behavioral factors. These covariates are interpreted as descriptive correlates (not exogenous policy instruments), hence we keep them separate from economic stress variables.
 
-Crime\_{it} = \beta\_0 + \beta*1 Prison*{it} + \beta*2 PoliceShootings*{it} + \beta*3 PoliceSpending*{it} + \beta*4 CorrectionsSpending*{it} + \beta*5 Alcohol*{it} + \beta*6* \log(Pop{it}) + \delta*t +* \varepsilon{it}
+$$Crime_{it} = \beta_0 + \beta_1 Prison_{it} + \beta_2 PoliceShootings_{it} + \beta_3 PoliceSpending_{it} + \beta_4 CorrectionsSpending_{it} + \beta_5 Alcohol_{it} + \beta6 log(Pop_{it}) + \delta_t + \varepsilon_{it}$$
 
 This model does not aim to measure deterrence effects, but rather documents how crime co-varies with enforcement intensity and social regulation in the short run.
 
