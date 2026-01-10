@@ -600,34 +600,38 @@ $$Crime_{it} = \alpha_i + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + 
 panel_dynamic <- panel_reg |>
   group_by(State) |>
   arrange(Year) |>
-  mutate(crime_lag = lag(Data.Rates.Property.All)) |>
+  mutate(property_lag = lag(Data.Rates.Property.All),
+    violent_lag = lag(Data.Rates.Violent.All)
+  ) |>
   ungroup() |>
-  filter(!is.na(crime_lag), log_gdp > 0)
+  filter(!is.na(property_lag), !is.na(violent_lag), log_gdp > 0)
+```
 
+```{r}
 model_property_4 <- plm(
-  Data.Rates.Property.All ~ crime_lag + 
+  Data.Rates.Property.All ~ property_lag + violent_lag + 
     log_gdp + 
     share_pretax_income_p90p100 +
     unemployment_rate +
-    prison_population +
+    prison_per_100k +
     beer_per_capita_14plus +
     log_pop,
-  data = panel_dynamic |> filter(!is.na(crime_lag)),
+  data = panel_dynamic,
   index = c("State", "Year"),
   model = "within"
-)
+  )
 ```
 
 ```{r}
 model_violent_4 <- plm(
-  Data.Rates.Violent.All ~ crime_lag + 
+  Data.Rates.Violent.All ~ property_lag + violent_lag + 
     log_gdp + 
     share_pretax_income_p90p100 +
     unemployment_rate +
-    prison_population +
+    prison_per_100k +
     beer_per_capita_14plus +
     log_pop,
-  data = panel_dynamic |> filter(!is.na(crime_lag)),
+  data = panel_dynamic,
   index = c("State", "Year"),
   model = "within"
 )
@@ -638,9 +642,8 @@ We add year fixed effects ($\delta_t$) to control for national trends (e.g., fed
 $$Crime_{it} = \alpha_i + \delta_t + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 
 ```{r}
-# Property
 model_property_5 <- plm(
-  Data.Rates.Property.All ~ crime_lag +
+  Data.Rates.Property.All ~ property_lag + violent_lag +
     log_gdp + # or consumption
     share_pretax_income_p90p100 +
     unemployment_rate + # or poverty, depends on the best
@@ -655,13 +658,12 @@ model_property_5 <- plm(
 ```
 
 ```{r}
-# Violent
 model_violent_5 <- plm(
-  Data.Rates.Violent.All ~ crime_lag +
+  Data.Rates.Violent.All ~ property_lag + violent_lag +
     log_gdp + 
     share_pretax_income_p90p100 +
     unemployment_rate +
-    prison_population +
+    prison_per_100k +
     beer_per_capita_14plus +
     log_pop,
   data = panel_dynamic,
@@ -669,9 +671,7 @@ model_violent_5 <- plm(
   model = "within",
   effect = "twoways"
 )
-
 ```
-
 
 ```{r}
 modelsummary(
@@ -732,21 +732,6 @@ The panel regression results reveal a contrast between the two types of crime, t
 For property crime, our variables explains approximately 76% of the within-state variation (R² = 0.76), which is consistent with economic theories on crime, suggesting for instance that property offences are motivated by financial need (Becker, 1968), that unemployment and alcohol consumption also increase crime rates (retrouver les articles lus là-dessus).
 
 As for violent crime, our variables fails to significantly predict violent crime rates (R² = 0.31), indicating that violent offences are driven by factors beyond economic conditions alone.
-
-
-We first examine the relationship between GDP and violent / property crime rates. Economic theory suggests that GDP should be a stronger predictor of property crime (primarily motivated by financial need) than of violent crime, which is driven by more complex social and psychological factors (Becker, 1968).
-
-We then add income inequality, using the share of pre-tax income accruing to the top 10% of the distribution, as provided by the World Inequality Database. A higher share indicates greater income concentration at the top, which could be associated with increased social tension and crime rates (Fajnzylber, Lederman, and Loayza, 2002).
-
-
-
-Model 3 shows that the GDP-inequalities-crime relationship is mainly driven by the common temporal trend (all states are becoming wealthier and are seeing a decline in crime at the same time), rather than by dynamics specific to each state.
-
-For property crime (Table 1), GDP shows a strong negative association ($β ≈ -1875$, $p < 0.001$), explaining about 70% of within-state variation (Model 1). Adding inequality improves the fit marginally, with higher income concentration associated with lower property crime ($β = -874$, $p < 0.05$).
-
-As a robustness check, Model 3 adds year fixed effects. The R² drops substantially (0.005), indicating that the GDP-crime relationship primarily reflects shared national trends rather than state-specific dynamics. This is consistent with the well-documented "great crime decline" - also visible in our first graph - that affected all U.S. states from the 1990s onward.
-
-For violent crime (Table 2), the results confirm our theoretical expectations: GDP has a weaker association ($β ≈ -100$, $R² = 0.15$), and inequality is only marginally significant ($p < 0.10$). Economic factors alone cannot explain violent crime patterns.
 
 
 Our estimates capture associations, not causal effects. Indeed, high crime may reduce GDP or increase prison population, which implies reverse causality. Moreover, there are omitted variables in our work, for instance time-varying factors like policing strategies, population structure and demographic shift may confounf our estimates.
