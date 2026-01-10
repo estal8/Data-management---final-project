@@ -442,6 +442,9 @@ comparison |>
   knitr::kable(digits = 3, caption = "Comparison of classical vs robust standard errors")
 ```
 
+Classical standard errors are 1.2 to 3.5 times smaller than robust standard errors, leading to inflated significance levels. 
+For instance, prison population per 100 000 inhabitants appears significant with classical errors (p < 0.001) but becomes non-significant with robust errors (p = 0.103). Given these findings, all subsequent results use robust standard errors clustered by state.
+
 Finally, we test for multicolinearity, using Variance Inflation Factors (VIF).
 
 ```{r}
@@ -493,6 +496,10 @@ where $\alpha_i$ denotes state fixed effects. The coefficients are identified fr
 We measure inequalities by using the share of pre-tax income accruing to the top 10% of the distribution, as provided by the World Inequality Database. A higher share indicates greater income concentration at the top, which could be associated with increased social tension and crime rates (Fajnzylber, Lederman, and Loayza, 2002).
 
 ```{r}
+robust_vcov <- function(x) vcovHC(x, type = "HC1", cluster = "group")
+```
+
+```{r}
 model_property_1 <- plm(
   Data.Rates.Property.All ~ log_gdp +
     share_pretax_income_p90p100 +
@@ -504,8 +511,6 @@ model_property_1 <- plm(
   index = c("State", "Year"),
   model = "within",
 )
-
-summary(model_property_1)
 ```
 
 ```{r}
@@ -520,15 +525,7 @@ model_violent_1 <- plm(
   index = c("State", "Year"),
   model = "within",
 )
-
-summary(model_violent_1)
 ```
-
-The panel regression results reveal a contrast between the two types of crime, that we had initially planned.
-
-For property crime, our variables explains approximately 76% of the within-state variation (R² = 0.76), which is consistent with economic theories on crime, suggesting for instance that property offences are motivated by financial need (Becker, 1968), that unemployment and alcohol consumption also increase crime rates (retrouver les articles lus là-dessus).
-
-As for violent crime, our variables fails to significantly predict violent crime rates (R² = 0.31), indicating that violent offences are driven by factors beyond economic conditions alone.
 
 Now, we replace $log(GDP)$ by $Consumption$ to test another measure of economic conditions (Model 2).
 
@@ -546,8 +543,6 @@ model_property_2 <- plm(
   index = c("State", "Year"),
   model = "within",
 )
-
-summary(model_property_2)
 ```
 
 ```{r}
@@ -562,8 +557,6 @@ model_violent_2 <- plm(
   index = c("State", "Year"),
   model = "within",
 )
-
-summary(model_violent_2)
 ```
 
 
@@ -583,8 +576,6 @@ model_property_3 <- plm(
   index = c("State", "Year"),
   model = "within",
 )
-
-summary(model_property_3)
 ```
 
 ```{r}
@@ -599,8 +590,6 @@ model_violent_3 <- plm(
   index = c("State", "Year"),
   model = "within",
 )
-
-summary(model_violent_3)
 ```
 
 To look into crime persistence (i.e., the tendency of high-crime states to remain high-crime), we estimate a dynamic panel model including lagged crime rates as an explanatory variable (Model 4).
@@ -627,11 +616,7 @@ model_property_4 <- plm(
   index = c("State", "Year"),
   model = "within"
 )
-
-summary(model_property_4)
 ```
-
-The model explains 91,7% ($R^2 = 0.9177$) of the variation in crime rates within states over time. 
 
 ```{r}
 model_violent_4 <- plm(
@@ -646,8 +631,6 @@ model_violent_4 <- plm(
   index = c("State", "Year"),
   model = "within"
 )
-
-summary(model_violent_4)
 ```
 
 We add year fixed effects ($\delta_t$) to control for national trends (e.g., federal policies, economic cycles) that affect all states simultaneously.
@@ -669,8 +652,6 @@ model_property_5 <- plm(
   model = "within",
   effect = "twoways"
 )
-
-summary(model_property_5)
 ```
 
 ```{r}
@@ -689,14 +670,8 @@ model_violent_5 <- plm(
   effect = "twoways"
 )
 
-summary(model_violent_5)
 ```
 
-Applying robust standard error to all models.
-
-```{r}
-robust_vcov <- function(x) vcovHC(x, type = "HC1", cluster = "group")
-```
 
 ```{r}
 modelsummary(
@@ -725,7 +700,6 @@ modelsummary(
   kable_styling(latex_options = "HOLD_position")
 ```
 
-
 ```{r}
 modelsummary(
   list(
@@ -752,6 +726,13 @@ modelsummary(
 ) |>
   kable_styling(latex_options = "HOLD_position")
 ```
+
+The panel regression results reveal a contrast between the two types of crime, that we had initially planned.
+
+For property crime, our variables explains approximately 76% of the within-state variation (R² = 0.76), which is consistent with economic theories on crime, suggesting for instance that property offences are motivated by financial need (Becker, 1968), that unemployment and alcohol consumption also increase crime rates (retrouver les articles lus là-dessus).
+
+As for violent crime, our variables fails to significantly predict violent crime rates (R² = 0.31), indicating that violent offences are driven by factors beyond economic conditions alone.
+
 
 We first examine the relationship between GDP and violent / property crime rates. Economic theory suggests that GDP should be a stronger predictor of property crime (primarily motivated by financial need) than of violent crime, which is driven by more complex social and psychological factors (Becker, 1968).
 
