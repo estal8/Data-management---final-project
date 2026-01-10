@@ -977,7 +977,115 @@ property_quartiles_tbl |>
 ```
 
 
-#### Regression analysis
+### Regression analysis
+
+```{r}
+library(corrplot)
+
+panel_sr <- panel_full |>
+  filter(Year >= 2015, Year <= 2018) |>
+  mutate(
+    log_gdp = log(gdp),
+    shootings_per_million = 1e6 * nb_police_shootings / Data.Population,
+    lpr_per_million = 1e6 * lpr_total / imm_population
+  ) |>
+  select(
+    Data.Rates.Violent.All,
+    Data.Rates.Property.All,
+    log_gdp,
+    share_pretax_income_p90p100,
+    unemployment_rate,
+    percent_poor,
+    prison_population,
+    spending_police,
+    spending_welfare,
+    shootings_per_million,
+    lpr_per_million,
+    beer_per_capita_14plus
+  ) |>
+  drop_na()
+
+corr_mat <- cor(panel_sr)
+
+corrplot(
+  corr_mat,
+  method = "color",
+  type = "upper",
+  tl.cex = 0.8,
+  addCoef.col = "black",
+  number.cex = 0.6
+)
+```
+####  Economic stress model (pooled OLS + year FE)
+
+```{r}
+ols_property_econ <- lm(
+  Data.Rates.Property.All ~ log_gdp +
+    unemployment_rate +
+    percent_poor +
+    share_pretax_income_p90p100 +
+    log_pop +
+    factor(Year),
+  data = panel_short
+)
+
+ols_violent_econ <- lm(
+  Data.Rates.Violent.All ~ log_gdp +
+    unemployment_rate +
+    percent_poor +
+    share_pretax_income_p90p100 +
+    log_pop +
+    factor(Year),
+  data = panel_short
+)
+
+summary(ols_property_econ)
+summary(ols_violent_econ)
+```
+
+#### Institutions stress model (pooled OLS + year FE)
+
+```{r}
+ols_property_inst <- lm(
+  Data.Rates.Property.All ~ prison_population +
+    nb_police_shootings +
+    spending_police +
+    spending_corrections +
+    beer_per_capita_14plus +
+    log_pop +
+    factor(Year),
+  data = panel_short_inst
+)
+
+ols_violent_inst <- lm(
+  Data.Rates.Violent.All ~ prison_population +
+    nb_police_shootings +
+    spending_police +
+    spending_corrections +
+    beer_per_capita_14plus +
+    log_pop +
+    factor(Year),
+  data = panel_short_inst
+)
+
+summary(ols_property_inst)
+summary(ols_violent_inst)
+```
+
+#### Robustness: Two-way fixed effects (TWFE) for the economic stress model
+```{r}
+twfe_property_econ <- plm(
+  Data.Rates.Property.All ~ log_gdp + unemployment_rate +
+    percent_poor + share_pretax_income_p90p100 + log_pop,
+  data = panel_short,
+  index = c("State","Year"),
+  model = "within",
+  effect = "twoways"
+)
+
+summary(twfe_property_econ)
+```
+
 
 ## Conclusion and limitations
 
