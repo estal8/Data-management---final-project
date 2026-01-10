@@ -489,12 +489,13 @@ The Breusch-Pagan Lagrange Multiplier test provides a complementary check. It te
 These tests confirm that individual effects are present and statistically significant. Having established that, we still have to choose between random effects and fixed effects. To do so, we use the Hausman test :
 
 ```{r}
-#Hausman (fixed vs random effects)
+# Hausman (fixed vs random effects)
 hausman_test <- phtest(model_fe, model_re)
 print(hausman_test)
 ```
+Under $H_0$, both fixed effects and random effects are consistent, but random effects is more efficient ; under $H_1$, only fixed effects is consistent. We obtain $\chi^2 = 595.9$ with $p<0.001$, so we can reject $H_0$. 
 
-Under $H_0$, both fixed effects and random effects are consistent, but random effects is more efficient; under $H_1$, only fixed effects is consistent. We obtain $\chi^2 = 595.9$ with $p<0.001$, so we reject $H_0$. This indicates that state-specific effects are correlated with our explanatory variables (GDP, inequality, etc.), which makes sense since wealthier states likely have different unobserved characteristics than poorer states.
+This indicates that state-specific effects are correlated with our explanatory variables (GDP, inequality, etc.), which makes sense since wealthier states likely have different unobserved characteristics than poorer states. 
 
 Next, we test for autocorrelation and heteroscedasticity. Because of the nature of crime according to our hypothesis (persistence), and of our explanatory variables (GDP, inequalities, prison population, etc change slowly over time), we may expect serial correlation. Moreover, heteroscedasticity is also plausible given the variation in state size and crime levels. Smaller states might experience more volatility in their crime rates because small absolute changes translate into large percentage changes.
 
@@ -532,7 +533,7 @@ comparison |>
   knitr::kable(digits = 3, caption = "Comparison of classical vs robust standard errors")
 ```
 
-Classical standard errors are 1.2 to 3.5 times smaller than robust standard errors, leading to inflated significance levels. For instance, prison population per 100 000 inhabitants appears significant with classical errors (p \< 0.001) but becomes non-significant with robust errors (p = 0.103). Given these findings, all subsequent results use robust standard errors clustered by state.
+Classical standard errors are 1.2 to 3.5 times smaller than robust standard errors, leading to inflated significance levels. For instance, prison population per 100 000 inhabitants appears significant with classical errors ($p < 0.001$) but becomes non-significant with robust errors ($p = 0.103$). Given these findings, all subsequent results use robust standard errors clustered by state.
 
 Finally, we test for multicolinearity, using Variance Inflation Factors (VIF).
 
