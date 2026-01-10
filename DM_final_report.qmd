@@ -904,6 +904,10 @@ quartile_table <- panel_recent |>
 
     LPR_per_million = mean(lpr_per_million, na.rm = TRUE),
     Police_shootings_per_million = mean(shootings_per_million, na.rm = TRUE),
+    Unemployment = mean(unemployment_rate, na.rm = TRUE),
+Poverty      = mean(percent_poor, na.rm = TRUE),
+Prison_per_100k = mean(1e5 * prison_population / Data.Population, na.rm = TRUE),
+Beer_pc      = mean(beer_per_capita_14plus, na.rm = TRUE),
 
     Welfare_spending = mean(spending_welfare, na.rm = TRUE),
     Police_spending  = mean(spending_police, na.rm = TRUE),
@@ -942,6 +946,10 @@ property_quartiles_tbl <- panel_recent |>
 
     LPR_per_million = mean(lpr_per_million, na.rm = TRUE),
     Police_shootings_per_million = mean(shootings_per_million, na.rm = TRUE),
+    Unemployment = mean(unemployment_rate, na.rm = TRUE),
+Poverty      = mean(percent_poor, na.rm = TRUE),
+Prison_per_100k = mean(1e5 * prison_population / Data.Population, na.rm = TRUE),
+Beer_pc      = mean(beer_per_capita_14plus, na.rm = TRUE),
 
     Welfare_spending = mean(spending_welfare, na.rm = TRUE),
     Police_spending  = mean(spending_police, na.rm = TRUE),
@@ -967,6 +975,7 @@ property_quartiles_tbl |>
   ) |>
   kableExtra::kable_styling(latex_options = "HOLD_position")
 ```
+
 
 #### Regression analysis
 
