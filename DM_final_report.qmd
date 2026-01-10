@@ -1046,7 +1046,7 @@ Prison population per 100,000 inhabitants shows a small but positive and signifi
 
 As for beer consumption, it is again strongly and positively correlated with violent crime.
 
-It's interesting to notice that adding lagged crime dramatically improves the models' fit ($R^2 ≈ 0.8$ in model 4 and 5). The crime persistence coefficient is large and highly significant ($θ = 0.833$). It indicates that violent crime exhibits even stronger inertia than property crime. Indeed, holding other factors constant, a state with 100 more violent crimes per 100 000 the past year will have 83 more violent crime the following year. But in these models, almost all variables that previously were significant lose their significance. This might indicate that their effect was linked to crime inertia. In the two-way fixed effect model (Model 5), only poverty remains slightly significant aside from lagged crime, but it has a negative coefficient.
+It's interesting to notice that adding lagged crime dramatically improves the models' fit ($R^2 ≈ 0.8$ in models 4 and 5). The crime persistence coefficient is large and highly significant ($θ = 0.833$). It indicates that violent crime exhibits even stronger inertia than property crime. Indeed, holding other factors constant, a state with 100 more violent crimes per 100 000 the past year will have 83 more violent crime the following year. But in these models, almost all variables that previously were significant lose their significance. This might indicate that their effect was linked to crime inertia. In the two-way fixed effect model (Model 5), only poverty remains slightly significant aside from lagged crime, but it has a negative coefficient.
 
 ### **Short-run analysis (2015–2018) - Contemporary correlates of crime**
 
