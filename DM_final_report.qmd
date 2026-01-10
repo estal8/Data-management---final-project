@@ -1133,8 +1133,6 @@ Using the short-run panel, we compute pairwise correlations between crime rates 
 ```{r}
 library(corrplot)
 
-library(corrplot)
-
 panel_sr <- panel_full |>
   filter(Year >= 2015, Year <= 2018) |>
   mutate(
@@ -1193,9 +1191,22 @@ We focus on four short-run hypotheses, mapped directly into two model blocks:
 
 #### Economic stress model (pooled OLS + year FE)
 
+```{r}
+panel_short <- panel_full_final
+
+panel_short_inst <- panel_full_final |>
+  filter(Year >= 2015, Year <= 2018) |>
+  mutate(
+    log_pop = log(Data.Population),
+    log_gdp = log(gdp)
+  ) |>
+  drop_na(prison_population, nb_police_shootings, spending_police, 
+          spending_corrections, beer_per_capita_14plus)
+```
+
 Given the short time dimension, we use a parsimonious pooled OLS specification and include year fixed effects to absorb nationwide shocks common to all states.
 
-$$Crime\_{it} = \beta\_0 + \beta*1* \log(GDP{it}) + \beta*2 Unemployment*{it} + \beta*3 Poverty*{it} + \beta*4 Inequality*{it} + \beta*5* \log(Pop{it}) + \delta*t +* \varepsilon{it}$$
+$$Crime\_{it} = \beta_0 + \beta_1 \log(GDP_{it}) + \beta_2 Unemployment_{it} + \beta_3 Poverty_{it} + \beta_4 Inequality_{it} + \beta_5 \log(Pop{it}) + \delta_t + \varepsilon_{it}$$
 
 where: Crime\_{it} denotes either violent or property crime in state i and year t, $\delta\_t$ are year fixed effects capturing nationwide shocks.
 
@@ -1209,7 +1220,7 @@ ols_property_econ <- lm(
     share_pretax_income_p90p100 +
     log_pop +
     factor(Year),
-  data = panel_short
+  data = panel_short_inst
 )
 
 ols_violent_econ <- lm(
@@ -1219,7 +1230,7 @@ ols_violent_econ <- lm(
     share_pretax_income_p90p100 +
     log_pop +
     factor(Year),
-  data = panel_sr
+  data = panel_short_inst
 )
 
 summary(ols_property_econ)
@@ -1270,7 +1281,7 @@ As a robustness check, we also estimate a two-way fixed effects version of the e
 twfe_property_econ <- plm(
   Data.Rates.Property.All ~ log_gdp + unemployment_rate +
     percent_poor + share_pretax_income_p90p100 + log_pop,
-  data = panel_short,
+  data = panel_short_inst,
   index = c("State","Year"),
   model = "within",
   effect = "twoways"
