@@ -463,8 +463,6 @@ tests_summary |>
 
 Our objective is to document robust correlations between socio-economic variables and crime rates, not to establish causal effects. Considering our tests conclusions, we employ fixed effects panel regressions to control for time-invariant state characteristics. 
 
-**Faire une annonce de plan résumant tous les modèles**
-
 Our baseline model looks like this : 
 
 $$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
@@ -612,6 +610,23 @@ summary(model_property_4)
 ```
 
 The model explains 91,7% ($R^2 = 0.9177$) of the variation in crime rates within states over time. 
+
+```{r}
+model_violent_4 <- plm(
+  Data.Rates.Violent.All ~ crime_lag + 
+    log_gdp + 
+    share_pretax_income_p90p100 +
+    unemployment_rate +
+    prison_population +
+    beer_per_capita_14plus +
+    log_pop,
+  data = panel_reg |> filter(!is.na(crime_lag)),
+  index = c("State", "Year"),
+  model = "within"
+)
+
+summary(model_violent_4)
+```
 
 We add year fixed effects ($\delta_t$) to control for national trends (e.g., federal policies, economic cycles) that affect all states simultaneously.
 
