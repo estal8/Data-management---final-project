@@ -448,15 +448,55 @@ For instance, prison population per 100 000 inhabitants appears significant with
 Finally, we test for multicolinearity, using Variance Inflation Factors (VIF).
 
 ```{r}
+model_all <- plm(
+  Data.Rates.Property.All ~ log_gdp +
+    Consumption +
+    unemployment_rate +
+    percent_poor +
+    share_pretax_income_p90p100 +
+    prison_per_100k +
+    beer_per_capita_14plus +
+    log_pop,
+  data = panel_reg,
+  index = c("State", "Year"),
+  model = "within"
+)
+
+car::vif(lm(Data.Rates.Property.All ~ log_gdp + Consumption + unemployment_rate + 
+            percent_poor + share_pretax_income_p90p100 + prison_per_100k + 
+            beer_per_capita_14plus + log_pop, data = panel_reg))
+```
+
+We do not include GDP, consumption and population simultaneously because of the multicollinearity it clearly introduces. Instead, we will estimate alternative specifications to assess which measure is most strongly associated with crime (see following models).
+
+```{r}
 model_ols <- lm(
   Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + 
-    unemployment_rate + prison_population + beer_per_capita_14plus,
+    unemployment_rate + prison_population + percent_poor + beer_per_capita_14plus,
   data = panel_reg
 )
 vif(model_ols)
 ```
 
-All VIF values are below 5, the conventional threshold for concern, so our explanatory variables are sufficiently independent.
+```{r}
+model_ols_2 <- lm(
+  Data.Rates.Property.All ~ log_pop + share_pretax_income_p90p100 + 
+    unemployment_rate + prison_population + percent_poor + beer_per_capita_14plus,
+  data = panel_reg
+)
+vif(model_ols_2)
+```
+
+```{r}
+model_ols_3 <- lm(
+  Data.Rates.Property.All ~ Consumption + share_pretax_income_p90p100 + 
+    unemployment_rate + prison_population + percent_poor + beer_per_capita_14plus,
+  data = panel_reg
+)
+vif(model_ols_3)
+```
+
+Without consumption, population, and GDP being included simultaneously, all VIF values are below 5, the conventional threshold for concern, so our explanatory variables are sufficiently independent.
 
 ```{r}
 tests_summary <- tibble(
@@ -488,7 +528,9 @@ tests_summary |>
 
 Our objective is to document robust correlations between socio-economic variables and crime rates, not to establish causal effects. Considering our tests conclusions, we employ fixed effects panel regressions to control for time-invariant state characteristics. 
 
-Our baseline model looks like this : 
+We estimate five panel specifications with state fixed effects to assess the robustness of our findings. All models use robust standard errors clustered by state to account for serial correlation and heteroscedasticity.
+
+Model 1 (Baseline) includes log GDP, income inequality, unemployment rate, prison population per capita, beer consumption, and log population. This specification tests the baseline correlations between economic conditions and crime.
 
 $$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 where $\alpha_i$ denotes state fixed effects. The coefficients are identified from within-state variation over time. 
@@ -527,7 +569,7 @@ model_violent_1 <- plm(
 )
 ```
 
-Now, we replace $log(GDP)$ by $Consumption$ to test another measure of economic conditions (Model 2).
+Model 2 (Consumption) replaces $log(GDP)$ by $Consumption$. While GDP measures the size of the state economy, per capita consumption better captures household living standards. Comparing the two allows us to assess which dimension of economic conditions matters most for crime.
 
 $$Crime_{it} = \alpha_i + \beta_1 \log(Consumption_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 
@@ -559,14 +601,13 @@ model_violent_2 <- plm(
 )
 ```
 
-
-We replace $Unemployment$ by $Poverty rate$ to test another measure of economic difficulties (Model 3).
+Model 3 (Poverty) replaces $Unemployment$ by $Poverty rate$ . Unemployment captures short-term labour market fluctuations, while poverty reflects persistent economic hardship. This specification tests which is strongly associated with crime.
 
 $$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Poverty_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 
 ```{r}
 model_property_3 <- plm(
-  Data.Rates.Property.All ~ Consumption +
+  Data.Rates.Property.All ~ log_gdp +
     share_pretax_income_p90p100 +
     percent_poor + 
     prison_per_100k +
@@ -580,7 +621,7 @@ model_property_3 <- plm(
 
 ```{r}
 model_violent_3 <- plm(
-  Data.Rates.Violent.All ~ Consumption +
+  Data.Rates.Violent.All ~ log_gdp +
     share_pretax_income_p90p100 +
     percent_poor + 
     prison_per_100k +
@@ -592,7 +633,7 @@ model_violent_3 <- plm(
 )
 ```
 
-To look into crime persistence (i.e., the tendency of high-crime states to remain high-crime), we estimate a dynamic panel model including lagged crime rates as an explanatory variable (Model 4).
+Model 4 (Dynamic) adds lagged crime as an explanatory variable to test the persistence hypothesis (H5) (i.e., the tendency of high-crime states to remain high-crime). If crime exhibits inertia, the lagged coefficient should be positive and significant. We acknowledge that including a lagged dependent variable in fixed effects models may introduce Nickell bias, which attenuates the coefficient toward zero when T is small. With T = 20 years, this bias is modest but not negligible.
 
 $$Crime_{it} = \alpha_i + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 
@@ -609,7 +650,7 @@ panel_dynamic <- panel_reg |>
 
 ```{r}
 model_property_4 <- plm(
-  Data.Rates.Property.All ~ property_lag + violent_lag + 
+  Data.Rates.Property.All ~ property_lag + 
     log_gdp + 
     share_pretax_income_p90p100 +
     unemployment_rate +
@@ -624,7 +665,7 @@ model_property_4 <- plm(
 
 ```{r}
 model_violent_4 <- plm(
-  Data.Rates.Violent.All ~ property_lag + violent_lag + 
+  Data.Rates.Violent.All ~ violent_lag + 
     log_gdp + 
     share_pretax_income_p90p100 +
     unemployment_rate +
@@ -637,13 +678,13 @@ model_violent_4 <- plm(
 )
 ```
 
-We add year fixed effects ($\delta_t$) to control for national trends (e.g., federal policies, economic cycles) that affect all states simultaneously.
+Model 5 (Two-ways) adds year fixed effects ($\delta_t$) to control for national trends affecting all states simultaneously (e.g., federal policies, economic cycles).
 
 $$Crime_{it} = \alpha_i + \delta_t + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 
 ```{r}
 model_property_5 <- plm(
-  Data.Rates.Property.All ~ property_lag + violent_lag +
+  Data.Rates.Property.All ~ property_lag +
     log_gdp + # or consumption
     share_pretax_income_p90p100 +
     unemployment_rate + # or poverty, depends on the best
@@ -659,7 +700,7 @@ model_property_5 <- plm(
 
 ```{r}
 model_violent_5 <- plm(
-  Data.Rates.Violent.All ~ property_lag + violent_lag +
+  Data.Rates.Violent.All ~ violent_lag +
     log_gdp + 
     share_pretax_income_p90p100 +
     unemployment_rate +
@@ -680,7 +721,7 @@ modelsummary(
     "Model 2: Consumption" = model_property_2,
     "Model 3: Poverty" = model_property_3,
     "Model 4: Dynamic" = model_property_4,
-    "Model 5: Two-way FE" = model_property_5
+    "Model 5: Two-ways fixed effects" = model_property_5
   ),
   vcov = robust_vcov,
   stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
@@ -707,7 +748,7 @@ modelsummary(
     "Model 2: Consumption" = model_violent_2,
     "Model 3: Poverty" = model_violent_3,
     "Model 4: Dynamic" = model_violent_4,
-    "Model 5: Two-way FE" = model_violent_5
+    "Model 5: Two-ways fixed effects" = model_violent_5
   ),
   vcov = robust_vcov,
   stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
@@ -717,8 +758,8 @@ modelsummary(
     "unemployment_rate" = "Unemployment rate",
     "prison_per_100k" = "Prison per 100k",
     "beer_per_capita_14plus" = "Beer consumption",
-    "property_lag" = "Property crime (t-1)",
-    "Consumption" = "Consumption"
+    "Consumption" = "Consumption",
+    "violent_lag" = "Violent crime (t-1)"
   ),
   gof_omit = "IC|Log|RMSE|Adj|Std.Errors",
   notes = "Robust standard errors clustered by state are in parenthesis",
