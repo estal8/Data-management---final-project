@@ -475,11 +475,33 @@ The first question is whether state-level heterogeneity exists. We test this usi
 ```{r}
 # F-test (pooled vs fixed effects)
 f_test <- pFtest(model_fe, model_pooled)
-print(f_test)
 
-# Breusch-Pagan LM (pooled vs random affects)
+# Breusch-Pagan LM (pooled vs random effects)
 bp_test <- plmtest(model_pooled, type = "bp")
-print(bp_test)
+
+tests_table <- tibble(
+  Test = c(
+    "F-test (Pooled vs FE)",
+    "Breusch-Pagan LM (Pooled vs RE)"
+  ),
+  Statistic = c(
+    as.numeric(f_test$statistic),
+    as.numeric(bp_test$statistic)
+  ),
+  `p-value` = c(
+    f_test$p.value,
+    bp_test$p.value
+  )
+)
+
+tests_table |>
+  mutate(
+    `p-value` = ifelse(`p-value` < 1e-4, "< 0.0001", round(`p-value`, 4))
+  ) |>
+  knitr::kable(
+    digits = 4,
+    caption = "F-test and Breusch-Pagan LM test results"
+  )
 ```
 
 The F-test compares the fixed effects model against pooled OLS. The null hypothesis is that all state fixed effects are jointly equal to zero ($H_0 = \alpha_{1} = … = \alpha_{2}$). We obtain $F=148.9$ with $p<0.001$. Thus, the F-test strongly rejects the null hypothesis that state fixed effects are jointly zero, indicating that pooled OLS is inappropriate.
@@ -491,7 +513,21 @@ These tests confirm that individual effects are present and statistically signif
 ```{r}
 # Hausman (fixed vs random effects)
 hausman_test <- phtest(model_fe, model_re)
-print(hausman_test)
+
+tests_table <- tibble(
+  Test = "Hausman (FE vs RE)",
+  Statistic = as.numeric(hausman_test$statistic),
+  `p-value` = hausman_test$p.value,
+)
+
+tests_table |>
+  mutate(
+    `p-value` = ifelse(`p-value` < 1e-4, "< 0.0001", round(`p-value`, 4))
+  ) |>
+  knitr::kable(
+    digits = 4,
+    caption = "Hausman test results (fixed vs random effects)"
+  )
 ```
 Under $H_0$, both fixed effects and random effects are consistent, but random effects is more efficient ; under $H_1$, only fixed effects is consistent. We obtain $\chi^2 = 595.9$ with $p<0.001$, so we can reject $H_0$. 
 
@@ -653,7 +689,7 @@ tests_summary <- tibble(
                 hausman_test$statistic,
                 bg_test$statistic,
                 bp_hetero$statistic),
-  P_value = c("< 0.001", "< 0.001", "< 0.001", "< 0.001", "< 0.001"),
+  p_value = c("< 0.001", "< 0.001", "< 0.001", "< 0.001", "< 0.001"),
   Decision = c(
     ifelse(f_test$p.value < 0.05, "FE needed", "Pooled OK"),
     ifelse(bp_test$p.value < 0.05, "Individual effects exist", "No effects"),
@@ -664,7 +700,7 @@ tests_summary <- tibble(
 )
 
 tests_summary |>
-  knitr::kable(booktabs = TRUE, caption = "Model specification tests")
+  knitr::kable(booktabs = TRUE, caption = "Summary of model specification tests results")
 ```
 
 ##### Models with fixed effects
