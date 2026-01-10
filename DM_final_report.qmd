@@ -320,6 +320,8 @@ crime_remaining_covariates <- panel_full_final |>
   )
 ```
 
+The 5 following figures presents pooled scatter plots relating crime rates to key socio-economic variables across state-year observations.
+
 ```{r}
 #| fig-cap: "Raw co-movement between crime and unemployment rate (pooled state–year observations)"
 #| fig-width: 10
@@ -338,6 +340,8 @@ crime_remaining_covariates |>
   ) +
   theme_minimal()
 ```
+
+The relationship between unemployment and crime appears weak and non-linear. 
 
 ```{r}
 #| fig-cap: "Raw co-movement between crime and percentage of poor (pooled state–year observations)"
@@ -358,6 +362,8 @@ crime_remaining_covariates |>
   theme_minimal()
 ```
 
+Poverty shows a modest positive association with both crime types. States with higher shares of poors tend to exhibit slightly higher crime rates, more so for violent crime. However, this relationship is characterized by substantial dispersion, suggesting that poverty alone is not a strong predictor of crime.
+
 ```{r}
 #| fig-cap: "Raw co-movement between crime and consumption per capita (pooled state–year observations)"
 #| fig-width: 10
@@ -376,6 +382,8 @@ ggplot(aes(x = Consumption, y = crime)) +
   ) +
   theme_minimal()
 ```
+
+Consumption per capita displays a clear negative association with both property and violent crime. The LOESS curves slope downward, indicating that states with higher living standards experience lower crime rates. 
 
 ```{r}
 #| fig-cap: "Raw co-movement between crime and beer consumption per capita for people aged 14 and above (pooled state–year observations)"
@@ -397,6 +405,8 @@ ggplot(aes(x = beer_per_capita_14plus, y = crime)) +
 
 ```
 
+Beer consumption per capita shows a non-linear, inverted-U relationship with crime. Property crime increases with beer consumption up to approximately 1.25 gallons per capita, then levels off. For violent crime, the pattern is similar but noisier. These graphs support the inclusion of alcohol as a criminogenic factor in our regression models.
+
 ```{r}
 #| fig-cap: "Raw co-movement between crime and prison population per 100 000 inhabitants (pooled state–year observations)"
 #| fig-width: 10
@@ -416,7 +426,9 @@ ggplot(aes(x = prison_per_100k, y = crime)) +
   theme_minimal()
 ```
 
-These 5 figures presents pooled scatter plots relating crime rates to key socio-economic variables across state-year observations. **CONTINUE**
+Prison population per 100 000 inhabitants is positively associated to both property and violent crime, as states with higher incarceration rates tend to have higher crime rates.
+
+Several variables display clear raw co-movements with crime, although the relationships are often non-linear and differ between property and violent crime. In particular, beer consumption and economic activity measures exhibit strong positive associations, while the relationship with unemployment and poverty appears weaker and less stable. These descriptive patterns motivate the regression strategy adopted in the following section.
 
 #### Regression analysis
 
