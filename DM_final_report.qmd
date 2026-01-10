@@ -721,7 +721,7 @@ Our objective is to document robust correlations between socio-economic variable
 
 We estimate five panel specifications with state fixed effects to assess the robustness of our findings. All models use robust standard errors clustered by state to account for serial correlation and heteroscedasticity.
 
-Model 1 (Baseline) includes log GDP, income inequality, unemployment rate, prison population per capita, beer consumption, and log population. This specification tests the baseline correlations between economic conditions and crime.
+Model 1 (Baseline) includes log GDP, income inequality, unemployment rate, prison population per capita and beer consumption. This specification tests the baseline correlations between economic conditions and crime.
 
 $$
 \begin{aligned}
@@ -1038,11 +1038,13 @@ The first three models fail to significantly predict violent crime rates as they
 
 Unlike property crime, `log_gdp` shows no significant correlation with violent crime. Personal consumption is also non-significant. These findings imply that violent crimes are less motivated by economic need than property crimes, and might be more likely to be driven by conflicts or social disorganization.
 
-Interestingly, unemployment rate is significantly and negatively correlated with violent crime in models 1-4 ($p < 0.001$). A 1 percentage point increase in unemployment rate leads to a decrease of around 9 violent crimes per 100 000 inhabitants for models 1-3, and to a 2,7 decrease in model 4. It is no longer significative in model 5. This counterintuitive finding may reflect omitted variable bias.
+Interestingly, unemployment rate is significantly and negatively correlated with violent crime in models 1-4 ($p < 0.001$). A 1 percentage point increase in unemployment rate leads to a decrease of around 9 violent crimes per 100 000 inhabitants for models 1-3 (representing about 2.4% of the average violent crime rate), and to a 2.8 decrease in model 4. This counterintuitive finding may reflect omitted variable bias, and should be interpreted with caution. The effect disappears in Model 5 after controlling for year fixed effects, suggesting it may capture only national time trends and not a structural relationship.
 
 The top 10% income share is not significantly correlated with violent crime ($p > 0.05$ in all models), contrary to theoretical predictions linking inequality to social tension and violence.
 
 Prison population per 100,000 inhabitants shows a small but positive and significant correlation with violent crime ($β ≈ 3.2 $, $p < 0.05$ in Models 1-3). This might not imply that incarceration fail to decrease crime, but could reveal reverse causality issues, as states with higher violent crime rates incarcerate more people.
+
+These findings lead us to reject hypothesis H3 (deterrence). The positive correlation between incarceration and crime does not support the deterrence hypothesis in our panel setting, likely due to reverse causality (states with more crime incarcerate more) overwhelming any potential deterrent effect.
 
 As for beer consumption, it is again strongly and positively correlated with violent crime.
 
