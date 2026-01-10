@@ -548,7 +548,7 @@ model_property_1 <- plm(
     unemployment_rate + 
     prison_per_100k +
     beer_per_capita_14plus +
-    log_pop,
+    percent_poor,
   data = panel_reg,
   index = c("State", "Year"),
   model = "within",
@@ -562,7 +562,7 @@ model_violent_1 <- plm(
     unemployment_rate + 
     prison_per_100k +
     beer_per_capita_14plus +
-    log_pop,
+    percent_poor,
   data = panel_reg,
   index = c("State", "Year"),
   model = "within",
@@ -580,7 +580,7 @@ model_property_2 <- plm(
     unemployment_rate + 
     prison_per_100k +
     beer_per_capita_14plus +
-    log_pop,
+    percent_poor,
   data = panel_reg,
   index = c("State", "Year"),
   model = "within",
@@ -594,25 +594,25 @@ model_violent_2 <- plm(
     unemployment_rate + 
     prison_per_100k +
     beer_per_capita_14plus +
-    log_pop,
+    percent_poor,
   data = panel_reg,
   index = c("State", "Year"),
   model = "within",
 )
 ```
 
-Model 3 (Poverty) replaces $Unemployment$ by $Poverty rate$ . Unemployment captures short-term labour market fluctuations, while poverty reflects persistent economic hardship. This specification tests which is strongly associated with crime.
+Model 3 (Poverty) replaces $log(GDP)$ by $log(Pop)$ . Unemployment captures short-term labour market fluctuations, while poverty reflects persistent economic hardship. This specification tests which is strongly associated with crime.
 
-$$Crime_{it} = \alpha_i + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Poverty_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
+$$Crime_{it} = \alpha_i + \beta_1 \log(Pop_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Poverty_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \epsilon_{it}$$
 
 ```{r}
 model_property_3 <- plm(
-  Data.Rates.Property.All ~ log_gdp +
+  Data.Rates.Property.All ~ log_pop +
     share_pretax_income_p90p100 +
-    percent_poor + 
+    unemployment_rate + 
     prison_per_100k +
     beer_per_capita_14plus +
-    log_pop,
+    percent_poor,
   data = panel_reg,
   index = c("State", "Year"),
   model = "within",
@@ -621,12 +621,12 @@ model_property_3 <- plm(
 
 ```{r}
 model_violent_3 <- plm(
-  Data.Rates.Violent.All ~ log_gdp +
+  Data.Rates.Violent.All ~ log_pop +
     share_pretax_income_p90p100 +
-    percent_poor + 
+    unemployment_rate + 
     prison_per_100k +
     beer_per_capita_14plus +
-    log_pop,
+    percent_poor,
   data = panel_reg,
   index = c("State", "Year"),
   model = "within",
@@ -656,7 +656,7 @@ model_property_4 <- plm(
     unemployment_rate +
     prison_per_100k +
     beer_per_capita_14plus +
-    log_pop,
+    percent_poor,
   data = panel_dynamic,
   index = c("State", "Year"),
   model = "within"
@@ -671,7 +671,7 @@ model_violent_4 <- plm(
     unemployment_rate +
     prison_per_100k +
     beer_per_capita_14plus +
-    log_pop,
+    percent_poor,
   data = panel_dynamic,
   index = c("State", "Year"),
   model = "within"
@@ -690,7 +690,7 @@ model_property_5 <- plm(
     unemployment_rate + # or poverty, depends on the best
     prison_per_100k +
     beer_per_capita_14plus +
-    log_pop,
+    percent_poor,
   data = panel_dynamic,
   index = c("State", "Year"),
   model = "within",
@@ -706,7 +706,7 @@ model_violent_5 <- plm(
     unemployment_rate +
     prison_per_100k +
     beer_per_capita_14plus +
-    log_pop,
+    percent_poor,
   data = panel_dynamic,
   index = c("State", "Year"),
   model = "within",
