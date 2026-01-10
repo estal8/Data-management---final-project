@@ -406,6 +406,8 @@ Model 2 : we replace $log(GDP)$ by $Consumption$ to test another measure of econ
 
 $$Crime_{it} = \alpha_i + \beta_1 \log(Consumption_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 
+**AFTER CONSUMPTION CHANGE => problem with panel full final !!! But I can't commit the changes**
+
 ```{r}
 model_property_2 <- plm(
   Data.Rates.Property.All ~ Consumption +
