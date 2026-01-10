@@ -418,7 +418,29 @@ bp_hetero <- bptest(model_fe)
 print(bp_hetero)
 ```
 
-The specification tests reveal two issues, serial correlation and heteroscedasticity. 
+The specification tests reveal two issues, serial correlation and heteroscedasticity. They do not bias our coefficient estimates but invalidate classic standard errors, potentially leading to misleading significance levels. So, we compute robust standard errors, clustered at the state level, and compare them with the correlated and heterodastic standard errors.
+
+```{r}
+robust_se <- vcovHC(model_fe, type = "HC1", cluster = "group")
+```
+
+```{r}
+comparison <- tibble(
+  Variable = names(coef(model_fe)),
+  Coefficient = coef(model_fe),
+  SE_classical = sqrt(diag(vcov(model_fe))),
+  SE_robust = sqrt(diag(robust_se))
+) |>
+  mutate(
+    t_classical = Coefficient / SE_classical,
+    t_robust = Coefficient / SE_robust,
+    p_classical = 2 * pt(-abs(t_classical), df = model_fe$df.residual),
+    p_robust = 2 * pt(-abs(t_robust), df = model_fe$df.residual)
+  )
+
+comparison |>
+  knitr::kable(digits = 3, caption = "Comparison of classical vs robust standard errors")
+```
 
 Finally, we test for multicolinearity, using Variance Inflation Factors (VIF).
 
@@ -586,7 +608,7 @@ To look into crime persistence (i.e., the tendency of high-crime states to remai
 $$Crime_{it} = \alpha_i + \theta \cdot Crime_{i,t-1} + \beta_1 \log(GDP_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Unemployment_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \gamma_2 \cdot \log(Pop_{it}) + \epsilon_{it}$$
 
 ```{r}
-panel_reg <- panel_reg |>
+panel_dynamic <- panel_reg |>
   group_by(State) |>
   arrange(Year) |>
   mutate(crime_lag = lag(Data.Rates.Property.All)) |>
@@ -601,7 +623,7 @@ model_property_4 <- plm(
     prison_population +
     beer_per_capita_14plus +
     log_pop,
-  data = panel_reg |> filter(!is.na(crime_lag)),
+  data = panel_dynamic |> filter(!is.na(crime_lag)),
   index = c("State", "Year"),
   model = "within"
 )
@@ -620,7 +642,7 @@ model_violent_4 <- plm(
     prison_population +
     beer_per_capita_14plus +
     log_pop,
-  data = panel_reg |> filter(!is.na(crime_lag)),
+  data = panel_dynamic |> filter(!is.na(crime_lag)),
   index = c("State", "Year"),
   model = "within"
 )
@@ -642,7 +664,7 @@ model_property_5 <- plm(
     prison_per_100k +
     beer_per_capita_14plus +
     log_pop,
-  data = panel_reg,
+  data = panel_dynamic,
   index = c("State", "Year"),
   model = "within",
   effect = "twoways"
@@ -661,7 +683,7 @@ model_violent_5 <- plm(
     prison_population +
     beer_per_capita_14plus +
     log_pop,
-  data = panel_reg,
+  data = panel_dynamic,
   index = c("State", "Year"),
   model = "within",
   effect = "twoways"
@@ -670,42 +692,66 @@ model_violent_5 <- plm(
 summary(model_violent_5)
 ```
 
+Applying robust standard error to all models.
+
 ```{r}
-modelsummary(
-  list(
-    "Model 1" = model_property_1,
-    "Model 2" = model_property_2,
-    "Model 3" = model_property_3,
-    "Model 4" = model_property_4,
-    "Model 5" = model_property_5
-  ),
-  title = "Property crime: Panel regression results",
-  stars = TRUE,
-  gof_omit = "IC|Log|RMSE",
-  output = "kableExtra"
-) |>
-  kable_styling(latex_options = "HOLD_position")
+robust_vcov <- function(x) vcovHC(x, type = "HC1", cluster = "group")
 ```
 
 ```{r}
 modelsummary(
   list(
-    "Model 1" = model_violent_1,
-    "Model 2" = model_violent_2,
-    "Model 3" = model_violent_3,
-    "Model 4" = model_violent_4,
-    "Model 5" = model_violent_5
+    "Model 1: Baseline" = model_property_1,
+    "Model 2: Consumption" = model_property_2,
+    "Model 3: Poverty" = model_property_3,
+    "Model 4: Dynamic" = model_property_4,
+    "Model 5: Two-way FE" = model_property_5
   ),
-  title = "Violent crime: Panel regression results",
-  stars = TRUE,
-  gof_omit = "IC|Log|RMSE",
+  vcov = robust_vcov,
+  stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
+  coef_rename = c(
+    "log_gdp" = "Log GDP",
+    "share_pretax_income_p90p100" = "Inequality (top 10%)",
+    "unemployment_rate" = "Unemployment rate",
+    "prison_per_100k" = "Prison per 100k",
+    "beer_per_capita_14plus" = "Beer consumption",
+    "property_lag" = "Property crime (t-1)",
+    "Consumption" = "Consumption"
+  ),
+  gof_omit = "IC|Log|RMSE|Adj|Std.Errors",
+  notes = "Robust standard errors clustered by state are in parenthesis",
   output = "kableExtra"
 ) |>
   kable_styling(latex_options = "HOLD_position")
 ```
 
 
-
+```{r}
+modelsummary(
+  list(
+    "Model 1: Baseline" = model_violent_1,
+    "Model 2: Consumption" = model_violent_2,
+    "Model 3: Poverty" = model_violent_3,
+    "Model 4: Dynamic" = model_violent_4,
+    "Model 5: Two-way FE" = model_violent_5
+  ),
+  vcov = robust_vcov,
+  stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
+  coef_rename = c(
+    "log_gdp" = "Log GDP",
+    "share_pretax_income_p90p100" = "Inequality (top 10%)",
+    "unemployment_rate" = "Unemployment rate",
+    "prison_per_100k" = "Prison per 100k",
+    "beer_per_capita_14plus" = "Beer consumption",
+    "property_lag" = "Property crime (t-1)",
+    "Consumption" = "Consumption"
+  ),
+  gof_omit = "IC|Log|RMSE|Adj|Std.Errors",
+  notes = "Robust standard errors clustered by state are in parenthesis",
+  output = "kableExtra"
+) |>
+  kable_styling(latex_options = "HOLD_position")
+```
 
 We first examine the relationship between GDP and violent / property crime rates. Economic theory suggests that GDP should be a stronger predictor of property crime (primarily motivated by financial need) than of violent crime, which is driven by more complex social and psychological factors (Becker, 1968).
 
