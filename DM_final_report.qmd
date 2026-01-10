@@ -714,6 +714,8 @@ model_violent_5 <- plm(
 )
 ```
 
+##### Results
+
 ```{r}
 modelsummary(
   list(
