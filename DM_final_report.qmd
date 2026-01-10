@@ -991,7 +991,7 @@ modelsummary(
 
 This table presents the results of our 5 models for property crime, using robust standard errors clustered by state to account for serial correlation and heteroscedasticity.
 
-The variable `log_gdp` shows a strong and consistent negative correlation with property crime. For instance, in the baseline model, a 10% increase in per state GDP is associated to about 151 fewer property crimes per 100 000 inhabitants ($β = -1.510$, $p < 0.001$). This effect is attenuated but remains significant when controlling for crime persistence in Model 4 ($β = -244$, $p < 0.001$), and becomes non-significant in the two-way fixed effects specification in Model 5, $β = -105$, $p > 0.05$). This suggests that the crime-GDP relationship reflects national trends rather than state-specific dynamics.
+The variable `log_gdp` shows a strong and consistent negative correlation with property crime. For instance, in the baseline model, a 10% increase in per state GDP is associated to about 151 fewer property crimes per 100 000 inhabitants ($β = -1509$, $p < 0.001$). This effect is attenuated but remains significant when controlling for crime persistence in Model 4 ($β = -244$, $p < 0.001$), and becomes non-significant in the two-way fixed effects specification in Model 5, $β = -105$, $p > 0.05$). This suggests that the crime-GDP relationship reflects national trends rather than state-specific dynamics.
 
 Personal consumption expenditures, tested as an alternative measure to GDP in Model 2, shows a significant but smaller negative correlation ($β = -0.061$, $p < 0.001$). This confirms that household living standards, not just aggregate output, are negatively associated with property crime.
 
