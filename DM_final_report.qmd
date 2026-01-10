@@ -1054,8 +1054,6 @@ As for beer consumption, it is again strongly and positively correlated with vio
 
 It's interesting to notice that adding lagged crime dramatically improves the models' fit ($R^2 ≈ 0.8$ in model 4 and 5). The crime persistence coefficient is large and highly significant ($θ = 0.833$). It indicates that violent crime exhibits even stronger inertia than property crime. Indeed, holding other factors constant, a state with 100 more violent crimes per 100 000 the past year will have 83 more violent crime the following year. But in these models, almost all variables that previously were significant lose their significance. This might indicate that their effect was linked to crime inertia. In the two-way fixed effect model (Model 5), only poverty remains slightly significant aside from lagged crime, but it has a negative coefficient.
 
-Our estimates capture associations, not causal effects. Indeed, high crime may reduce GDP or increase prison population, which implies reverse causality. Moreover, there are omitted variables in our work, for instance time-varying factors like policing strategies, population structure and demographic shift may confound our estimates.
-
 ### **Short-run analysis (2015–2018) - Contemporary correlates of crime**
 
 #### Descriptive analysis
@@ -1065,7 +1063,6 @@ Our estimates capture associations, not causal effects. Indeed, high crime may r
 We start the short-run analysis by describing crime rates and contemporaneous socio-economic variables over the period 2015–2018, which corresponds to the years for which the richest set of covariates is jointly available. Given the short time dimension, the objective is to document cross-state variation rather than long-run trends.
 
 ```{r}
-
 panel_recent <- panel_full |>
   filter(Year >= 2015, Year <= 2018)
 
@@ -1078,7 +1075,12 @@ panel_recent_tbl <- panel_recent |>
     unemployment_rate_pct = unemployment_rate,   # ya está en %
     poverty_rate_pct      = percent_poor,        # ya está en %
     prison_per_100k       = 1e5 * prison_population / Data.Population,
-    alcohol_per_capita    = beer_per_capita_14plus
+    alcohol_per_capita    = beer_per_capita_14plus,
+    spending_education   = spending_education / 1e6,
+    spending_welfare     = spending_welfare / 1e6,
+    spending_health      = spending_health / 1e6,
+    spending_corrections = spending_corrections / 1e6,
+    spending_police      = spending_police / 1e6
   )
 
 vars_2 <- c(
@@ -1128,8 +1130,8 @@ summary_recent <- panel_recent_tbl |>
   mutate(
 variable = dplyr::recode(variable,
       
-      "Data.Rates.Violent.All"      = "Violent crime rate (per 100k)",
-      "Data.Rates.Property.All"     = "Property crime rate (per 100k)",
+      "Data.Rates.Violent.All"      = "Violent crime rate",
+      "Data.Rates.Property.All"     = "Property crime rate",
 
      
       "log_gdp"                     = "Log GDP",
@@ -1140,11 +1142,11 @@ variable = dplyr::recode(variable,
       "shootings_per_million"       = "Police shootings per million",
 
      
-      "spending_education"          = "Public spending: education",
-      "spending_welfare"            = "Public spending: welfare",
-      "spending_health"             = "Public spending: health",
-      "spending_corrections"        = "Public spending: corrections",
-      "spending_police"             = "Public spending: police",
+      "spending_education"          = "Public spending: education (in millions)",
+      "spending_welfare"            = "Public spending: welfare (in millions)",
+      "spending_health"             = "Public spending: health (in millions)",
+      "spending_corrections"        = "Public spending: corrections (in millions)",
+      "spending_police"             = "Public spending: police (in millions)",
 
       
       "wic_2015"                    = "WIC participants (2015)",
@@ -1152,7 +1154,7 @@ variable = dplyr::recode(variable,
       "sbp_2015"                    = "School breakfast participants (2015)",
       "unemployment_rate_pct"       = "Unemployment rate (%)",
       "poverty_rate_pct"            = "Poverty rate (%)",
-      "prison_per_100k"             = "Prison population (per 100k)",
+      "prison_per_100k"             = "Prison population per 100k",
       "alcohol_per_capita"          = "Beer consumption per capita"
     )
   )
@@ -1313,7 +1315,7 @@ Public spending and food assistance indicators show considerable dispersion but 
 
 Overall, this quartile-based comparison indicates that, even over a short horizon, states with higher crime rates tend to be characterised by greater economic stress, higher incarceration rates, and more intense police activity. These patterns motivate the regression analysis that follows, which formalises these associations while controlling for multiple dimensions simultaneously.
 
-### Regression analysis
+#### Regression analysis
 
 Because the short-run panel only covers four years (2015–2018), we begin with a purely exploratory correlation analysis. The objective is not statistical inference, but rather to provide a preliminary overview of how violent and property crime co-move with a broad set of socio-economic and institutional variables, and to motivate a parsimonious and structured regression design.
 
@@ -1368,7 +1370,7 @@ Institutional variables exhibit particularly strong correlations among themselve
 
 Overall, the correlation structure points to two related but distinct dimensions: economic stress (income, unemployment, poverty, inequality) and institutional or enforcement intensity (incarceration, policing, public safety spending). This motivates a structured regression strategy.
 
-#### Hypotheses
+##### Hypotheses
 
 We focus on four short-run hypotheses, mapped directly into two model blocks:
 
@@ -1379,7 +1381,7 @@ We focus on four short-run hypotheses, mapped directly into two model blocks:
 
 (H1–H2 are tested in the economic stress model; H3–H4 in the institutional model.)
 
-#### Economic stress model (pooled OLS + year FE)
+##### Economic stress model (pooled OLS + year FE)
 
 ```{r}
 panel_short <- panel_full_final
@@ -1396,7 +1398,15 @@ panel_short_inst <- panel_full_final |>
 
 Given the short time dimension, we use a parsimonious pooled OLS specification and include year fixed effects to absorb nationwide shocks common to all states.
 
-$$Crime\_{it} = \beta_0 + \beta_1 log(GDP_{it}) + \beta_2 Unemployment_{it} + \beta_3 Poverty_{it} + \beta_4 Inequality_{it} + \beta_5 log(Pop{it}) + \delta_t + \varepsilon_{it}$$
+$$\begin{aligned}
+Crime_{it} =\ & \ \beta_0 + \beta_1 log(GDP_{it}) 
++ \beta_2 \ Unemployment_{it} \\
+& + \beta_3 \ Poverty_{it} 
++ \beta_4 \ Inequality_{it} \\
+& + \beta_5 \ log(Pop_{it}) 
++ \delta_t 
++ \varepsilon_{it}
+\end{aligned}$$
 
 where: $Crime_{it}$ denotes either violent or property crime in state i and year t, $\delta_t$ are year fixed effects capturing nationwide shocks.
 
@@ -1427,11 +1437,21 @@ summary(ols_property_econ)
 summary(ols_violent_econ)
 ```
 
-#### Institutions stress model (pooled OLS + year FE)
+##### Institutions stress model (pooled OLS + year FE)
 
 We estimate a separate specification focusing on contemporaneous institutional intensity and behavioral factors. These covariates are interpreted as descriptive correlates (not exogenous policy instruments), hence we keep them separate from economic stress variables.
 
-$$Crime_{it} = \beta_0 + \beta_1 Prison_{it} + \beta_2 PoliceShootings_{it} + \beta_3 PoliceSpending_{it} + \beta_4 CorrectionsSpending_{it} + \beta_5 Alcohol_{it} + \beta6 log(Pop_{it}) + \delta_t + \varepsilon_{it}$$
+$$\begin{aligned}
+Crime_{it} =\ & \ \beta_0 
++ \beta_1 \ Prison_{it} 
++ \beta_2 \ PoliceShootings_{it} \\
+& + \beta_3 \ PoliceSpending_{it} 
++ \beta_4 \ CorrectionsSpending_{it} \\
+& + \beta_5 \ Alcohol_{it} 
++ \beta_6 \ log(Pop_{it}) 
++ \delta_t 
++ \varepsilon_{it}
+\end{aligned}$$
 
 This model does not aim to measure deterrence effects, but rather documents how crime co-varies with enforcement intensity and social regulation in the short run.
 
