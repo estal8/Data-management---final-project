@@ -601,7 +601,7 @@ model_violent_2 <- plm(
 )
 ```
 
-Model 3 (Poverty) replaces $log(GDP)$ by $log(Pop)$ . Unemployment captures short-term labour market fluctuations, while poverty reflects persistent economic hardship. This specification tests which is strongly associated with crime.
+Model 3 (Population) replaces $log(GDP)$ by $log(Pop)$, to test whether the size of the state population is associated with property crime. This allows to compare the influence of the total population per state to the GDP.
 
 $$Crime_{it} = \alpha_i + \beta_1 \log(Pop_{it}) + \beta_2 \cdot Inequality_{it} + \beta_3 \cdot Poverty_{it} + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Beer_{it} + \epsilon_{it}$$
 
@@ -719,7 +719,7 @@ modelsummary(
   list(
     "Model 1: Baseline" = model_property_1,
     "Model 2: Consumption" = model_property_2,
-    "Model 3: Poverty" = model_property_3,
+    "Model 3: Population" = model_property_3,
     "Model 4: Dynamic" = model_property_4,
     "Model 5: Two-ways fixed effects" = model_property_5
   ),
@@ -746,7 +746,7 @@ modelsummary(
   list(
     "Model 1: Baseline" = model_violent_1,
     "Model 2: Consumption" = model_violent_2,
-    "Model 3: Poverty" = model_violent_3,
+    "Model 3: Population" = model_violent_3,
     "Model 4: Dynamic" = model_violent_4,
     "Model 5: Two-ways fixed effects" = model_violent_5
   ),
