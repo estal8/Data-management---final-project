@@ -245,9 +245,9 @@ ggplot(crime_gdp, aes(x = log_gdp, y = crime)) +
   theme_minimal()
 ```
 
-Property crime: The pooled scatter plot reveals a clear non-linear relationship between property crime and state GDP. At low to intermediate levels of GDP, property crime rates tend to increase, before declining for higher levels of economic activity. The downward-sloping segment at higher GDP levels suggests that economically stronger states tend to experience lower property crime rates, consistent with the hypothesis that improved economic opportunities reduce incentives for financially motivated offences. The dispersion of observations around the fitted curve remains substantial, indicating that GDP alone cannot account for cross-state differences in property crime.
+The pooled scatter plot reveals a clear non-linear relationship between property crime and state GDP. At low to intermediate levels of GDP, property crime rates tend to increase, before declining for higher levels of economic activity. The downward-sloping segment at higher GDP levels suggests that economically stronger states tend to experience lower property crime rates, consistent with the hypothesis that improved economic opportunities reduce incentives for financially motivated offences. The dispersion of observations around the fitted curve remains substantial, indicating that GDP alone cannot account for cross-state differences in property crime.
 
-Violent crime: In contrast, the relationship between violent crime and GDP is markedly weaker. While violent crime rates increase sharply at low GDP levels, the association flattens and becomes less systematic as GDP rises. At higher levels of economic activity, violent crime exhibits no clear monotonic decline. This pattern suggests that violent crime is less directly tied to economic performance than property crime and is likely driven by additional social, institutional, and demographic factors.
+In contrast, the relationship between violent crime and GDP is markedly weaker. While violent crime rates increase sharply at low GDP levels, the association flattens and becomes less systematic as GDP rises. At higher levels of economic activity, violent crime exhibits no clear monotonic decline. This pattern suggests that violent crime is less directly tied to economic performance than property crime and is likely driven by additional social, institutional, and demographic factors.
 
 ```{r}
 crime_ineq <- panel_long |>
@@ -289,9 +289,17 @@ ggplot(crime_ineq, aes(x = inequality, y = crime)) +
   theme_minimal()
 ```
 
-Property crime: The relationship between property crime and income inequality is non-linear and noisy. Property crime rates are highest at intermediate levels of inequality and decline at the upper end of the income share distribution. This inverted-U pattern suggests that inequality may matter for property crime, but its effect is neither simple nor monotonic. The wide dispersion of observations highlights the importance of unobserved state-specific characteristics.
+The relationship between property crime and income inequality is non-linear and noisy. Property crime rates are highest at intermediate levels of inequality and decline at the upper end of the income share distribution. This inverted-U pattern suggests that inequality may matter for property crime, but its effect is neither simple nor monotonic. The wide dispersion of observations highlights the importance of unobserved state-specific characteristics.
 
-Violent crime: It displays a more pronounced association with inequality. Crime rates increase strongly as the top income share rises from low to intermediate levels, before declining slightly at very high levels of inequality. This pattern is consistent with theories linking violent crime to social fragmentation, relative deprivation, and institutional stress, rather than purely economic incentives.
+It displays a more pronounced association with inequality. Crime rates increase strongly as the top income share rises from low to intermediate levels, before declining slightly at very high levels of inequality. This pattern is consistent with theories linking violent crime to social fragmentation, relative deprivation, and institutional stress, rather than purely economic incentives.
+
+ADD THE LAST VARIABLES : 
+
+unemployment_rate
+percent_poor
+Consumption
+beer_per_capita_14plus
+prison_per_100k
 
 #### Regression analysis
 
