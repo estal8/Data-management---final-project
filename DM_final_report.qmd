@@ -291,19 +291,132 @@ ggplot(crime_ineq, aes(x = inequality, y = crime)) +
 
 The relationship between property crime and income inequality is non-linear and noisy. Property crime rates are highest at intermediate levels of inequality and decline at the upper end of the income share distribution. This inverted-U pattern suggests that inequality may matter for property crime, but its effect is neither simple nor monotonic. The wide dispersion of observations highlights the importance of unobserved state-specific characteristics.
 
-It displays a more pronounced association with inequality. Crime rates increase strongly as the top income share rises from low to intermediate levels, before declining slightly at very high levels of inequality. This pattern is consistent with theories linking violent crime to social fragmentation, relative deprivation, and institutional stress, rather than purely economic incentives.
+Violent crime displays a more pronounced association with inequality. Crime rates increase strongly as the top income share rises from low to intermediate levels, before declining slightly at very high levels of inequality. This pattern is consistent with theories linking violent crime to social fragmentation, relative deprivation, and institutional stress, rather than purely economic incentives.
 
-ADD THE LAST VARIABLES : 
+```{r}
+crime_remaining_covariates <- panel_full_final |>
+  select(
+    State, Year,
+    Data.Rates.Property.All,
+    Data.Rates.Violent.All,
+    unemployment_rate,
+    percent_poor,
+    Consumption,
+    beer_per_capita_14plus,
+    prison_per_100k
+  ) |>
+  filter(!is.na(prison_per_100k)) |>
+  pivot_longer(
+    cols = c(Data.Rates.Property.All, Data.Rates.Violent.All),
+    names_to = "type",
+    values_to = "crime"
+  ) |>
+  mutate(
+    type = dplyr::recode(
+      type,
+      "Data.Rates.Violent.All"  = "Violent crime",
+      "Data.Rates.Property.All" = "Property crime"
+    )
+  )
+```
 
-unemployment_rate
+```{r}
+#| fig-cap: "Raw co-movement between crime and unemployment rate (pooled state–year observations)"
+#| fig-width: 10
+#| fig-height: 5
+#| warning: false
+#| message: false
 
+crime_remaining_covariates |>
+  ggplot(aes(x = unemployment_rate, y = crime)) +
+  geom_point(alpha = 0.25, size = 0.8) +
+  geom_smooth(method = "loess", formula = y ~ x, se = FALSE, linewidth = 1) +
+  facet_wrap(~ type, scales = "free_y") +
+  labs(
+    x = "Unemployment rate (%)",
+    y = "Crimes per 100,000 inhabitants"
+  ) +
+  theme_minimal()
+```
 
-percent_poor
-Consumption
-beer_per_capita_14plus
-prison_per_100k
+```{r}
+#| fig-cap: "Raw co-movement between crime and percentage of poor (pooled state–year observations)"
+#| fig-width: 10
+#| fig-height: 5
+#| warning: false
+#| message: false
 
+crime_remaining_covariates |> 
+  ggplot(aes(x = percent_poor, y = crime)) +
+  geom_point(alpha = 0.25, size = 0.8) +
+  geom_smooth(method = "loess", formula = y ~ x, se = FALSE, linewidth = 1) +
+  facet_wrap(~ type, scales = "free_y") +
+  labs(
+    x = "Share of population below poverty line (%)",
+    y = "Crimes per 100,000 inhabitants"
+  ) +
+  theme_minimal()
+```
 
+```{r}
+#| fig-cap: "Raw co-movement between crime and consumption per capita (pooled state–year observations)"
+#| fig-width: 10
+#| fig-height: 5
+#| warning: false
+#| message: false
+
+crime_remaining_covariates |> 
+ggplot(aes(x = Consumption, y = crime)) +
+  geom_point(alpha = 0.25, size = 0.8) +
+  geom_smooth(method = "loess", formula = y ~ x, se = FALSE, linewidth = 1) +
+  facet_wrap(~ type, scales = "free_y") +
+  labs(
+    x = "Consumption per capita",
+    y = "Crimes per 100,000 inhabitants"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| fig-cap: "Raw co-movement between crime and beer consumption per capita for people aged 14 and above (pooled state–year observations)"
+#| fig-width: 10
+#| fig-height: 5
+#| warning: false
+#| message: false
+
+crime_remaining_covariates |> 
+ggplot(aes(x = beer_per_capita_14plus, y = crime)) +
+  geom_point(alpha = 0.25, size = 0.8) +
+  geom_smooth(method = "loess", formula = y ~ x, se = FALSE, linewidth = 1) +
+  facet_wrap(~ type, scales = "free_y") +
+  labs(
+    x = "Beer consumption per capita (14+)",
+    y = "Crimes per 100,000 inhabitants"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+#| fig-cap: "Raw co-movement between crime and prison population per 100 000 inhabitants (pooled state–year observations)"
+#| fig-width: 10
+#| fig-height: 5
+#| warning: false
+#| message: false
+
+crime_remaining_covariates |> 
+ggplot(aes(x = prison_per_100k, y = crime)) +
+  geom_point(alpha = 0.25, size = 0.8) +
+  geom_smooth(method = "loess", formula = y ~ x, se = FALSE, linewidth = 1) +
+  facet_wrap(~ type, scales = "free_y") +
+  labs(
+    x = "Prison population per 100,000",
+    y = "Crimes per 100,000 inhabitants"
+  ) +
+  theme_minimal()
+```
+
+These 5 figures presents pooled scatter plots relating crime rates to key socio-economic variables across state-year observations. **CONTINUE**
 
 #### Regression analysis
 
