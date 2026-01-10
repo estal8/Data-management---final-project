@@ -838,7 +838,9 @@ The variable `log_gdp` shows a strong and consistent negative correlation with p
 
 Personal consumption expenditures, tested as an alternative measure to GDP in Model 2, shows a significant but smaller negative correlation ($β = -0.061$, $p < 0.001$). This confirms that household living standards, not just aggregate output, are negatively associated with property crime.
 
+Neither unemployment rate nor poverty rate shows a significant correlation with property crime after controlling for other factors. In a similar fashion, the prison population per 100 000 inhabitants is not significantly correlated to property crime. These null findings contrasts with theoretical expectations. For unemployment, it is not consistent with the literature that shows that, during the 1990s, unemployment dropping caused, in part, an decrease in property crimes (Raphael & Winter-Ebmer, 2001).
 
+Beer consumption per capita is positively and significantly correlated with property crime across all specifications, from $β = 1,833$ ($p < 0.001$) in Model 1 to $β = 226$ ($p > 0.05$) in Model 5. The attenuation in Model 5 could be linked to the absorption of common trends by year fixed effects.
 
 
 
