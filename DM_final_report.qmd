@@ -199,7 +199,7 @@ ggplot(crime_by_state_top, aes(x = Year, y = rate, colour = State)) +
 
 Figure 2 displays the crime trends for the eight states with the highest crime rate per 100 000 inhabitants between 1960 and 2018. Despite differences in levels, all states exhibit similar trends : a strong increase until the late 1980s or early 1990s, followed by a sustained decline
 
-At the same time, cross-state heterogeneity remains pronounced. The District of Columbia stands out, both for its higher levels and for its volatility.
+At the same time, cross-state heterogeneity remains pronounced. The District of Columbia stands out, both for its higher levels and for its volatility, <hich might reflect its unique urban and institutional characteristics. This makes it difficult to compare it with US states. While it is included in this descriptive analysis, it is excluded from the regression sample due to missing values for key variables.
 
 ##### Descriptive co-movement with economic structure
 
@@ -296,10 +296,14 @@ It displays a more pronounced association with inequality. Crime rates increase 
 ADD THE LAST VARIABLES : 
 
 unemployment_rate
+
+
 percent_poor
 Consumption
 beer_per_capita_14plus
 prison_per_100k
+
+
 
 #### Regression analysis
 
