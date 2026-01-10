@@ -1154,8 +1154,10 @@ panel_sr <- panel_full |>
     spending_welfare,
     shootings_per_million,
     lpr_per_million,
-    beer_per_capita_14plus
+    beer_per_capita_14plus,
+    Data.Population
   ) |>
+  mutate(log_pop = log(Data.Population)) |> # added because you use it later (and didn't create a panel_short database ??)
   drop_na()
 
 corr_mat <- cor(panel_sr)
@@ -1193,9 +1195,9 @@ We focus on four short-run hypotheses, mapped directly into two model blocks:
 
 Given the short time dimension, we use a parsimonious pooled OLS specification and include year fixed effects to absorb nationwide shocks common to all states.
 
-Crime\_{it} = \beta\_0 + \beta*1* \log(GDP{it}) + \beta*2 Unemployment*{it} + \beta*3 Poverty*{it} + \beta*4 Inequality*{it} + \beta*5* \log(Pop{it}) + \delta*t +* \varepsilon{it}
+$$Crime\_{it} = \beta\_0 + \beta*1* \log(GDP{it}) + \beta*2 Unemployment*{it} + \beta*3 Poverty*{it} + \beta*4 Inequality*{it} + \beta*5* \log(Pop{it}) + \delta*t +* \varepsilon{it}$$
 
-where: • Crime\_{it} denotes either violent or property crime in state i and year t, • \delta\_t are year fixed effects capturing nationwide shocks.
+where: Crime\_{it} denotes either violent or property crime in state i and year t, $\delta\_t$ are year fixed effects capturing nationwide shocks.
 
 This specification captures short-run associations between economic stress and crime without conditioning on potentially endogenous institutional responses.
 
@@ -1217,7 +1219,7 @@ ols_violent_econ <- lm(
     share_pretax_income_p90p100 +
     log_pop +
     factor(Year),
-  data = panel_short
+  data = panel_sr
 )
 
 summary(ols_property_econ)
