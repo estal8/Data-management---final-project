@@ -77,8 +77,10 @@ library(dplyr)
 library(tidyverse)
 library(here)
 library(vroom)
+library(car)
 library(modelsummary)
 library(kableExtra)
+library(lmtest)
 ```
 
 ```{r}
@@ -338,7 +340,7 @@ We test the following hypotheses:
 
 We estimate different models for property and violent crime, as property crime is more directly linked to economic incentives (Becker, 1968), while violent crime may be more linked to specific social factors.
 
-##### Fixed effects 
+##### Tests 
 
 ```{r}
 panel_reg <- panel_full_final |>
@@ -350,8 +352,97 @@ panel_reg <- panel_full_final |>
          log_pop = log(Data.Population))
 ```
 
-First we test for the model that best suits our data.
+Before presenting our results, we conduct a series of tests to validate our approach.
 
+```{r}
+panel_data <- pdata.frame(panel_reg, index = c("State", "Year"))
+
+model_pooled <- plm(
+  Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + 
+    unemployment_rate + prison_per_100k + beer_per_capita_14plus,
+  data = panel_data, model = "pooling"
+)
+
+model_fe <- plm(
+  Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + 
+    unemployment_rate + prison_per_100k + beer_per_capita_14plus,
+  data = panel_data, model = "within"
+)
+
+model_re <- plm(
+  Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + 
+    unemployment_rate + prison_per_100k + beer_per_capita_14plus,
+  data = panel_data, model = "random"
+)
+```
+
+```{r} 
+# F-test (pooled vs fixed effects)
+f_test <- pFtest(model_fe, model_pooled)
+print(f_test)
+
+# Breusch-Pagan LM (pooled vs random affects)
+bp_test <- plmtest(model_pooled, type = "bp")
+print(bp_test)
+
+#Hausman (fixed vs random effects)
+hausman_test <- phtest(model_fe, model_re)
+print(hausman_test)
+
+# Autocorrelation test (Breusch-Godfrey)
+bg_test <- pbgtest(model_fe, order = 1)
+print(bg_test)
+
+# Heteroscedasticity test (Breusch-Pagan)
+bp_hetero <- bptest(model_fe)
+print(bp_hetero)
+
+model_ols <- lm(
+  Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + 
+    unemployment_rate + prison_population + beer_per_capita_14plus,
+  data = panel_reg
+)
+vif(model_ols)
+```
+
+```{r}
+tests_summary <- tibble(
+  Test = c("F-test (Pooled vs FE)", 
+           "Breusch-Pagan LM", 
+           "Hausman (FE vs RE)",
+           "Breusch-Godfrey (autocorr.)",
+           "Breusch-Pagan (heterosced.)"),
+  Statistic = c(f_test$statistic, 
+                bp_test$statistic, 
+                hausman_test$statistic,
+                bg_test$statistic,
+                bp_hetero$statistic),
+  P_value = c("< 0.001", "< 0.001", "< 0.001", "< 0.001", "< 0.001"),
+  Decision = c(
+    ifelse(f_test$p.value < 0.05, "FE needed", "Pooled OK"),
+    ifelse(bp_test$p.value < 0.05, "Individual effects exist", "No effects"),
+    ifelse(hausman_test$p.value < 0.05, "FE preferred", "RE acceptable"),
+    ifelse(bg_test$p.value < 0.05, "Autocorrelation present", "No autocorrelation"),
+    ifelse(bp_hetero$p.value < 0.05, "Heteroscedasticity present", "Homoscedastic")
+  )
+)
+
+tests_summary |>
+  knitr::kable(booktabs = TRUE, caption = "Model specification tests")
+```
+
+The first question is whether state-level heterogeneity exists. We test this using two complementary approaches.The F-test compares the fixed effects model against pooled OLS. The null hypothesis is that all state fixed effects are jointly equal to zero ($H_0 = \alpha_{1} = … = \alpha_{2}$). We obtain $F=148.9$ with $p<0.001$.
+Thus, the F-test strongly rejects the null hypothesis that state fixed effects are jointly zero, indicating that pooled OLS is inappropriate. 
+
+The Breusch-Pagan Lagrange Multiplier test provides a complementary check. It tests whether the variance of individual effects is zero ($H_0: \sigma^2_\alpha = 0$). We obtain $\chi^2 = 3047.7$ with $p<0.001$, which allows us to reject the null hypothesis.
+
+These tests confirm that individual effects are present and statistically significant. Having established that, we still have to choose between random effects and fixed effects. To do so, we use the Hausman test : under $H_0$, both fixed effects and random effects are consistent, but random effects is more efficient; under $H_1$, only fixed effects is consistent.
+We obtain $\chi^2 = 595.9$ with $p<0.001$, so we reject $H_0$. This indicates that state-specific effects are correlated with our explanatory variables (GDP, inequality, etc.), which makes sense since wealthier states likely have different unobserved characteristics than poorer states.
+
+Next, we test for autocorrelation and heteroscedasticity. 
+
+
+##### Models with fixed effects
 
 **Faire une annonce de plan résumant tous les modèles**
 
@@ -367,7 +458,7 @@ model_property_1 <- plm(
   Data.Rates.Property.All ~ log_gdp +
     share_pretax_income_p90p100 +
     unemployment_rate + 
-    prison_population +
+    prison_per_100k +
     beer_per_capita_14plus +
     log_pop,
   data = panel_reg,
@@ -383,7 +474,7 @@ model_violent_1 <- plm(
   Data.Rates.Violent.All ~ log_gdp +
     share_pretax_income_p90p100 +
     unemployment_rate + 
-    prison_population +
+    prison_per_100k +
     beer_per_capita_14plus +
     log_pop,
   data = panel_reg,
@@ -413,7 +504,7 @@ model_property_2 <- plm(
   Data.Rates.Property.All ~ Consumption +
     share_pretax_income_p90p100 +
     unemployment_rate + 
-    prison_population +
+    prison_per_100k +
     beer_per_capita_14plus +
     log_pop,
   data = panel_reg,
@@ -429,7 +520,7 @@ model_violent_1 <- plm(
   Data.Rates.Violent.All ~ Consumption +
     share_pretax_income_p90p100 +
     unemployment_rate + 
-    prison_population +
+    prison_per_100k +
     beer_per_capita_14plus +
     log_pop,
   data = panel_reg,
@@ -489,7 +580,7 @@ model_property_5 <- plm(
     log_gdp + # or consumption
     share_pretax_income_p90p100 +
     unemployment_rate + # or poverty, depends on the best
-    prison_population +
+    prison_per_100k +
     beer_per_capita_14plus +
     log_pop,
   data = panel_reg,
@@ -706,67 +797,6 @@ modelsummary(
 ```
 
 For violent crime (Table 2), the results confirm our theoretical expectations: GDP has a weaker association ($β ≈ -100$, $R² = 0.15$), and inequality is only marginally significant ($p < 0.10$). Economic factors alone cannot explain violent crime patterns.
-
-##### Between model
-
-```{r}
-model_between <- plm(
-  Data.Rates.Property.All ~ log(gdp) + share_pretax_income_p90p100,
-  data = panel_reg,
-  index = c("State", "Year"),
-  model = "between"
-)
-```
-
-```{r}
-summary(model_between)
-```
-
-##### Random model
-
-```{r}
-model_random_property <- plm(
-  Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100,
-  data = panel_reg,
-  index = c("State", "Year"),
-  model = "random"
-)
-
-model_random_violent <- plm(
-  Data.Rates.Violent.All ~ log_gdp + share_pretax_income_p90p100,
-  data = panel_reg,
-  index = c("State", "Year"),
-  model = "random"
-)
-```
-
-```{r}
-summary(model_random_property)
-summary(model_random_violent)
-```
-
-##### Test de Hausman
-
-```{r}
-hausman_property <- phtest(
-  model_property_3,        # Fixed effects (two-ways)
-  model_random_property    # Random effects
-)
-
-hausman_property
-```
-
-```{r}
-hausman_violent <- phtest(
-  model_violent_3,
-  model_random_violent
-)
-
-hausman_violent
-```
-
-
-
 
 
 Our estimates capture associations, not causal effects. Indeed, high crime may reduce GDP or increase prison population, which implies reverse causality. Moreover, there are omitted variables in our work, for instance time-varying factors like policing strategies, population structure and demographic shift may confounf our estimates.
