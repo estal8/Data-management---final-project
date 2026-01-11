@@ -510,19 +510,19 @@ panel_data <- pdata.frame(panel_reg, index = c("State", "Year"))
 
 model_pooled <- plm(
   Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + 
-    unemployment_rate + prison_per_100k + beer_per_capita_14plus,
+    unemployment_rate + prison_per_100k + beer_per_capita_14plus + percent_poor,
   data = panel_data, model = "pooling"
 )
 
 model_fe <- plm(
   Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + 
-    unemployment_rate + prison_per_100k + beer_per_capita_14plus,
+    unemployment_rate + prison_per_100k + beer_per_capita_14plus + percent_poor,
   data = panel_data, model = "within"
 )
 
 model_re <- plm(
   Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + 
-    unemployment_rate + prison_per_100k + beer_per_capita_14plus,
+    unemployment_rate + prison_per_100k + beer_per_capita_14plus + percent_poor,
   data = panel_data, model = "random"
 )
 ```
@@ -561,9 +561,9 @@ tests_table |>
   )
 ```
 
-The F-test compares the fixed effects model against pooled OLS. The null hypothesis is that all state fixed effects are jointly equal to zero ($H_0 = \alpha_{1} = … = \alpha_{2}$). We obtain $F=148.9$ with $p<0.001$. Thus, the F-test strongly rejects the null hypothesis that state fixed effects are jointly zero, indicating that pooled OLS is inappropriate.
+The F-test compares the fixed effects model against pooled OLS. The null hypothesis is that all state fixed effects are jointly equal to zero ($H_0 = \alpha_{1} = … = \alpha_{2}$). We obtain $F=148.4$ with $p<0.001$. Thus, the F-test strongly rejects the null hypothesis that state fixed effects are jointly zero, indicating that pooled OLS is inappropriate.
 
-The Breusch-Pagan Lagrange Multiplier test provides a complementary check. It tests whether the variance of individual effects is zero ($H_0: \sigma^2_\alpha = 0$). We obtain $\chi^2 = 3047.7$ with $p<0.001$, which allows us to reject the null hypothesis.
+The Breusch-Pagan Lagrange Multiplier test provides a complementary check. It tests whether the variance of individual effects is zero ($H_0: \sigma^2_\alpha = 0$). We obtain $\chi^2 = 2981.1$ with $p<0.001$, which allows us to reject the null hypothesis.
 
 These tests confirm that individual effects are present and statistically significant. Having established that, we still have to choose between random effects and fixed effects. To do so, we use the Hausman test :
 
@@ -587,7 +587,7 @@ tests_table |>
   )
 ```
 
-Under $H_0$, both fixed effects and random effects are consistent, but random effects is more efficient ; under $H_1$, only fixed effects is consistent. We obtain $\chi^2 = 595.9$ with $p<0.001$, so we can reject $H_0$.
+Under $H_0$, both fixed effects and random effects are consistent, but random effects is more efficient ; under $H_1$, only fixed effects is consistent. We obtain $\chi^2 = 599.8$ with $p<0.001$, so we can reject $H_0$.
 
 This indicates that state-specific effects are correlated with our explanatory variables (GDP, inequality, etc.), which makes sense since wealthier states likely have different unobserved characteristics than poorer states.
 
@@ -633,7 +633,8 @@ var_labels <- c(
   "unemployment_rate" = "Unemployment rate",
   "prison_per_100k" = "Prison per 100k",
   "beer_per_capita_14plus" = "Beer per capita (14+)",
-  "log_pop" = "Log(Population)"
+  "log_pop" = "Log(Population)",
+  "percent_poor" = "Poverty (%)"
 )
 
 comparison <- tibble(
