@@ -23,7 +23,7 @@ Principally, the project asks whether economic and social variables are more str
 
 ## Brief dataset description
 
-We built our panel by usind nine different sources :
+We built our panel by using nine different sources :
 
 -   Property and Violent crime rates (FBI/CORGIS, 1960–2019) ;
 
@@ -875,7 +875,7 @@ model_violent_2 <- plm(
 )
 ```
 
-Model 3 (Dynamic) adds lagged crime as an explanatory variable to test the persistence hypothesis (H5) (i.e., the tendency of high-crime states to remain high-crime). If crime exhibits inertia, the lagged coefficient should be positive and significant. We acknowledge that including a lagged dependent variable in fixed effects models introduces Nickell bias, which attenuates the coefficient toward zero when T is small. With T = 20 years, this bias is modest but not negligible. Results from Model 4 should therefore be interpreted cautiously, as the true persistence coefficient may be slightly higher than estimated.
+Model 3 (Dynamic) adds lagged crime as an explanatory variable to test the persistence hypothesis (H5) (i.e., the tendency of high-crime states to remain high-crime). If crime exhibits inertia, the lagged coefficient should be positive and significant. We acknowledge that including a lagged dependent variable in fixed effects models introduces Nickell bias, which attenuates the coefficient toward zero when T is small. With T = 20 years, this bias is modest but not negligible. Results from Model 3 should therefore be interpreted cautiously, as the true persistence coefficient may be slightly higher than estimated.
 
 $$
 \begin{aligned}
