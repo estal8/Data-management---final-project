@@ -689,9 +689,9 @@ knitr::kable(
 )
 ```
 
-We do not include GDP, consumption and population simultaneously because of the multicollinearity it clearly introduces. Instead, we will estimate alternative specifications to assess which measure is most strongly associated with crime (see following models).
+We do not include GDP, consumption and population simultaneously because of the multicollinearity it clearly introduces. Instead, we will estimate alternative specifications to assess which measure is most strongly associated with crime (see following models). In fact, we choose not to include log population at all, as it is not directly linked to any of our hypothesis and as population changes slowly over time, the within-state variation in log population is limited and largely captured by the state fixed effects.
 
-For now, we look at the VIF when we only keep one variable among log(gdp), log(pop) and consumption.
+For now, we look at the VIF when we only keep one variable among log(gdp) and consumption.
 
 ```{r}
 model_ols <- lm(
@@ -708,19 +708,6 @@ knitr::kable(
 
 ```{r}
 model_ols_2 <- lm(
-  Data.Rates.Property.All ~ log_pop + share_pretax_income_p90p100 + 
-    unemployment_rate + prison_population + percent_poor + beer_per_capita_14plus,
-  data = panel_reg
-)
-knitr::kable(
-  round(vif(model_ols_2), 2),
-  col.names = "VIF",
-  caption = "Variance inflation factors with log(pop)"
-)
-```
-
-```{r}
-model_ols_3 <- lm(
   Data.Rates.Property.All ~ Consumption + share_pretax_income_p90p100 + 
     unemployment_rate + prison_population + percent_poor + beer_per_capita_14plus,
   data = panel_reg
@@ -733,7 +720,7 @@ knitr::kable(
 )
 ```
 
-Without consumption, population, and GDP being included simultaneously, all VIF values are below 5, the conventional threshold for concern, so our explanatory variables are sufficiently independent.
+Without consumption and GDP being included simultaneously, all VIF values are below 5, the conventional threshold for concern, so our explanatory variables are sufficiently independent.
 
 ```{r}
 tests_summary <- tibble(
