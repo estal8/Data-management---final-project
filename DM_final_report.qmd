@@ -195,6 +195,45 @@ Figure 2 displays the crime trends for the eight states with the highest crime r
 
 The District of Columbia stands out, both for its higher levels and for its volatility, which might reflect its unique urban and institutional characteristics. This makes it difficult to compare it with US states. While it is included in this descriptive analysis, it is excluded from the regression sample due to missing values for key variables and to its unique characteristics as a federal district (no state-level governance, extreme urbanization).
 
+##### Summary statistics
+
+```{r}
+panel_reg <- panel_full_final |>
+  filter(Year >= 1998 & Year <= 2018) |>
+  filter(State != "District of Columbia") |>
+  mutate(log_gdp = log(gdp), log_pop = log(Data.Population))
+```
+
+```{r}
+panel_reg |>
+  select(
+    `Property crime (per 100k)` = Data.Rates.Property.All,
+    `Violent crime (per 100k)` = Data.Rates.Violent.All,
+    `Log GDP` = log_gdp,
+    `Top 10% pretax income share` = share_pretax_income_p90p100,
+    `Unemployment rate (%)` = unemployment_rate,
+    `Poverty rate (%)` = percent_poor,
+    `Prison per 100k` = prison_per_100k,
+    `Beer per capita (gallons)` = beer_per_capita_14plus,
+    `Consumption per capita` = Consumption
+  ) |>
+  pivot_longer(everything(), names_to = "Variable", values_to = "value") |>
+  group_by(Variable) |>
+  summarise(
+    N = sum(!is.na(value)),
+    Mean = mean(value, na.rm = TRUE),
+    SD = sd(value, na.rm = TRUE),
+    Min = min(value, na.rm = TRUE),
+    Median = median(value, na.rm = TRUE),
+    Max = max(value, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  knitr::kable(digits = 2, booktabs = TRUE) |>
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "scale_down"))
+```
+
+The regression sample covers 50 U.S. states over 21 years (1998-2018), yielding 1,050 observations.
+
 ##### Descriptive co-movement with economic structure
 
 ```{r}
@@ -488,17 +527,9 @@ all_variables |>
   kableExtra::pack_rows("Control variables", 6, 7)
 ```
 
-We include unemployment and poverty as controls rather than primary variables for two reasons. First, they capture dimensions of economic stress that are conceptually distinct from aggregate GDP: a state's economy may grow while unemployment rises or poverty persists, creating divergent effects on crime. Second, poverty reflects the lower tail of the income distribution, which may affect crime differently than top income concentration (inequality). 
-By including these controls, we isolate the partial correlation between our variables of interest and crime, conditional on labour market conditions and economic hardship.
+We include unemployment and poverty as controls because they capture dimensions of economic stress that are conceptually distinct from aggregate GDP (a state's economy may grow while unemployment rises or poverty persists, creating divergent effects on crime). Poverty reflects the lower tail of the income distribution, which may affect crime differently than top income concentration. 
 
 ##### Tests
-
-```{r}
-panel_reg <- panel_full_final |>
-  filter(Year >= 1998 & Year <= 2018) |>
-  filter(State != "District of Columbia") |>
-  mutate(log_gdp = log(gdp), log_pop = log(Data.Population))
-```
 
 Before presenting our results, we conduct a series of tests to validate our approach.
 
@@ -689,7 +720,7 @@ knitr::kable(
 
 We do not include GDP, consumption and population simultaneously because of the multicollinearity it clearly introduces. Instead, we will estimate alternative specifications to assess which measure is most strongly associated with crime (see following models). 
 
-We choose not include log population in our specifications at all, for three reasons. First, it exhibits severe multicollinearity with log GDP (VIF > 80 when both are included), which would inflate standard errors and obscure the effects of economic conditions. Second, state fixed effects already absorb time-invariant differences in state size, and since population changes slowly over time, the within-state variation in log population provides limited additional information beyond what is captured by the fixed effects. Third, the total population is not directly linked to any of our theoretical hypotheses; it is the composition of the population (age structure, urbanization, demographic characteristics) that theory suggests might affect crime, not its absolute size. Unfortunately, detailed demographic breakdowns by state and year were not available in our dataset. Future research incorporating age structure or urbanization rates could provide additional insights into the demographic correlates of crime.
+We choose not include log population in our specifications at all, for three reasons. First, it exhibits severe multicollinearity with log GDP, which would inflate standard errors and obscure the effects of economic conditions. Second, state fixed effects already absorb time-invariant differences in state size, and since population changes slowly over time, its within-state variation provides limited additional information beyond what is captured by the fixed effects. Third, the total population is not directly linked to any of our theoretical hypotheses; it is the composition of the population (age structure, demographic characteristics) that theory suggests might affect crime, not its absolute size. Unfortunately, detailed demographic breakdowns by state and year were not available in our dataset. Future research incorporating age structure or urbanization rates could provide additional insights.
 
 For now, we look at the VIF when we only keep one variable among log(gdp) and consumption.
 
@@ -1071,6 +1102,65 @@ hypothesis_summary |>
   knitr::kable(booktabs = TRUE) |>
   kableExtra::kable_styling(latex_options = "HOLD_position")
 ```
+
+##### Robustness check
+
+To assess the sensitivity of our results, we conduct two robustness checks. 
+
+First, we exclude the three largest states by population (California, Texas, New York) to ensure they do not disproportionately drive our estimates.
+
+```{r}
+model_property_robust <- plm(
+  Data.Rates.Property.All ~ log_gdp +
+    share_pretax_income_p90p100 +
+    unemployment_rate + 
+    prison_per_100k +
+    beer_per_capita_14plus +
+    percent_poor,
+  data = panel_reg |> filter(!State %in% c("California", "Texas", "New York")),
+  index = c("State", "Year"),
+  model = "within"
+)
+
+model_violent_robust <- plm(
+  Data.Rates.Violent.All ~ log_gdp +
+    share_pretax_income_p90p100 +
+    unemployment_rate + 
+    prison_per_100k +
+    beer_per_capita_14plus +
+    percent_poor,
+  data = panel_reg |> filter(!State %in% c("California", "Texas", "New York")),
+  index = c("State", "Year"),
+  model = "within"
+)
+```
+
+```{r}
+modelsummary(
+  list(
+    "Property (full)" = model_property_1,
+    "Property (excl. CA/TX/NY)" = model_property_robust,
+    "Violent (full)" = model_violent_1,
+    "Violent (excl. CA/TX/NY)" = model_violent_robust
+  ),
+  vcov = robust_vcov,
+  stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
+  coef_rename = c(
+    "log_gdp" = "Log GDP",
+    "share_pretax_income_p90p100" = "Inequality (top 10%)",
+    "unemployment_rate" = "Unemployment rate",
+    "prison_per_100k" = "Prison per 100k",
+    "beer_per_capita_14plus" = "Beer consumption",
+    "percent_poor" = "Poverty rate"
+  ),
+  gof_omit = "IC|Log|RMSE|Adj|Std.Errors",
+  notes = "Robust standard errors clustered by state in parentheses.",
+  output = "kableExtra"
+) |>
+  kable_styling(latex_options = c("HOLD_position", "scale_down"))
+```
+
+Second, we exclude the highest-crime states to verify that our findings are not driven by outliers
 
 ### **Short-run analysis (2015–2018) - Contemporary correlates of crime**
 
