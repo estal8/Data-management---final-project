@@ -1173,124 +1173,131 @@ panel_recent <- panel_full |>
     violent_rate  = Data.Rates.Violent.All,
     property_rate = Data.Rates.Property.All,
     log_gdp = log(gdp),
-    lpr_per_million = ifelse(
-      imm_population > 0,
-      1e6 * lpr_total / imm_population,
-      NA_real_
-    ),
-    shootings_per_million = ifelse(
-      Data.Population > 0,
-      1e6 * nb_police_shootings / Data.Population,
-      NA_real_
-    ),
-    unemployment_rate_pct = unemployment_rate,        
-    poverty_rate_pct      = percent_poor,             
-    prison_per_100k       = ifelse(
-      Data.Population > 0,
-      1e5 * prison_population / Data.Population,
-      NA_real_
-    ),
-    alcohol_per_capita    = beer_per_capita_14plus
-  )
-```
-
-
-```{r}
-panel_recent <- panel_recent |>
-  mutate(
-    violent_quartile = ntile(violent_rate, 4)
+    lpr_pm = ifelse(imm_population > 0, 1e6 * lpr_total / imm_population, NA_real_),
+    shoot_pm = ifelse(Data.Population > 0, 1e6 * nb_police_shootings / Data.Population, NA_real_),
+    prison_100k = ifelse(Data.Population > 0, 1e5 * prison_population / Data.Population, NA_real_),
+    violent_q  = ntile(violent_rate, 4),
+    property_q = ntile(property_rate, 4)
   )
 
-panel_recent <- panel_recent |>
-  mutate(
-    property_quartile = ntile(property_rate, 4)
-  )
-```
-
-```{r}
 quartile_table <- panel_recent |>
-  group_by(violent_quartile) |>
+  group_by(violent_q) |>
   summarise(
-    Mean_violent_crime = mean(violent_rate, na.rm = TRUE),
-    Mean_property_crime = mean(property_rate, na.rm = TRUE),
-
-    Log_GDP = mean(log_gdp, na.rm = TRUE),
-    Inequality_top10 = mean(share_pretax_income_p90p100, na.rm = TRUE),
-
-    LPR_per_million = mean(lpr_per_million, na.rm = TRUE),
-    Police_shootings_per_million = mean(shootings_per_million, na.rm = TRUE),
-    Unemployment = mean(unemployment_rate, na.rm = TRUE),
-    Poverty      = mean(percent_poor, na.rm = TRUE),
-    Prison_per_100k = mean(1e5 * prison_population / Data.Population, na.rm = TRUE),
-    Beer_pc      = mean(beer_per_capita_14plus, na.rm = TRUE),
-
-    Welfare_spending = mean(spending_welfare, na.rm = TRUE),
-    Police_spending  = mean(spending_police, na.rm = TRUE),
-
-    WIC_participation  = mean(wic_2015, na.rm = TRUE),
-    School_lunch_participation = mean(nslp_2015, na.rm = TRUE),
+    VC      = mean(violent_rate, na.rm = TRUE),
+    PC      = mean(property_rate, na.rm = TRUE),
+    GDP     = mean(log_gdp, na.rm = TRUE),
+    Ineq10  = mean(share_pretax_income_p90p100, na.rm = TRUE),
+    LPRpm   = mean(lpr_pm, na.rm = TRUE),
+    Shootpm = mean(shoot_pm, na.rm = TRUE),
+    Unemp   = mean(unemployment_rate, na.rm = TRUE),
+    Pov     = mean(percent_poor, na.rm = TRUE),
+    Prison  = mean(prison_100k, na.rm = TRUE),
+    Beer    = mean(beer_per_capita_14plus, na.rm = TRUE),
+    WelfSp  = mean(spending_welfare, na.rm = TRUE),
+    PoliceSp= mean(spending_police, na.rm = TRUE),
+    WIC     = mean(wic_2015, na.rm = TRUE),
+    Lunch   = mean(nslp_2015, na.rm = TRUE),
     .groups = "drop"
   ) |>
   mutate(
-    violent_quartile = factor(
-      violent_quartile,
-      labels = c("Low crime", "Mid-low", "Mid-high", "High crime")
+    Quartile = factor(
+      violent_q,
+      levels = 1:4,
+      labels = c("Low", "Mid-low", "Mid-high", "High")
     )
-  )
-```
-
-```{r}
-quartile_table |>
-  knitr::kable(
-    caption = "Contemporary socio-economic characteristics by violent crime quartile (2015–2018)",
-    digits = 2,
-    booktabs = TRUE
   ) |>
-  kableExtra::kable_styling(latex_options = "HOLD_position")
-```
-```{r}
+  select(-violent_q)
+
+violent_A <- quartile_table |>
+  select(
+    Quartile,
+    VC, PC, GDP, Ineq10,
+    Unemp, Pov, Prison
+  )
+
+violent_B <- quartile_table |>
+  select(
+    Quartile,
+    Beer, LPRpm, Shootpm,
+    WelfSp, PoliceSp, WIC, Lunch
+  )
+
 property_quartiles_tbl <- panel_recent |>
-  group_by(property_quartile) |>
+  group_by(property_q) |>
   summarise(
-    Mean_property_crime = mean(property_rate, na.rm = TRUE),
-    Mean_violent_crime  = mean(violent_rate, na.rm = TRUE),
-
-    Log_GDP = mean(log_gdp, na.rm = TRUE),
-    Inequality_top10 = mean(share_pretax_income_p90p100, na.rm = TRUE),
-
-    LPR_per_million = mean(lpr_per_million, na.rm = TRUE),
-    Police_shootings_per_million = mean(shootings_per_million, na.rm = TRUE),
-    Unemployment = mean(unemployment_rate, na.rm = TRUE),
-    Poverty      = mean(percent_poor, na.rm = TRUE),
-    Prison_per_100k = mean(1e5 * prison_population / Data.Population, na.rm = TRUE),
-    Beer_pc      = mean(beer_per_capita_14plus, na.rm = TRUE),
-
-    Welfare_spending = mean(spending_welfare, na.rm = TRUE),
-    Police_spending  = mean(spending_police, na.rm = TRUE),
-
-    WIC_participation  = mean(wic_2015, na.rm = TRUE),
-    School_lunch_participation = mean(nslp_2015, na.rm = TRUE),
+    PC      = mean(property_rate, na.rm = TRUE),
+    VC      = mean(violent_rate, na.rm = TRUE),
+    GDP     = mean(log_gdp, na.rm = TRUE),
+    Ineq10  = mean(share_pretax_income_p90p100, na.rm = TRUE),
+    LPRpm   = mean(lpr_pm, na.rm = TRUE),
+    Shootpm = mean(shoot_pm, na.rm = TRUE),
+    Unemp   = mean(unemployment_rate, na.rm = TRUE),
+    Pov     = mean(percent_poor, na.rm = TRUE),
+    Prison  = mean(prison_100k, na.rm = TRUE),
+    Beer    = mean(beer_per_capita_14plus, na.rm = TRUE),
+    WelfSp  = mean(spending_welfare, na.rm = TRUE),
+    PoliceSp= mean(spending_police, na.rm = TRUE),
+    WIC     = mean(wic_2015, na.rm = TRUE),
+    Lunch   = mean(nslp_2015, na.rm = TRUE),
     .groups = "drop"
   ) |>
   mutate(
-    property_quartile = factor(
-      property_quartile,
-      labels = c("Low crime", "Mid-low", "Mid-high", "High crime")
+    Quartile = factor(
+      property_q,
+      levels = 1:4,
+      labels = c("Low", "Mid-low", "Mid-high", "High")
     )
-  )
-```
-
-```{r}
-property_quartiles_tbl |>
-  knitr::kable(
-    caption = "Contemporary socio-economic characteristics by property crime quartile (2015–2018)",
-    digits = 2,
-    booktabs = TRUE
   ) |>
-  kableExtra::kable_styling(latex_options = "HOLD_position")
+  select(-property_q)
 
+property_A <- property_quartiles_tbl |>
+  select(
+    Quartile,
+    PC, VC, GDP, Ineq10,
+    Unemp, Pov, Prison
+  )
+
+property_B <- property_quartiles_tbl |>
+  select(
+    Quartile,
+    Beer, LPRpm, Shootpm,
+    WelfSp, PoliceSp, WIC, Lunch
+  )
+
+kable_pdf <- function(df, caption) {
+  df |>
+    knitr::kable(
+      caption = caption,
+      digits = 2,
+      booktabs = TRUE
+    ) |>
+    kableExtra::kable_styling(
+      latex_options = c("HOLD_position"),
+      position = "center",
+      font_size = 7
+    )
+}
+
+kable_pdf(
+  violent_A,
+  "Contemporary characteristics by VIOLENT crime quartile (2015--2018) --- Panel A (crime \\& economy)"
+)
+
+kable_pdf(
+  violent_B,
+  "Contemporary characteristics by VIOLENT crime quartile (2015--2018) --- Panel B (society, institutions \\& programs)"
+)
+
+kable_pdf(
+  property_A,
+  "Contemporary characteristics by PROPERTY crime quartile (2015--2018) --- Panel A (crime \\& economy)"
+)
+
+kable_pdf(
+  property_B,
+  "Contemporary characteristics by PROPERTY crime quartile (2015--2018) --- Panel B (institutions \\& programs)"
+)
 ```
-
 
 States in the highest violent crime quartile experience, on average, nearly three times the violent crime rate of those in the lowest quartile, and also display substantially higher property crime rates. These high-crime states are characterised by worse labour market and social conditions, with unemployment rates exceeding 5% and poverty rates above 14%, compared to about 3.9% unemployment and 10.5% poverty in low-crime states.
 
