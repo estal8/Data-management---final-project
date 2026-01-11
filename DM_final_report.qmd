@@ -765,7 +765,7 @@ Crime_{it} =\ & \alpha_i
 & + \beta_3 \cdot Beer_{it} 
 + \beta_4 \cdot Prison_{it} \\
 & + \gamma_1 \cdot Unemployment_{it} + \gamma_2 \cdot Poverty_{it}
-+ \epsilon_{it}
++ \varepsilon_{it}
 \end{aligned}
 $$
 
@@ -815,7 +815,7 @@ Crime_{it} =\ & \alpha_i
 & + \beta_3 \cdot Beer_{it} 
 + \beta_4 \cdot Prison_{it} \\
 & + \gamma_1 \cdot Unemployment_{it} + \gamma_2 \cdot Poverty_{it}
-+ \epsilon_{it}
++ \varepsilon_{it}
 \end{aligned}
 $$
 
