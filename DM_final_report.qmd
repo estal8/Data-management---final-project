@@ -920,9 +920,9 @@ $$
 ```{r}
 model_property_4 <- plm(
   Data.Rates.Property.All ~ property_lag +
-    log_gdp + # or consumption
+    log_gdp +
     share_pretax_income_p90p100 +
-    unemployment_rate + # or poverty, depends on the best
+    unemployment_rate +
     prison_per_100k +
     beer_per_capita_14plus +
     percent_poor,
