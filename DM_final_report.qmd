@@ -232,7 +232,7 @@ panel_reg |>
   kableExtra::kable_styling(latex_options = c("HOLD_position", "scale_down"))
 ```
 
-The regression sample covers 50 U.S. states over 21 years (1998-2018), yielding 1,050 observations.
+Property crime averages 3,069 per 100,000 inhabitants (SD = 865.26), while violent crime averages 393 (SD = 168.27). All variables show substantial cross-state variation.
 
 ##### Descriptive co-movement with economic structure
 
@@ -1100,10 +1100,13 @@ hypothesis_summary <- tibble(
 
 hypothesis_summary |>
   knitr::kable(booktabs = TRUE) |>
-  kableExtra::kable_styling(latex_options = "HOLD_position")
+  kableExtra::kable_styling(
+    latex_options = c("HOLD_position", "scale_down"),
+    font_size = 9
+  )
 ```
 
-##### Robustness check
+#### Robustness check
 
 To assess the sensitivity of our results, we conduct two robustness checks. 
 
@@ -1160,7 +1163,73 @@ modelsummary(
   kable_styling(latex_options = c("HOLD_position", "scale_down"))
 ```
 
-Second, we exclude the highest-crime states to verify that our findings are not driven by outliers
+Excluding the three largest states yields nearly identical results. For property crime, the log GDP coefficient changes from -1,510 to -1,556, and beer consumption remains strongly significant. For violent crime, unemployment maintains its negative correlation and beer consumption becomes slightly more significant. This confirms our findings are not driven by large states.
+
+Second, we exclude the highest-crime states to verify that our findings are not driven by outliers.
+
+```{r}
+high_crime_states <- panel_reg |>
+  group_by(State) |>
+  summarise(mean_crime = mean(Data.Rates.Violent.All, na.rm = TRUE)) |>
+  arrange(desc(mean_crime)) |>
+  slice_head(n = 3) |>
+  pull(State)
+```
+
+```{r}
+model_property_excl_hc <- plm(
+  Data.Rates.Property.All ~ log_gdp +
+    share_pretax_income_p90p100 +
+    unemployment_rate + 
+    prison_per_100k +
+    beer_per_capita_14plus +
+    percent_poor,
+  data = panel_reg |> filter(!State %in% high_crime_states),
+  index = c("State", "Year"),
+  model = "within"
+)
+
+model_violent_excl_hc <- plm(
+  Data.Rates.Violent.All ~ log_gdp +
+    share_pretax_income_p90p100 +
+    unemployment_rate + 
+    prison_per_100k +
+    beer_per_capita_14plus +
+    percent_poor,
+  data = panel_reg |> filter(!State %in% high_crime_states),
+  index = c("State", "Year"),
+  model = "within"
+)
+```
+
+```{r}
+modelsummary(
+  list(
+    "Property (full)" = model_property_1,
+    "Property (excl. high-crime)" = model_property_excl_hc,
+    "Violent (full)" = model_violent_1,
+    "Violent (excl. high-crime)" = model_violent_excl_hc
+  ),
+  vcov = robust_vcov,
+  stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
+  coef_rename = c(
+    "log_gdp" = "Log GDP",
+    "share_pretax_income_p90p100" = "Inequality (top 10%)",
+    "unemployment_rate" = "Unemployment rate",
+    "prison_per_100k" = "Prison per 100k",
+    "beer_per_capita_14plus" = "Beer consumption",
+    "percent_poor" = "Poverty rate"
+  ),
+  gof_omit = "IC|Log|RMSE|Adj|Std.Errors",
+  notes = "Robust standard errors clustered by state in parentheses.",
+  output = "kableExtra"
+) |>
+  kable_styling(latex_options = c("HOLD_position", "scale_down"))
+```
+
+Excluding the three highest-crime states yields virtually identical results. Log GDP remains significantly negative for property crime ($β = -1480$ vs $-1510$), and beer consumption maintains its positive association with both crime types. 
+
+The stability of coefficients across both robustness checks confirms that our findings are not driven by outlier states.
 
 ### **Short-run analysis (2015–2018) - Contemporary correlates of crime**
 
@@ -1264,13 +1333,15 @@ variable = dplyr::recode(variable,
       "alcohol_per_capita"          = "Beer consumption per capita"
     )
   )
+
 summary_recent |>
-  knitr::kable(
-    caption = "Summary statistics, short-run panel (2015–2018)",
-    digits = 2,
-    booktabs = TRUE
-  ) |>
-  kableExtra::kable_styling(latex_options = "HOLD_position")
+  knitr::kable(caption = "Summary statistics, short-run panel (2015–2018)",
+               booktabs = TRUE, 
+               digits = 2) |>
+  kableExtra::kable_styling(
+    latex_options = c("HOLD_position", "scale_down"),
+    font_size = 9
+  )
 ```
 
 During 2015–2018, violent crime averages 385 incidents per 100,000 inhabitants, while property crime is far more prevalent, with an average of about 2,420 incidents per 100,000. Both crime types exhibit substantial cross-state dispersion, particularly property crime, indicating persistent heterogeneity in crime exposure.
@@ -1610,7 +1681,7 @@ twfe_property_econ <- plm(
 )
 ```
 
-### Results
+#### Results
 
 ```{r}
 modelsummary(
