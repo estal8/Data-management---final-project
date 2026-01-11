@@ -1515,7 +1515,7 @@ First, despite the use of fixed effects in the long-run panel, the estimated rel
 
 Second, the short-run analysis is constrained by a very limited time dimension. This restricts statistical power and makes highly saturated specifications, such as two-way fixed effects models, imprecise. As a result, short-run regression results should be interpreted as descriptive correlations rather than structural effects.
 
-Third, several institutional variables included in the short-run models—police shootings, public spending, and prison population—are likely endogenous responses to crime levels. Their coefficients therefore capture contemporaneous co-movement rather than deterrence or policy effects.
+Third, several institutional variables included in the short-run models—police shootings, public spending, and prison population are likely endogenous responses to crime levels. Their coefficients therefore capture contemporaneous co-movement rather than deterrence or policy effects.
 
 Finally, crime exhibits strong persistence over time, especially for violent crime. Once lagged crime is included, most contemporaneous covariates lose significance, indicating that short-run variations are dominated by inertia. This limits the ability of static models to identify independent short-term drivers of crime.
 
