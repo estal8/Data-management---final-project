@@ -1123,7 +1123,3 @@ ggplot(crime_trends, aes(x = Year, y = rate, colour = type)) +
   theme_minimal()
 ```
 
-```{r}
-write_csv(panel_full_final, here("DATA_panel_full_final.csv"))
-```
-
