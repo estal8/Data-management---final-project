@@ -279,9 +279,9 @@ ggplot(crime_gdp, aes(x = log_gdp, y = crime)) +
   theme(plot.caption = element_text(size = 13, hjust = 0.5))
 ```
 
-The pooled scatter plot reveals a non-linear relationship between property crime and state GDP. Property crime increases at low GDP levels before declining at higher levels, consistent with the opportunity cost hypothesis. However, substantial dispersion around the fitted curve indicates that GDP alone cannot explain cross-state differences in property crime.
+The pooled scatter plot indicates a non-linear relationship between GDP and property crime : it increases at low GDP levels and declines as GDP rises. However, substantial dispersion around the fitted curve indicates that GDP alone cannot explain cross-state differences in property crime. 
 
-In contrast, violent crime shows a weaker association to GDP. While crime rises sharply at low GDP, the relationship flattens at higher levels with no clear monotonic decline. This suggests violent crime is less tied to economic performance and more driven by social, institutional, and demographic factors.
+For violent crime, the association with GDP is weaker. Although crime increases sharply at low GDP levels, the relationship flattens at higher levels, with no clear monotonic decline. This suggests violent crime is less closely related to economic conditions and may instead be driven by other social factors.
 
 ```{r}
 crime_ineq <- panel_long |>
@@ -326,7 +326,7 @@ ggplot(crime_ineq, aes(x = inequality, y = crime)) +
 
 Property crime exhibits a non-linear and noisy relationship with inequality, peaking at intermediate levels. This suggests inequality matters for property crime, though not monotonically. Wide  dispersion indicates important unobserved state characteristics.
 
-Violent crime shows a stronger association with inequality, rising sharply with inequality from low to intermediate levels before declining slightly at very high inequality. This aligns with theories linking violent crime to social fragmentation and relative deprivation rather than economic incentives.
+Violent crime shows a stronger association with inequality, rising sharply with inequality from low to intermediate levels before declining slightly at high levels This aligns with theories linking violent crime to social fragmentation and relative deprivation.
 
 ```{r}
 crime_remaining_covariates <- panel_full_final |>
@@ -354,8 +354,6 @@ crime_remaining_covariates <- panel_full_final |>
     )
   )
 ```
-
-The 5 following figures presents pooled scatter plots relating crime rates to key socio-economic variables across state-year observations.
 
 ```{r}
 #| fig-width: 10
@@ -467,11 +465,11 @@ ggplot(aes(x = prison_per_100k, y = crime)) +
 
 Prison population per 100 000 inhabitants is positively associated to both property and violent crime. States with higher incarceration rates tend to exhibit higher crime, likely reflecting reverse causality rather than failed deterrence.
 
-Several variables display clear raw co-movements with crime, although the relationships are often non-linear and differ between property and violent crime. In particular, beer consumption and economic activity measures exhibit strong positive associations, while the relationship with unemployment and poverty appears weaker and less stable. These descriptive patterns motivate the regression strategy adopted in the following section.
+Several variables display clear raw co-movements with crime, although the relationships are often non-linear and differ between property and violent crime. In particular, beer consumption and economic activity measures exhibit positive associations. These descriptive patterns motivate the regression strategy adopted in the following section.
 
 #### Regression analysis
 
-Taken together, the descriptive evidence suggests that crime rates in U.S. states co-evolve with economic conditions and income inequality, but that these relationships are heterogeneous and potentially confounded by persistent state-specific characteristics and common national shocks. To account for these factors and move beyond raw correlations, we now estimate panel regressions with state and year fixed effects, which exploit within-state variation over time while controlling for unobserved heterogeneity.
+The descriptive evidence suggests that crime rates in U.S. states co-evolve with economic conditions and beer consumption, but that these relationships are heterogeneous and potentially confounded by persistent state-specific characteristics and common national shocks. To account for these factors, we now estimate panel regressions with state and year fixed effects, which exploit within-state variation over time while controlling for unobserved heterogeneity.
 
 ##### Hypotheses and control variables
 
@@ -617,9 +615,9 @@ tests_table |>
 
 Under $H_0$, both fixed effects and random effects are consistent, but random effects is more efficient ; under $H_1$, only fixed effects is consistent. We obtain $\chi^2 = 599.8$ with $p<0.001$, so we can reject $H_0$.
 
-This indicates that state-specific effects are correlated with our explanatory variables (GDP, inequality, etc.), which makes sense since wealthier states likely have different unobserved characteristics than poorer states.
+This indicates that state-specific effects are correlated with our explanatory variables, which makes sense since wealthier states likely have different unobserved characteristics than poorer states.
 
-Next, we test for autocorrelation and heteroscedasticity. Because of the nature of crime according to our hypothesis (persistence), and of our explanatory variables (GDP, inequalities, prison population, etc change slowly over time), we may expect serial correlation. Moreover, heteroscedasticity is also plausible given the variation in state size and crime levels. Smaller states might experience more volatility in their crime rates because small absolute changes translate into large percentage changes.
+Next, we test for autocorrelation and heteroscedasticity. Because of the nature of crime according to our persistence hypothesis, and of our explanatory variables (GDP, inequalities, prison population, etc change slowly over time), we may expect serial correlation. Moreover, heteroscedasticity is also plausible given the variation in state size and crime levels. Smaller states might experience more volatility in their crime rates because small absolute changes translate into large percentage changes.
 
 ```{r}
 # Autocorrelation test (Breusch-Godfrey)
@@ -718,7 +716,7 @@ knitr::kable(
 )
 ```
 
-We do not include GDP, consumption and population simultaneously because of the multicollinearity it clearly introduces. Instead, we will estimate alternative specifications to assess which measure is most strongly associated with crime (see following models). 
+We do not include GDP, consumption and population simultaneously because of the multicollinearity it clearly introduces. Instead, we will estimate alternative specifications to assess which measure is strongly associated with crime. 
 
 We choose not include log population in our specifications at all, for three reasons. First, it exhibits severe multicollinearity with log GDP, which would inflate standard errors and obscure the effects of economic conditions. Second, state fixed effects already absorb time-invariant differences in state size, and since population changes slowly over time, its within-state variation provides limited additional information beyond what is captured by the fixed effects. Third, the total population is not directly linked to any of our theoretical hypotheses; it is the composition of the population (age structure, demographic characteristics) that theory suggests might affect crime, not its absolute size. Unfortunately, detailed demographic breakdowns by state and year were not available in our dataset. Future research incorporating age structure or urbanization rates could provide additional insights.
 
