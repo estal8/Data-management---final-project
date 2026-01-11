@@ -25,7 +25,7 @@ Principally, the project asks whether economic and social variables are more str
 
 We built our panel by usind nine different sources :
 
--   Property and Violent crime rates, state population (FBI/CORGIS, 1960–2019) ;
+-   Property and Violent crime rates (FBI/CORGIS, 1960–2019) ;
 
 -   Income inequality providing top income shares by state (WID, 1960–2018);
 
@@ -121,7 +121,6 @@ crime_distribution <- panel_long |>
 ```
 
 ```{r}
-#| fig-cap: "National crime trends and cross-state dispersion (mean and 10th–90th percentiles, 1960–2018)"
 #| fig-width: 10
 #| fig-height: 5
 #| warning: false
@@ -132,11 +131,12 @@ ggplot(crime_distribution, aes(x = Year)) +
   geom_line(aes(y = mean), linewidth = 0.9) +
   facet_wrap(~ type, scales = "free_y") +
   labs(
-    title = "Figure 1. Crime trends across U.S. states (1960–2018)",
+    caption = "Figure 1. National crime trends and cross-state dispersion (mean and 10th–90th percentiles, 1960–2018)",
     x = "Year",
     y = "Crimes per 100,000 inhabitants"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(size = 13, hjust = 0.5))
 ```
 
 Both crime categories exhibit a pronounced common time profile, with a strong increase from the 1960s to the late 1980s or early 1990s, followed by a sustained decline. Despite these shared national trends, cross-state heterogeneity remains large throughout the entire period, as illustrated by the wide percentile bands.
@@ -173,7 +173,6 @@ crime_by_state_top <- panel_full |>
 ```
 
 ```{r}
-#| fig-cap: "Violent and property crime rates in the eight highest-crime U.S. states (1960–2018)"
 #| fig-width: 10
 #| fig-height: 5
 #| warning: false
@@ -183,12 +182,13 @@ ggplot(crime_by_state_top, aes(x = Year, y = rate, colour = State)) +
   geom_line(linewidth = 0.7) +
   facet_wrap(~ type, scales = "free_y") +
   labs(
-    title = "Figure 2. Crime rates in the eight highest-crime states (1960–2018)",
+    caption = "Figure 2. Violent and property crime rates in the eight highest-crime U.S. states (1960–2018)",
     x = "Year",
     y = "Crimes per 100,000 inhabitants",
     colour = "State"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(size = 13, hjust = 0.5))
 ```
 
 Figure 2 displays the crime trends for the eight states with the highest crime rate per 100 000 inhabitants between 1960 and 2018. Despite differences in levels, all states exhibit similar trends : a strong increase until the late 1980s or early 1990s, followed by a sustained decline. Cross-state heterogeneity also remains pronounced. 
@@ -222,7 +222,6 @@ crime_gdp <- panel_long |>
 ```
 
 ```{r}
-#| fig-cap: "Raw co-movement between crime and GDP (pooled state–year observations)"
 #| fig-width: 10
 #| fig-height: 5
 #| warning: false
@@ -234,9 +233,11 @@ ggplot(crime_gdp, aes(x = log_gdp, y = crime)) +
   facet_wrap(~ type, scales = "free_y") +
   labs(
     x = "Log state GDP",
-    y = "Crimes per 100,000 inhabitants"
+    y = "Crimes per 100,000 inhabitants",
+    caption = "Figure 3. Raw co-movement between crime and GDP (pooled state–year observations))"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(size = 13, hjust = 0.5))
 ```
 
 The pooled scatter plot reveals a non-linear relationship between property crime and state GDP. Property crime increases at low GDP levels before declining at higher levels, consistent with the opportunity cost hypothesis. However, substantial dispersion around the fitted curve indicates that GDP alone cannot explain cross-state differences in property crime.
@@ -266,7 +267,6 @@ crime_ineq <- panel_long |>
 ```
 
 ```{r}
-#| fig-cap: "Raw co-movement between crime and income inequality (pooled state–year observations)"
 #| fig-width: 10
 #| fig-height: 5
 #| warning: false
@@ -277,10 +277,12 @@ ggplot(crime_ineq, aes(x = inequality, y = crime)) +
   geom_smooth(method = "loess", se = FALSE, linewidth = 1) +
   facet_wrap(~ type, scales = "free_y") +
   labs(
+    caption = "Figure 4. Raw co-movement between crime and income inequality (pooled state–year observations)",
     x = "Top 10% pre-tax income share",
     y = "Crimes per 100,000 inhabitants"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(size = 13, hjust = 0.5))
 ```
 
 Property crime exhibits a non-linear and noisy relationship with inequality, peaking at intermediate levels. This suggests inequality matters for property crime, though not monotonically. Wide  dispersion indicates important unobserved state characteristics.
@@ -317,7 +319,6 @@ crime_remaining_covariates <- panel_full_final |>
 The 5 following figures presents pooled scatter plots relating crime rates to key socio-economic variables across state-year observations.
 
 ```{r}
-#| fig-cap: "Raw co-movement between crime and unemployment rate (pooled state–year observations)"
 #| fig-width: 10
 #| fig-height: 5
 #| warning: false
@@ -330,15 +331,16 @@ crime_remaining_covariates |>
   facet_wrap(~ type, scales = "free_y") +
   labs(
     x = "Unemployment rate (%)",
-    y = "Crimes per 100,000 inhabitants"
+    y = "Crimes per 100,000 inhabitants",
+    caption = "Figure 5. Raw co-movement between crime and unemployment rate (pooled state–year observations)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(size = 13, hjust = 0.5))
 ```
 
 The relationship between unemployment and crime appears weak and non-linear. Property crime peaks at intermediate unemployment levels, while violent crime rises modestly with unemployment. The substantial dispersion suggests unemployment alone is not a strong crime predictor.
 
 ```{r}
-#| fig-cap: "Raw co-movement between crime and percentage of poor (pooled state–year observations)"
 #| fig-width: 10
 #| fig-height: 5
 #| warning: false
@@ -351,15 +353,16 @@ crime_remaining_covariates |>
   facet_wrap(~ type, scales = "free_y") +
   labs(
     x = "Share of population below poverty line (%)",
-    y = "Crimes per 100,000 inhabitants"
+    y = "Crimes per 100,000 inhabitants", 
+    caption = "Figure 6. Raw co-movement between crime and percentage of poor (pooled state–year observations)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(size = 13, hjust = 0.5))
 ```
 
 Poverty displays a modest positive association with both crime types, slightly stronger for violent crime. However, substantial dispersion around the LOESS curve indicates poverty alone poorly predicts crime across states.
 
 ```{r}
-#| fig-cap: "Raw co-movement between crime and consumption per capita (pooled state–year observations)"
 #| fig-width: 10
 #| fig-height: 5
 #| warning: false
@@ -372,15 +375,16 @@ ggplot(aes(x = Consumption, y = crime)) +
   facet_wrap(~ type, scales = "free_y") +
   labs(
     x = "Consumption per capita",
-    y = "Crimes per 100,000 inhabitants"
+    y = "Crimes per 100,000 inhabitants",
+    caption = "Figure 7. Raw co-movement between crime and consumption per capita (pooled state–year observations)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(size = 13, hjust = 0.5))
 ```
 
 Consumption per capita shows a clear negative association with both crime types. States with higher living standards systematically experience lower property and violent crime rates.
 
 ```{r}
-#| fig-cap: "Raw co-movement between crime and beer consumption per capita for people aged 14 and above (pooled state–year observations)"
 #| fig-width: 10
 #| fig-height: 5
 #| warning: false
@@ -393,16 +397,16 @@ ggplot(aes(x = beer_per_capita_14plus, y = crime)) +
   facet_wrap(~ type, scales = "free_y") +
   labs(
     x = "Beer consumption per capita (14+)",
-    y = "Crimes per 100,000 inhabitants"
+    y = "Crimes per 100,000 inhabitants", 
+    caption = "Figure 8. Raw co-movement between crime and beer consumption per capita (pooled state–year observations)"
   ) +
-  theme_minimal()
-
+  theme_minimal() +
+  theme(plot.caption = element_text(size = 13, hjust = 0.5))
 ```
 
 Beer consumption per capita shows a non-linear, inverted-U relationship with crime. Property crime increases with beer consumption up to approximately 1.25 gallons per capita, then levels off. For violent crime, the pattern is similar but noisier. These graphs support the inclusion of alcohol as a criminogenic factor in our regression models.
 
 ```{r}
-#| fig-cap: "Raw co-movement between crime and prison population per 100 000 inhabitants (pooled state–year observations)"
 #| fig-width: 10
 #| fig-height: 5
 #| warning: false
@@ -415,9 +419,11 @@ ggplot(aes(x = prison_per_100k, y = crime)) +
   facet_wrap(~ type, scales = "free_y") +
   labs(
     x = "Prison population per 100,000",
-    y = "Crimes per 100,000 inhabitants"
+    y = "Crimes per 100,000 inhabitants",
+    caption = "Figure 9. Raw co-movement between crime and prison population per 100 000 (pooled state–year observations)"
   ) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.caption = element_text(size = 13, hjust = 0.5))
 ```
 
 Prison population per 100 000 inhabitants is positively associated to both property and violent crime. States with higher incarceration rates tend to exhibit higher crime, likely reflecting reverse causality rather than failed deterrence.
@@ -428,7 +434,7 @@ Several variables display clear raw co-movements with crime, although the relati
 
 Taken together, the descriptive evidence suggests that crime rates in U.S. states co-evolve with economic conditions and income inequality, but that these relationships are heterogeneous and potentially confounded by persistent state-specific characteristics and common national shocks. To account for these factors and move beyond raw correlations, we now estimate panel regressions with state and year fixed effects, which exploit within-state variation over time while controlling for unobserved heterogeneity.
 
-##### Hypotheses
+##### Hypotheses and control variables
 
 We test the following hypotheses:
 
@@ -439,6 +445,51 @@ We test the following hypotheses:
 -   **H5 (crime persistence)** : Crime rates exhibit temporal inertia, i.e. past crime is a strong predictor of current crime (it encourages or discourages entry, it owerwhelms law enforcers…).
 
 We estimate different models for property and violent crime, as property crime is more directly linked to economic incentives (Becker, 1968), while violent crime may be more linked to specific social factors.
+
+We distinguish between variables of primary interest, which directly test our hypotheses, and control variables, which reduce omitted variable bias.
+
+```{r}
+#| tbl-cap: "Variables of interest and controls"
+
+all_variables <- tibble(
+  Variable = c(
+    "Log(GDP) or Consumption",
+    "Inequality (top 10% share)",
+    "Prison population per 100k",
+    "Beer consumption per capita",
+    "Lagged crime",
+    "Unemployment rate",
+    "Poverty rate"
+  ),
+  Type = c(
+    "Primary",
+    "Primary",
+    "Primary",
+    "Primary",
+    "Primary",
+    "Control",
+    "Control"
+  ),
+  `Hypothesis / Rationale` = c(
+    "H1: Opportunity cost",
+    "H2: Income concentration",
+    "H3: Deterrence/incapacitation",
+    "H4: Alcohol as criminogenic factor",
+    "H5: Crime persistence",
+    "Labour market slack (short-term economic stress)",
+    "Persistent economic hardship (lower tail of distribution)"
+  )
+)
+
+all_variables |>
+  knitr::kable(booktabs = TRUE) |>
+  kableExtra::kable_styling(latex_options = "HOLD_position") |>
+  kableExtra::pack_rows("Variables of primary interest", 1, 5) |>
+  kableExtra::pack_rows("Control variables", 6, 7)
+```
+
+We include unemployment and poverty as controls rather than primary variables for two reasons. First, they capture dimensions of economic stress that are conceptually distinct from aggregate GDP: a state's economy may grow while unemployment rises or poverty persists, creating divergent effects on crime. Second, poverty reflects the lower tail of the income distribution, which may affect crime differently than top income concentration (inequality). 
+By including these controls, we isolate the partial correlation between our variables of interest and crime, conditional on labour market conditions and economic hardship.
 
 ##### Tests
 
@@ -714,7 +765,7 @@ tests_summary |>
 
 Our objective is to document robust correlations between socio-economic variables and crime rates, not to establish causal effects. Considering our tests conclusions, we employ fixed effects panel regressions to control for time-invariant state characteristics.
 
-We estimate five panel specifications with state fixed effects to assess the robustness of our findings. All models use robust standard errors clustered by state to account for serial correlation and heteroscedasticity.
+We estimate four panel specifications with state fixed effects to assess the robustness of our findings. All models use robust standard errors clustered by state to account for serial correlation and heteroscedasticity.
 
 Model 1 (Baseline) includes log GDP, income inequality, unemployment rate, prison population per capita and beer consumption. This specification tests the baseline correlations between economic conditions and crime.
 
