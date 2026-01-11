@@ -3,8 +3,7 @@ title: "Socio-economic determinants of crime in U.S. states"
 author: "Paula de Miguel Sánchez & Esther Allevi"
 subtitle: "{{< words-sum body-note-ref >}} words"
 format:
-  wordcount-pdf: default
-  pdf:
+  wordcount-pdf: 
     toc: true
     number-sections: true
 execute:
