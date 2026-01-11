@@ -52,7 +52,7 @@ Full descriptions are provided in the data cleaning document (Phase 2).
 
 ## Data analysis
 
-Our empirical analysis is divided into two parts, reflecting the heterogeneous temporal coverage of our sources.
+This empirical analysis is divided into two parts, reflecting the heterogeneous temporal coverage of our sources.
 
 The crime, inequality, GDP, consumption, unemployment, prison population, poverty, and alcohol series provide consistent state-year observations between 1998-2018. It allows us to examine the structural relationships between economic conditions and crime using fixed effects panel regressions.
 
@@ -284,9 +284,9 @@ ggplot(crime_ineq, aes(x = inequality, y = crime)) +
   theme_minimal()
 ```
 
-The relationship between property crime and income inequality is non-linear and noisy. Property crime rates are highest at intermediate levels of inequality and decline at the upper end of the income share distribution. This inverted-U pattern suggests that inequality may matter for property crime, but its effect is neither simple nor monotonic. The wide dispersion of observations highlights the importance of unobserved state-specific characteristics.
+Property crime exhibits a non-linear and noisy relationship with inequality: highest at intermediate levels, declining at high inequality. This suggests inequality matters for property crime, though not monotonically. Wide  dispersion indicates important unobserved state characteristics.
 
-Violent crime displays a more pronounced association with inequality. Crime rates increase strongly as the top income share rises from low to intermediate levels, before declining slightly at very high levels of inequality. This pattern is consistent with theories linking violent crime to social fragmentation, relative deprivation, and institutional stress, rather than purely economic incentives.
+Violent crime shows a stronger association with inequality, rising sharply as top incomes rises from low to intermediate levels before declining slightly at very high inequality. This pattern aligns with theories linking violent crime to social fragmentation and relative deprivation rather than economic incentives.
 
 ```{r}
 crime_remaining_covariates <- panel_full_final |>
@@ -336,7 +336,7 @@ crime_remaining_covariates |>
   theme_minimal()
 ```
 
-The relationship between unemployment and crime appears weak and non-linear.
+The relationship between unemployment and crime appears weak and non-linear. Property crime peaks at intermediate unemployment levels, while violent crime rises modestly with unemployment. The substantial dispersion suggests unemployment alone is not a strong crime predictor.
 
 ```{r}
 #| fig-cap: "Raw co-movement between crime and percentage of poor (pooled state–year observations)"
@@ -357,7 +357,7 @@ crime_remaining_covariates |>
   theme_minimal()
 ```
 
-Poverty shows a modest positive association with both crime types. States with higher shares of poors tend to exhibit slightly higher crime rates, more so for violent crime. However, this relationship is characterized by substantial dispersion, suggesting that poverty alone is not a strong predictor of crime.
+Poverty displays a modest positive association with both crime types, slightly stronger for violent crime. However, substantial dispersion around the LOESS curve indicates poverty alone poorly predicts crime across states.
 
 ```{r}
 #| fig-cap: "Raw co-movement between crime and consumption per capita (pooled state–year observations)"
@@ -378,7 +378,7 @@ ggplot(aes(x = Consumption, y = crime)) +
   theme_minimal()
 ```
 
-Consumption per capita displays a clear negative association with both property and violent crime. The LOESS curves slope downward, indicating that states with higher living standards experience lower crime rates.
+Consumption per capita shows a clear negative association with both crime types. States with higher living standards systematically experience lower property and violent crime rates.
 
 ```{r}
 #| fig-cap: "Raw co-movement between crime and beer consumption per capita for people aged 14 and above (pooled state–year observations)"
@@ -421,7 +421,7 @@ ggplot(aes(x = prison_per_100k, y = crime)) +
   theme_minimal()
 ```
 
-Prison population per 100 000 inhabitants is positively associated to both property and violent crime, as states with higher incarceration rates tend to have higher crime rates.
+Prison population per 100 000 inhabitants is positively associated to both property and violent crime. States with higher incarceration rates tend to exhibit higher crime, likely reflecting reverse causality rather than failed deterrence.
 
 Several variables display clear raw co-movements with crime, although the relationships are often non-linear and differ between property and violent crime. In particular, beer consumption and economic activity measures exhibit strong positive associations, while the relationship with unemployment and poverty appears weaker and less stable. These descriptive patterns motivate the regression strategy adopted in the following section.
 
