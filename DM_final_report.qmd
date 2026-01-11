@@ -1051,7 +1051,7 @@ modelsummary(
   kable_styling(latex_options = "HOLD_position")
 ```
 
-The first three models fail to significantly predict violent crime rates as they explain only about 31% of within-state variation (R² = 0.31), which is substantially less than for property crime ($R^2 ≈ 0.76$). This might indicate that violent offences are driven by factors beyond economic conditions alone.
+The first two models fail to significantly predict violent crime rates as they explain only about 31% of within-state variation ($R^2 = 0.31$), which is substantially less than for property crime ($R^2 ≈ 0.76$). This might indicate that violent offences are driven by factors beyond economic conditions alone.
 
 Unlike property crime, `log_gdp` shows no significant correlation with violent crime. Personal consumption is also non-significant. These findings imply that violent crimes are less motivated by economic need than property crimes, and might be more likely to be driven by conflicts or social disorganization.
 
@@ -1085,14 +1085,14 @@ hypothesis_summary <- tibble(
     "Not supported",
     "Not supported",
     "Supported (Beer***)",
-    "Strongly supported (ρ ≈ 0.80***)"
+    "Strongly supported (theta ≈ 0.80***)"
   ),
   `Violent Crime` = c(
     "Not supported",
     "Not supported",
     "Not supported",
     "Partially supported (Models 1-3)",
-    "Strongly supported (ρ ≈ 0.85***)"
+    "Strongly supported (theta ≈ 0.85***)"
   )
 )
 
@@ -1161,7 +1161,7 @@ modelsummary(
   kable_styling(latex_options = c("HOLD_position", "scale_down"))
 ```
 
-Excluding the three largest states yields nearly identical results. For property crime, the log GDP coefficient changes from -1,510 to -1,556, and beer consumption remains strongly significant. For violent crime, unemployment maintains its negative correlation and beer consumption becomes slightly more significant. This confirms our findings are not driven by large states.
+Excluding the three largest states yields nearly identical results. For property crime, the log GDP coefficient changes from -1510 to -1556, and beer consumption remains strongly significant. For violent crime, unemployment maintains its negative correlation and beer consumption becomes slightly more significant. This confirms our findings are not driven by large states.
 
 Second, we exclude the highest-crime states to verify that our findings are not driven by outliers.
 
