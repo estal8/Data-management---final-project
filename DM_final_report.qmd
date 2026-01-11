@@ -24,7 +24,7 @@ Principally, the project asks whether economic and social variables are more str
 
 We built our panel by usind nine different sources :
 
--   Crime rates distinguishing violent and property offences, and state population (FBI/CORGIS, 1960–2019) ;
+-   Property and Violent crime rates, state population (FBI/CORGIS, 1960–2019) ;
 
 -   Income inequality providing top income shares by state (WID, 1960–2018);
 
@@ -32,11 +32,11 @@ We built our panel by usind nine different sources :
 
 -   Unemployment rate (BLS, 1976-2025);
 
--   Prison population (The Sentencing Project, 1980–2022), used to produce data on prison population per 100 000 inhabitants ;
+-   Prison population (The Sentencing Project, 1980–2022) ;
 
 -   Poverty rates (Census Bureau, 1980–2023);
 
--   Beer consumption per capita for population aged 14 and older (NIAAA, 1970–2022);
+-   Beer consumption per capita for population aged 14+ (NIAAA, 1970–2022);
 
 -   Immigration flows covering legal residents, refugees and asylees (DHS, 2013–2023);
 
@@ -54,7 +54,7 @@ Our empirical analysis is divided into two parts, reflecting the heterogeneous t
 
 The crime, inequality, GDP, consumption, unemployment, prison population, poverty, and alcohol series provide consistent state-year observations between 1998-2018. It allows us to examine the structural relationships between economic conditions and crime using fixed effects panel regressions.
 
-In contrast, immigration flows (2013–2018), police shootings (2015–2018), public spending (2017–2018) and food access (2012-2023) are only available for recent years. Rather than discarding these valuable contemporary indicators, we adopt a two-stage approach: we first exploit the full historical depth of our panel to study structural relationships between economic conditions and crime, then narrow the window to a shorter period to incorporate additional explanatory factors in a richer, shorter-term analysis.
+In contrast, immigration flows, police shootings, public spending and food access are only available for recent years (2015-2018). Considering the lack of historical depth, but also the value of these contemporary indicators, we conduct an exploratory analysis, that should be interpreted accordingly.
 
 ### **Long-run analysis (1998–2018)**
 
