@@ -141,7 +141,7 @@ ggplot(crime_distribution, aes(x = Year)) +
 
 Both crime categories exhibit a pronounced common time profile, with a strong increase from the 1960s to the late 1980s or early 1990s, followed by a sustained decline. Despite these shared national trends, cross-state heterogeneity remains large throughout the entire period, as illustrated by the wide percentile bands.
 
-Property crime displays a particularly strong rise and fall, whereas violent crime peaks later and declines more gradually, suggesting distinct underlying mechanisms. The persistence of substantial dispersion across states indicates that national trends alone cannot account for observed crime dynamics and highlights the relevance of state-specific factors. These descriptive findings motivate the use of panel models with both state and time fixed effects in the subsequent analysis.
+Property crime displays a particularly strong rise and fall, whereas violent crime peaks later and declines more gradually, suggesting distinct underlying mechanisms. The persistence of substantial dispersion across states indicates that national trends alone cannot account for observed crime dynamics and highlights the relevance of state-specific factors.
 
 Due to data availability constraints, our focus will be on the period 1998-2018, in the midst of a crime decline in the US states.
 
@@ -191,9 +191,9 @@ ggplot(crime_by_state_top, aes(x = Year, y = rate, colour = State)) +
   theme_minimal()
 ```
 
-Figure 2 displays the crime trends for the eight states with the highest crime rate per 100 000 inhabitants between 1960 and 2018. Despite differences in levels, all states exhibit similar trends : a strong increase until the late 1980s or early 1990s, followed by a sustained decline
+Figure 2 displays the crime trends for the eight states with the highest crime rate per 100 000 inhabitants between 1960 and 2018. Despite differences in levels, all states exhibit similar trends : a strong increase until the late 1980s or early 1990s, followed by a sustained decline. Cross-state heterogeneity also remains pronounced. 
 
-At the same time, cross-state heterogeneity remains pronounced. The District of Columbia stands out, both for its higher levels and for its volatility, \<hich might reflect its unique urban and institutional characteristics. This makes it difficult to compare it with US states. While it is included in this descriptive analysis, it is excluded from the regression sample due to missing values for key variables.
+The District of Columbia stands out, both for its higher levels and for its volatility, \<hich might reflect its unique urban and institutional characteristics. This makes it difficult to compare it with US states. While it is included in this descriptive analysis, it is excluded from the regression sample due to missing values for key variables.
 
 ##### Descriptive co-movement with economic structure
 
@@ -239,9 +239,10 @@ ggplot(crime_gdp, aes(x = log_gdp, y = crime)) +
   theme_minimal()
 ```
 
-The pooled scatter plot reveals a clear non-linear relationship between property crime and state GDP. At low to intermediate levels of GDP, property crime rates tend to increase, before declining for higher levels of economic activity. The downward-sloping segment at higher GDP levels suggests that economically stronger states tend to experience lower property crime rates, consistent with the hypothesis that improved economic opportunities reduce incentives for financially motivated offences. The dispersion of observations around the fitted curve remains substantial, indicating that GDP alone cannot account for cross-state differences in property crime.
+The pooled scatter plot reveals a non-linear relationship between property crime and state GDP. Property crime increases at low GDP levels before declining at higher levels, consistent with the opportunity cost hypothesis. 
+However, substantial dispersion around the fitted curve indicates that GDP alone cannot explain cross-state differences in property crime.
 
-In contrast, the relationship between violent crime and GDP is markedly weaker. While violent crime rates increase sharply at low GDP levels, the association flattens and becomes less systematic as GDP rises. At higher levels of economic activity, violent crime exhibits no clear monotonic decline. This pattern suggests that violent crime is less directly tied to economic performance than property crime and is likely driven by additional social, institutional, and demographic factors.
+In contrast, violent crime shows a weaker association to GDP. While crime rises sharply at low GDP, the relationship flattens at higher levels with no clear monotonic decline. This suggests violent crime is less tied to economic performance and more driven by social, institutional, and demographic factors.
 
 ```{r}
 crime_ineq <- panel_long |>
