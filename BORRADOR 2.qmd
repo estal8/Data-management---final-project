@@ -1,0 +1,101 @@
+```{r}
+quartile_table_A <- quartile_table |>
+  dplyr::select(
+    violent_quartile,
+    Mean_violent_crime,
+    Mean_property_crime,
+    Log_GDP,
+    Inequality_top10,
+    Unemployment,
+    Poverty
+  )
+
+quartile_table_A |>
+  knitr::kable(
+    caption = "Contemporary characteristics by violent crime quartile (2015–2018) — Panel A: crime and economic conditions",
+    digits = 2,
+    booktabs = TRUE
+  ) |>
+  kableExtra::kable_styling(
+    latex_options = "HOLD_position",
+    position = "center"
+  )
+```
+
+```{r}
+quartile_table_B <- quartile_table |>
+  dplyr::select(
+    violent_quartile,
+    Prison_per_100k,
+    LPR_per_million,
+    Police_shootings_per_million,
+    Beer_pc,
+    Welfare_spending,
+    Police_spending,
+    WIC_participation,
+    School_lunch_participation
+  )
+
+quartile_table_B |>
+  knitr::kable(
+    caption = "Contemporary characteristics by violent crime quartile (2015–2018) — Panel B: institutions and social factors",
+    digits = 2,
+    booktabs = TRUE
+  ) |>
+  kableExtra::kable_styling(
+    latex_options = "HOLD_position",
+    position = "center"
+  )
+```
+
+
+```{r}
+property_quartiles_A <- property_quartiles_tbl |>
+  dplyr::select(
+    property_quartile,
+    Mean_property_crime,
+    Mean_violent_crime,
+    Log_GDP,
+    Inequality_top10,
+    Unemployment,
+    Poverty
+  )
+
+property_quartiles_A |>
+  knitr::kable(
+    caption = "Contemporary characteristics by property crime quartile (2015–2018) — Panel A: crime and economic conditions",
+    digits = 2,
+    booktabs = TRUE
+  ) |>
+  kableExtra::kable_styling(
+    latex_options = "HOLD_position",
+    position = "center"
+  )
+```
+
+```{r}
+property_quartiles_B <- property_quartiles_tbl |>
+  dplyr::select(
+    property_quartile,
+    Prison_per_100k,
+    LPR_per_million,
+    Police_shootings_per_million,
+    Beer_pc,
+    Welfare_spending,
+    Police_spending,
+    WIC_participation,
+    School_lunch_participation
+  )
+
+property_quartiles_B |>
+  knitr::kable(
+    caption = "Contemporary characteristics by property crime quartile (2015–2018) — Panel B: institutions and social factors",
+    digits = 2,
+    booktabs = TRUE
+  ) |>
+  kableExtra::kable_styling(
+    latex_options = "HOLD_position",
+    position = "center"
+  )
+```
+
