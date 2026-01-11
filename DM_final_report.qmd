@@ -1499,26 +1499,25 @@ twfe_property_econ <- plm(
 
 summary(twfe_property_econ)
 ```
-The short-run regressions provide limited and fragile explanatory power, reflecting the very short time dimension of the panel. The pooled OLS models explain at most 29–32% of the variation in property crime (R² ≈ 0.29–0.32) and around 29% for violent crime, indicating that a large share of cross-state crime differences remains unexplained.
+The short-run regressions provide limited and fragile explanatory power, reflecting the very short time dimension of the panel. The pooled OLS models explain at most 29–32% of the variation in property crime ($R² ≈ 0.29–0.32$) and around 29% for violent crime, indicating that a large share of cross-state crime differences remains unexplained.
 
-For property crime, poverty and income inequality are the only consistently significant covariates. Poverty is positively associated with property crime (β ≈ 84, p = 0.004), and the top 10% income share is also significant (p = 0.015). GDP, unemployment, and population size are not statistically significant. These results suggest correlation rather than a robust structural relationship.
+For property crime, poverty and income inequality are the only consistently significant covariates. Poverty is positively associated with property crime ($β ≈ 84$, $p = 0.004$), and the top 10% income share is also significant ($p = 0.015$). GDP, unemployment, and population size are not statistically significant. These results suggest correlation rather than a robust structural relationship.
 
-For violent crime, results are even less stable. Unemployment is significant (β ≈ 70, p = 0.001), while poverty is only marginally significant (p ≈ 0.06) and inequality is not significant. Model fit remains modest (R² ≈ 0.29), pointing to weak short-run explanatory content.
+For violent crime, results are even less stable. Unemployment is significant ($β ≈ 70$, $p = 0.001$), while poverty is only marginally significant ($p ≈ 0.06$) and inequality is not significant. Model fit remains modest ($R² ≈ 0.29$), pointing to weak short-run explanatory content.
 
-Institutional models perform slightly better for property crime (R² ≈ 0.32) but very poorly for violent crime (R² ≈ 0.11). Police shootings per capita are the only robust institutional correlate (p < 0.05), while incarceration and spending variables are not significant, likely reflecting reverse causality and multicollinearity.
+Institutional models perform slightly better for property crime ($R² ≈ 0.32$) but very poorly for violent crime ($R² ≈ 0.11$). Police shootings per capita are the only robust institutional correlate ($p < 0.05$), while incarceration and spending variables are not significant, likely reflecting reverse causality and multicollinearity.
 
-The two-way fixed effects model further weakens results (R² ≈ 0.13), confirming that short-run within-state variation is insufficient to identify stable relationships. Overall, these findings should be interpreted as descriptive correlations rather than reliable estimates of causal effects.
+The two-way fixed effects model further weakens results ($R² ≈ 0.13$), confirming that short-run within-state variation is insufficient to identify stable relationships. Overall, these findings should be interpreted as descriptive correlations rather than reliable estimates of causal effects.
 
 ## Conclusion and limitations
 
 ### Limitations
 
-Several limitations should be kept in mind when interpreting the results.
-First, despite the use of fixed effects in the long-run panel, the estimated relationships remain associative rather than causal, as key variables such as incarceration, unemployment, and alcohol consumption may be jointly determined with crime.
+Several limitations should be kept in mind when interpreting the results. 
 
-Second, the short-run analysis is constrained by a very limited time dimension. This restricts statistical power and makes highly saturated specifications, such as two-way fixed effects models, imprecise. As a result, short-run regression results should be interpreted as descriptive correlations rather than structural effects.
+The long run analysis focuses on 1998–2018, a period of sustained crime decline across U.S. states. The relationships we document may not generalize to periods of rising crime in the United States. Despite the use of fixed effects, the estimated relationships remain associative rather than causal. Key variables such as incarceration, unemployment, and alcohol consumption may be jointly determined with crime. We lack credible instruments or natural experiments to establish causal effects. The positive correlation between prison population and crime, for instance, likely reflects reverse causality rather than failed deterrence. Data constraints exclude social capital, educational quality, and drug markets, potentially biasing estimated coefficients.
 
-Third, several institutional variables included in the short-run models—police shootings, public spending, and prison population are likely endogenous responses to crime levels. Their coefficients therefore capture contemporaneous co-movement rather than deterrence or policy effects.
+As for the short-run analysis, it is constrained by a very limited time dimension. This restricts statistical power and makes highly saturated specifications, such as two-way fixed effects models, imprecise. As a result, short-run regression results should be interpreted as descriptive correlations rather than structural effects. Several institutional variables included in the short-run models—police shootings, public spending, and prison population are likely endogenous responses to crime levels. Their coefficients therefore capture contemporaneous co-movement rather than deterrence or policy effects.
 
 Finally, crime exhibits strong persistence over time, especially for violent crime. Once lagged crime is included, most contemporaneous covariates lose significance, indicating that short-run variations are dominated by inertia. This limits the ability of static models to identify independent short-term drivers of crime.
 
