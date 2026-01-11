@@ -131,7 +131,7 @@ ggplot(crime_distribution, aes(x = Year)) +
   geom_line(aes(y = mean), linewidth = 0.9) +
   facet_wrap(~ type, scales = "free_y") +
   labs(
-    caption = "Figure 1. National crime trends and cross-state dispersion (mean and 10th–90th percentiles, 1960–2018)",
+    caption = "Figure 1. National crime trends and cross-state dispersion (mean and 10th-90th percentiles, 1960-2018)",
     x = "Year",
     y = "Crimes per 100,000 inhabitants"
   ) +
@@ -182,7 +182,7 @@ ggplot(crime_by_state_top, aes(x = Year, y = rate, colour = State)) +
   geom_line(linewidth = 0.7) +
   facet_wrap(~ type, scales = "free_y") +
   labs(
-    caption = "Figure 2. Violent and property crime rates in the eight highest-crime U.S. states (1960–2018)",
+    caption = "Figure 2. Violent and property crime rates in the eight highest-crime U.S. states (1960-2018)",
     x = "Year",
     y = "Crimes per 100,000 inhabitants",
     colour = "State"
@@ -234,7 +234,7 @@ ggplot(crime_gdp, aes(x = log_gdp, y = crime)) +
   labs(
     x = "Log state GDP",
     y = "Crimes per 100,000 inhabitants",
-    caption = "Figure 3. Raw co-movement between crime and GDP (pooled state–year observations))"
+    caption = "Figure 3. Raw co-movement between crime and GDP (pooled state-year observations))"
   ) +
   theme_minimal() +
   theme(plot.caption = element_text(size = 13, hjust = 0.5))
@@ -277,7 +277,7 @@ ggplot(crime_ineq, aes(x = inequality, y = crime)) +
   geom_smooth(method = "loess", se = FALSE, linewidth = 1) +
   facet_wrap(~ type, scales = "free_y") +
   labs(
-    caption = "Figure 4. Raw co-movement between crime and income inequality (pooled state–year observations)",
+    caption = "Figure 4. Raw co-movement between crime and income inequality (pooled state-year observations)",
     x = "Top 10% pre-tax income share",
     y = "Crimes per 100,000 inhabitants"
   ) +
@@ -332,7 +332,7 @@ crime_remaining_covariates |>
   labs(
     x = "Unemployment rate (%)",
     y = "Crimes per 100,000 inhabitants",
-    caption = "Figure 5. Raw co-movement between crime and unemployment rate (pooled state–year observations)"
+    caption = "Figure 5. Raw co-movement between crime and unemployment rate (pooled state-year observations)"
   ) +
   theme_minimal() +
   theme(plot.caption = element_text(size = 13, hjust = 0.5))
@@ -354,7 +354,7 @@ crime_remaining_covariates |>
   labs(
     x = "Share of population below poverty line (%)",
     y = "Crimes per 100,000 inhabitants", 
-    caption = "Figure 6. Raw co-movement between crime and percentage of poor (pooled state–year observations)"
+    caption = "Figure 6. Raw co-movement between crime and percentage of poor (pooled state-year observations)"
   ) +
   theme_minimal() +
   theme(plot.caption = element_text(size = 13, hjust = 0.5))
@@ -376,7 +376,7 @@ ggplot(aes(x = Consumption, y = crime)) +
   labs(
     x = "Consumption per capita",
     y = "Crimes per 100,000 inhabitants",
-    caption = "Figure 7. Raw co-movement between crime and consumption per capita (pooled state–year observations)"
+    caption = "Figure 7. Raw co-movement between crime and consumption per capita (pooled state-year observations)"
   ) +
   theme_minimal() +
   theme(plot.caption = element_text(size = 13, hjust = 0.5))
@@ -398,7 +398,7 @@ ggplot(aes(x = beer_per_capita_14plus, y = crime)) +
   labs(
     x = "Beer consumption per capita (14+)",
     y = "Crimes per 100,000 inhabitants", 
-    caption = "Figure 8. Raw co-movement between crime and beer consumption per capita (pooled state–year observations)"
+    caption = "Figure 8. Raw co-movement between crime and beer consumption per capita (pooled state-year observations)"
   ) +
   theme_minimal() +
   theme(plot.caption = element_text(size = 13, hjust = 0.5))
@@ -420,7 +420,7 @@ ggplot(aes(x = prison_per_100k, y = crime)) +
   labs(
     x = "Prison population per 100,000",
     y = "Crimes per 100,000 inhabitants",
-    caption = "Figure 9. Raw co-movement between crime and prison population per 100 000 (pooled state–year observations)"
+    caption = "Figure 9. Raw co-movement between crime and prison population per 100 000 (pooled state-year observations)"
   ) +
   theme_minimal() +
   theme(plot.caption = element_text(size = 13, hjust = 0.5))
@@ -476,8 +476,8 @@ all_variables <- tibble(
     "H3: Deterrence/incapacitation",
     "H4: Alcohol as criminogenic factor",
     "H5: Crime persistence",
-    "Labour market slack (short-term economic stress)",
-    "Persistent economic hardship (lower tail of distribution)"
+    "Labour market slack",
+    "Persistent economic hardship"
   )
 )
 
@@ -714,7 +714,7 @@ model_ols_2 <- lm(
 )
 
 knitr::kable(
-  round(vif(model_ols_3), 2),
+  round(vif(model_ols_2), 2),
   col.names = "VIF",
   caption = "Variance inflation factors with consumption"
 )
