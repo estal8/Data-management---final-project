@@ -193,7 +193,7 @@ ggplot(crime_by_state_top, aes(x = Year, y = rate, colour = State)) +
 
 Figure 2 displays the crime trends for the eight states with the highest crime rate per 100 000 inhabitants between 1960 and 2018. Despite differences in levels, all states exhibit similar trends : a strong increase until the late 1980s or early 1990s, followed by a sustained decline. Cross-state heterogeneity also remains pronounced. 
 
-The District of Columbia stands out, both for its higher levels and for its volatility, which might reflect its unique urban and institutional characteristics. This makes it difficult to compare it with US states. While it is included in this descriptive analysis, it is excluded from the regression sample due to missing values for key variables.
+The District of Columbia stands out, both for its higher levels and for its volatility, which might reflect its unique urban and institutional characteristics. This makes it difficult to compare it with US states. While it is included in this descriptive analysis, it is excluded from the regression sample due to missing values for key variables and to its unique characteristics as a federal district (no state-level governance, extreme urbanization).
 
 ##### Descriptive co-movement with economic structure
 
@@ -438,7 +438,7 @@ Taken together, the descriptive evidence suggests that crime rates in U.S. state
 
 We test the following hypotheses:
 
--   **H1 (opportunity cost)** : Higher GDP and lower unemployment are associated with lower crime rates, particularly for property crime.
+-   **H1 (opportunity cost)** : Higher GDP (or consumption) is associated with lower crime rates, particularly for property crime.
 -   **H2 (inequality)** : Greater income concentration at the top of the distribution is associated with higher crime rates.
 -   **H3 (deterrence)** : Larger prison populations are associated with lower crime rates because of incapacitation of criminals.
 -   **H4 (alcohol as a criminogenic factor)** : Higher alcohol consumption is associated with higher violent crime rates.
@@ -497,10 +497,7 @@ By including these controls, we isolate the partial correlation between our vari
 panel_reg <- panel_full_final |>
   filter(Year >= 1998 & Year <= 2018) |>
   filter(State != "District of Columbia") |>
-  filter(!is.na(gdp), !is.na(Data.Rates.Violent.All), 
-         !is.na(Data.Rates.Property.All), !is.na(share_pretax_income_p90p100), !is.na(Consumption), !is.na(unemployment_rate), !is.na(Data.Population)) |>
-  mutate(log_gdp = log(gdp), 
-         log_pop = log(Data.Population))
+  mutate(log_gdp = log(gdp), log_pop = log(Data.Population))
 ```
 
 Before presenting our results, we conduct a series of tests to validate our approach.
@@ -690,14 +687,16 @@ knitr::kable(
 )
 ```
 
-We do not include GDP, consumption and population simultaneously because of the multicollinearity it clearly introduces. Instead, we will estimate alternative specifications to assess which measure is most strongly associated with crime (see following models). In fact, we choose not to include log population at all, as it is not directly linked to any of our hypothesis and as population changes slowly over time, the within-state variation in log population is limited and largely captured by the state fixed effects.
+We do not include GDP, consumption and population simultaneously because of the multicollinearity it clearly introduces. Instead, we will estimate alternative specifications to assess which measure is most strongly associated with crime (see following models). 
+
+We choose not include log population in our specifications at all, for three reasons. First, it exhibits severe multicollinearity with log GDP (VIF > 80 when both are included), which would inflate standard errors and obscure the effects of economic conditions. Second, state fixed effects already absorb time-invariant differences in state size, and since population changes slowly over time, the within-state variation in log population provides limited additional information beyond what is captured by the fixed effects. Third, the total population is not directly linked to any of our theoretical hypotheses; it is the composition of the population (age structure, urbanization, demographic characteristics) that theory suggests might affect crime, not its absolute size. Unfortunately, detailed demographic breakdowns by state and year were not available in our dataset. Future research incorporating age structure or urbanization rates could provide additional insights into the demographic correlates of crime.
 
 For now, we look at the VIF when we only keep one variable among log(gdp) and consumption.
 
 ```{r}
 model_ols <- lm(
   Data.Rates.Property.All ~ log_gdp + share_pretax_income_p90p100 + 
-    unemployment_rate + prison_population + percent_poor + beer_per_capita_14plus,
+    unemployment_rate + prison_per_100k + percent_poor + beer_per_capita_14plus,
   data = panel_reg
 )
 knitr::kable(
@@ -710,7 +709,7 @@ knitr::kable(
 ```{r}
 model_ols_2 <- lm(
   Data.Rates.Property.All ~ Consumption + share_pretax_income_p90p100 + 
-    unemployment_rate + prison_population + percent_poor + beer_per_capita_14plus,
+    unemployment_rate + prison_per_100k + percent_poor + beer_per_capita_14plus,
   data = panel_reg
 )
 
@@ -855,7 +854,7 @@ Crime_{it} =\ & \alpha_i
 + \theta \cdot Crime_{i,t-1} 
 + \beta_1 \log(GDP_{it}) \\
 & + \beta_2 \cdot Inequality_{it} 
-+ \beta_3 \cdot Unemployment_{it} \\
++ \beta_3 \cdot Beer_{it} \\
 & + \beta_4 \cdot Prison_{it} + \gamma_1 \cdot Unemployment_{it} + \gamma_2 \cdot Poverty_{it} + \varepsilon_{it}
 \end{aligned}
 $$
@@ -910,7 +909,7 @@ Crime_{it} =\ & \alpha_i
 + \theta \cdot Crime_{i,t-1} \\
 & + \beta_1 \log(GDP_{it}) 
 + \beta_2 \cdot Inequality_{it} \\
-& + \beta_3 \cdot Unemployment_{it} 
+& + \beta_3 \cdot Beer_{it} 
 + \beta_4 \cdot Prison_{it} \\
 & + \gamma_1 \cdot Unemployment_{it} + \gamma_2 \cdot Poverty_{it}
 + \varepsilon_{it}
@@ -985,11 +984,11 @@ The variable `log_gdp` shows a strong and consistent negative correlation with p
 
 Personal consumption expenditures, tested as an alternative measure to GDP in Model 2, shows a significant but smaller negative correlation ($β = -0.061$, $p < 0.001$). This confirms that household living standards, not just aggregate output, are negatively associated with property crime.
 
-Neither unemployment rate nor poverty rate shows a significant correlation with property crime after controlling for other factors. In a similar fashion, the prison population per 100 000 inhabitants is not significantly correlated to property crime. These null findings contrasts with theoretical expectations. For unemployment, it is not consistent with the literature that shows that, during the 1990s, unemployment dropping caused, in part, an decrease in property crimes (Raphael & Winter-Ebmer, 2001).
+Neither unemployment rate nor poverty rate shows a significant correlation with property crime after controlling for other factors. In a similar fashion, the prison population per 100 000 inhabitants is not significantly correlated to property crime. These null findings contrasts with theoretical expectations. For unemployment, it is not consistent with the literature that shows that, during the 1990s, unemployment dropping caused, in part, an decrease in property crimes (Raphael & Winter-Ebmer, 2001). As control variables, their non-significance does not directly impact our hypotheses but suggests that aggregate labour market conditions and poverty rates do not strongly predict property crime once GDP is accounted for.
 
 Beer consumption per capita is positively and significantly correlated with property crime across all specifications. In model 1, an increase of 1 gallons per capita is associated with approximately 1833 additional property crimes per 100,000 inhabitants ($p < 0.001$). The attenuation in Model 4 could be linked to the absorption of common trends by year fixed effects.
 
-The lagged crime rate is the strongest predictor in dynamic specifications : in Model 3, a one-unit increase in the previous year's property crime rate is associated with a 0.79-unit increase in the current rate ($θ = 0.795$, $θ < 0.001$). This coefficient remains stable in Model 4 : a one-unit increase in the previous year's property crime rate is associated with a 0.81-unit increase in the current rate ($θ = 0.811$, $p < 0.001$), confirming substantial crime inertia.
+The lagged crime rate is the strongest predictor in dynamic specifications : in Model 3, a one-unit increase in the previous year's property crime rate is associated with a 0.79-unit increase in the current rate ($θ = 0.795$, $p < 0.001$). This coefficient remains stable in Model 4 : a one-unit increase in the previous year's property crime rate is associated with a 0.81-unit increase in the current rate ($θ = 0.811$, $p < 0.001$), confirming substantial crime inertia.
 
 The baseline model explains 76% of within state variation ($R^2=0.761$). Adding lagged crime in models 3 and 4 increases $R^2$ up to 91%, indicating that past crime is a powerful predictor of current crime.
 
@@ -1027,7 +1026,7 @@ The first three models fail to significantly predict violent crime rates as they
 
 Unlike property crime, `log_gdp` shows no significant correlation with violent crime. Personal consumption is also non-significant. These findings imply that violent crimes are less motivated by economic need than property crimes, and might be more likely to be driven by conflicts or social disorganization.
 
-Interestingly, unemployment rate is significantly and negatively correlated with violent crime in models 1-3 ($p < 0.001$). A 1 percentage point increase in unemployment rate leads to a decrease of around 9 violent crimes per 100 000 inhabitants for models 1-2 (representing about 2.4% of the average violent crime rate), and to a 2.8 decrease in model 3. This counterintuitive finding may reflect omitted variable bias, and should be interpreted with caution. The effect disappears in Model 4 after controlling for year fixed effects, suggesting it may capture only national time trends and not a structural relationship.
+Among control variables, unemployment rate shows a surprising negative correlation with violent crime in models 1-3 ($p < 0.001$). However, as a control variable, this result is incidental to our main hypotheses and should be interpreted with caution. The effect disappears in Model 4 after controlling for year fixed effects, suggesting it may capture only national time trends and not a structural relationship.
 
 The top 10% income share is not significantly correlated with violent crime ($p > 0.05$ in all models), contrary to theoretical predictions linking inequality to social tension and violence.
 
@@ -1038,6 +1037,40 @@ These findings lead us to reject hypothesis H3 (deterrence). The positive correl
 As for beer consumption, it is again strongly and positively correlated with violent crime.
 
 It's interesting to notice that adding lagged crime dramatically improves the models' fit ($R^2 ≈ 0.8$ in models 3 and 4). The crime persistence coefficient is large and highly significant ($θ = 0.833$). It indicates that violent crime exhibits even stronger inertia than property crime. Indeed, holding other factors constant, a state with 100 more violent crimes per 100 000 the past year will have 83 more violent crime the following year. But in these models, almost all variables that previously were significant lose their significance. This might indicate that their effect was linked to crime inertia. In the two-way fixed effect model (Model 4), only poverty remains slightly significant aside from lagged crime, but it has a negative coefficient.
+
+To summarize our conclusions and rejection / support of our initial hypotheses, refer to this table : 
+
+```{r}
+#| tbl-cap: "Summary of findings by hypothesis"
+
+hypothesis_summary <- tibble(
+  Hypothesis = c(
+    "H1: Opportunity cost",
+    "H2: Inequality",
+    "H3: Deterrence",
+    "H4: Alcohol",
+    "H5: Crime persistence"
+  ),
+  `Property Crime` = c(
+    "Supported (GDP***, Consumption***)",
+    "Not supported",
+    "Not supported",
+    "Supported (Beer***)",
+    "Strongly supported (ρ ≈ 0.80***)"
+  ),
+  `Violent Crime` = c(
+    "Not supported",
+    "Not supported",
+    "Not supported",
+    "Partially supported (Models 1-3)",
+    "Strongly supported (ρ ≈ 0.85***)"
+  )
+)
+
+hypothesis_summary |>
+  knitr::kable(booktabs = TRUE) |>
+  kableExtra::kable_styling(latex_options = "HOLD_position")
+```
 
 ### **Short-run analysis (2015–2018) - Contemporary correlates of crime**
 
