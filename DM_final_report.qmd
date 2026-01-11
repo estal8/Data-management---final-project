@@ -193,7 +193,7 @@ ggplot(crime_by_state_top, aes(x = Year, y = rate, colour = State)) +
 
 Figure 2 displays the crime trends for the eight states with the highest crime rate per 100 000 inhabitants between 1960 and 2018. Despite differences in levels, all states exhibit similar trends : a strong increase until the late 1980s or early 1990s, followed by a sustained decline. Cross-state heterogeneity also remains pronounced. 
 
-The District of Columbia stands out, both for its higher levels and for its volatility, \<hich might reflect its unique urban and institutional characteristics. This makes it difficult to compare it with US states. While it is included in this descriptive analysis, it is excluded from the regression sample due to missing values for key variables.
+The District of Columbia stands out, both for its higher levels and for its volatility, which might reflect its unique urban and institutional characteristics. This makes it difficult to compare it with US states. While it is included in this descriptive analysis, it is excluded from the regression sample due to missing values for key variables.
 
 ##### Descriptive co-movement with economic structure
 
@@ -1207,13 +1207,11 @@ summary_recent |>
   kableExtra::kable_styling(latex_options = "HOLD_position")
 ```
 
-During this period, violent crime averages 385 incidents per 100,000 inhabitants, while property crime is substantially more prevalent, with an average of 2,420 incidents per 100,000 inhabitants. Both indicators display considerable dispersion across states, especially property crime, highlighting strong heterogeneity in crime exposure even in recent years.
+During 2015–2018, violent crime averages 385 incidents per 100,000 inhabitants, while property crime is far more prevalent, with an average of about 2,420 incidents per 100,000. Both crime types exhibit substantial cross-state dispersion, particularly property crime, indicating persistent heterogeneity in crime exposure.
 
-Economic conditions vary moderately across states. Log GDP shows limited dispersion, while income concentration, measured by the top 10% pre-tax income share, averages 46%, with meaningful cross-state variation. Labour market conditions appear relatively favourable on average, with unemployment rates around 4.4%, but poverty remains persistent, affecting roughly 12% of the population.
+Economic conditions vary moderately across states. Log GDP shows limited dispersion, while income concentration averages 46% for the top 10%, with meaningful cross-state variation. Unemployment rates are relatively low on average (around 4.4%), but poverty remains widespread, affecting roughly 12% of the population.
 
-Migration intensity and police-related variables also differ markedly across states. States host on average 2,480 lawful permanent residents per million inhabitants, while police shootings occur at a rate of about 3.6 per million, with substantial dispersion. These differences motivate their inclusion as potential correlates of crime.
-
-Public spending and social programme indicators (education, welfare, health, corrections, police, and food assistance) exhibit large variability but are available only for a subset of observations, reflecting the short coverage of these datasets. Institutional and behavioural factors further show heterogeneity, with prison populations averaging 377 inmates per 100,000 inhabitants and beer consumption per capita displaying moderate cross-state variation.
+Migration and policing indicators also differ markedly across states. States host on average about 2,480 lawful permanent residents per million inhabitants, and police shootings occur at a rate of roughly 3.6 per million, both with substantial dispersion. Public spending variables display considerable heterogeneity but are only available for a limited number of years. Finally, institutional and behavioural factors vary across states, with average prison populations of 377 inmates per 100,000 inhabitants and moderate variation in beer consumption per capita.
 
 ##### Contemporary heterogeneity and structural correlates (2015–2018)
 
@@ -1353,11 +1351,11 @@ A similar pattern emerges when states are grouped by property crime quartiles. H
 
 Public spending and food assistance indicators show considerable dispersion but no clear monotonic pattern across quartiles, reflecting both institutional heterogeneity and the limited availability of these variables in the short-run sample.
 
-Overall, this quartile-based comparison indicates that, even over a short horizon, states with higher crime rates tend to be characterised by greater economic stress, higher incarceration rates, and more intense police activity. These patterns motivate the regression analysis that follows, which formalises these associations while controlling for multiple dimensions simultaneously.
+This quartile-based comparison indicates that, even over a short horizon, states with higher crime rates tend to be characterised by greater economic stress, higher incarceration rates, and more intense police activity. These patterns motivate the regression analysis that follows, which formalises these associations while controlling for multiple dimensions simultaneously.
 
 #### Regression analysis
 
-Because the short-run panel only covers four years (2015–2018), we begin with a purely exploratory correlation analysis. The objective is not statistical inference, but rather to provide a preliminary overview of how violent and property crime co-move with a broad set of socio-economic and institutional variables, and to motivate a parsimonious and structured regression design.
+Because the short-run panel only covers four years, we begin with a purely exploratory correlation analysis. The objective is not statistical inference, but rather to provide a preliminary overview of how violent and property crime co-move with a broad set of socio-economic and institutional variables, and to motivate a parsimonious and structured regression design.
 
 Using the short-run panel, we compute pairwise correlations between crime rates and selected economic, social, and institutional indicators, including GDP, income inequality, unemployment, poverty, prison population, police activity, public spending, immigration, and alcohol consumption. The resulting correlation matrix is summarized using a heatmap.
 
@@ -1410,12 +1408,9 @@ corrplot(
   diag = FALSE
 )
 ```
+The correlation matrix highlights clear short-run patterns. Both violent and property crime are positively correlated with unemployment and poverty, particularly for property crime, pointing to a close association with short-run economic conditions. Crime is also positively correlated with police shootings, indicating that high-crime states tend to face more intensive policing.
 
-The correlation matrix reveals several clear short-run patterns. Both violent and property crime are positively correlated with unemployment and poverty, with stronger associations for property crime, suggesting a closer link with short-run economic conditions. Crime rates are also positively correlated with police shootings per million inhabitants, indicating that high-crime states tend to experience more intense or confrontational policing environments.
-
-In contrast, log GDP shows only a weak and slightly negative correlation with crime, while income inequality displays modest correlations, suggesting that these variables are not strong short-run predictors of crime on their own. Prison population is positively correlated with both crime and police shootings, consistent with institutional responses to higher crime rather than pure deterrence effects.
-
-Overall, the correlation structure points to a distinction between socio-economic conditions (unemployment and poverty) and institutional intensity (incarceration and policing), motivating a structured and parsimonious regression strategy.
+By contrast, log GDP and income inequality display only weak correlations with crime, while prison population is positively correlated with both crime and police shootings, consistent with institutional responses rather than deterrence effects. The correlations suggest a separation between socio-economic stress and institutional intensity, motivating a parsimonious regression strategy.
 
 ##### Hypotheses
 
@@ -1443,7 +1438,7 @@ panel_short_inst <- panel_full_final |>
           spending_corrections, beer_per_capita_14plus)
 ```
 
-Given the short time dimension, we use a parsimonious pooled OLS specification and include year fixed effects to absorb nationwide shocks common to all states.
+We use a parsimonious pooled OLS specification and include year fixed effects to absorb nationwide shocks common to all states.
 
 $$\begin{aligned}
 Crime_{it} =\ & \ \beta_0 + \beta_1 log(GDP_{it}) 
@@ -1480,8 +1475,6 @@ ols_violent_econ <- lm(
   data = panel_short_inst
 )
 
-summary(ols_property_econ)
-summary(ols_violent_econ)
 ```
 
 ##### Institutions stress model (pooled OLS + year FE)
@@ -1525,8 +1518,6 @@ ols_violent_inst <- lm(
   data = panel_short_inst
 )
 
-summary(ols_property_inst)
-summary(ols_violent_inst)
 ```
 
 These results should therefore be interpreted as descriptive associations rather than causal effects.
@@ -1544,9 +1535,75 @@ twfe_property_econ <- plm(
   model = "within",
   effect = "twoways"
 )
-
-summary(twfe_property_econ)
 ```
+
+### Results
+
+```{r}
+modelsummary(
+  list(
+    "Property crime" = ols_property_econ,
+    "Violent crime"  = ols_violent_econ
+  ),
+  stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
+  coef_rename = c(
+    "log_gdp" = "Log GDP",
+    "unemployment_rate" = "Unemployment rate",
+    "percent_poor" = "Poverty rate",
+    "share_pretax_income_p90p100" = "Inequality (top 10%)",
+    "log_pop" = "Log population"
+  ),
+  gof_omit = "IC|Log|RMSE|Adj|Std.Errors",
+  notes = "Pooled OLS with year fixed effects. Standard errors in parentheses.",
+  output = "kableExtra"
+) |>
+  kableExtra::kable_styling(latex_options = "HOLD_position")
+  
+```
+
+```{r}
+modelsummary(
+  list(
+    "Property crime" = ols_property_inst,
+    "Violent crime"  = ols_violent_inst
+  ),
+  stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
+  coef_rename = c(
+    "prison_population" = "Prison population",
+    "nb_police_shootings" = "Police shootings",
+    "spending_police" = "Police spending",
+    "spending_corrections" = "Corrections spending",
+    "beer_per_capita_14plus" = "Beer consumption",
+    "log_pop" = "Log population"
+  ),
+  gof_omit = "IC|Log|RMSE|Adj|Std.Errors",
+  notes = "Pooled OLS with year fixed effects. Standard errors in parentheses.",
+  output = "kableExtra"
+) |>
+  kableExtra::kable_styling(latex_options = "HOLD_position")
+```
+
+```{r}
+modelsummary(
+  list(
+    "TWFE – Property crime" = twfe_property_econ
+  ),
+  stars = c('*' = 0.05, '**' = 0.01, '***' = 0.001),
+  coef_rename = c(
+    "log_gdp" = "Log GDP",
+    "unemployment_rate" = "Unemployment rate",
+    "percent_poor" = "Poverty rate",
+    "share_pretax_income_p90p100" = "Inequality (top 10%)",
+    "log_pop" = "Log population"
+  ),
+  gof_omit = "IC|Log|RMSE|Adj|Std.Errors",
+  notes = "Two-way fixed effects (state and year). Short panel: results interpreted cautiously.",
+  output = "kableExtra"
+) |>
+  kableExtra::kable_styling(latex_options = "HOLD_position")
+```
+
+
 The short-run regressions provide limited and fragile explanatory power, reflecting the very short time dimension of the panel. The pooled OLS models explain at most 29–32% of the variation in property crime ($R² ≈ 0.29–0.32$) and around 29% for violent crime, indicating that a large share of cross-state crime differences remains unexplained.
 
 For property crime, poverty and income inequality are the only consistently significant covariates. Poverty is positively associated with property crime ($β ≈ 84$, $p = 0.004$), and the top 10% income share is also significant ($p = 0.015$). GDP, unemployment, and population size are not statistically significant. These results suggest correlation rather than a robust structural relationship.
